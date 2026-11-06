@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a0000" />
+  <meta name="theme-color" content="#07151d" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>بوابة جامعة بني سويف الأهلية | BSNU Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,9 +18,9 @@
           fontFamily: { cairo: ['Cairo', 'sans-serif'] },
           colors: {
             uni: {
-              50: '#fff1f1', 100: '#ffdfdf', 200: '#ffc5c5', 300: '#ff9b9b',
-              400: '#ff6363', 500: '#ff2d2d', 600: '#ed1515', 700: '#c80d0d',
-              800: '#a50f0f', 900: '#881414', 950: '#4a0505'
+              50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9',
+              400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490',
+              800: '#155e75', 900: '#164e63', 950: '#083344'
             }
           },
           animation: {
@@ -41,17 +41,17 @@
   </script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Cairo', sans-serif; background: #050000; margin: 0; overflow-x: hidden; }
+    body { font-family: 'Cairo', sans-serif; background: #030c13; margin: 0; overflow-x: hidden; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0000; }
-    ::-webkit-scrollbar-thumb { background: #7f1d1d; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #991b1b; }
+    ::-webkit-scrollbar-track { background: #07151d; }
+    ::-webkit-scrollbar-thumb { background: #155e75; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0e7490; }
     .glass { background: rgba(17, 0, 0, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
     .glass-strong { background: rgba(10, 0, 0, 0.85); backdrop-filter: blur(24px); }
-    .glow-red { box-shadow: 0 0 40px rgba(220, 38, 38, 0.15); }
-    .glow-text { text-shadow: 0 0 30px rgba(239, 68, 68, 0.4); }
+    .glow-cyan { box-shadow: 0 0 40px rgba(6, 182, 212, 0.15); }
+    .glow-text { text-shadow: 0 0 30px rgba(34, 211, 238, 0.4); }
     .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .card-hover:hover { transform: translateY(-4px); border-color: rgba(239, 68, 68, 0.5); box-shadow: 0 12px 40px rgba(220, 38, 38, 0.12); }
+    .card-hover:hover { transform: translateY(-4px); border-color: rgba(34, 211, 238, 0.5); box-shadow: 0 12px 40px rgba(6, 182, 212, 0.12); }
     .message-enter { animation: slideUp 0.3s ease-out; }
     @keyframes bounce-dot {
       0%, 80%, 100% { transform: translateY(0); }
@@ -122,14 +122,14 @@
 
     // ==================== DATA ====================
     const subjectsData = [
-      { id: 1, name: 'Communication Presentation', code: 'HU101', arabicName: 'العرض والتواصل', color: 'from-rose-600 to-red-700', icon: 'Message' },
+      { id: 1, name: 'Communication Presentation', code: 'HU101', arabicName: 'العرض والتواصل', color: 'from-sky-600 to-cyan-700', icon: 'Message' },
       { id: 2, name: 'Scientific Thinking', code: 'HU102', arabicName: 'التفكير العلمي', color: 'from-violet-600 to-purple-700', icon: 'Sparkles' },
       { id: 3, name: 'Math 1', code: 'MA101', arabicName: 'رياضيات 1', color: 'from-blue-600 to-indigo-700', icon: 'Calculator' },
       { id: 4, name: 'Math 0', code: 'MA100', arabicName: 'رياضيات 0', color: 'from-cyan-600 to-teal-700', icon: 'Calculator' },
       { id: 5, name: 'English', code: 'EN101', arabicName: 'اللغة الإنجليزية', color: 'from-emerald-600 to-green-700', icon: 'BookOpen' },
       { id: 6, name: 'Electronics', code: 'EL101', arabicName: 'الإلكترونيات', color: 'from-amber-600 to-orange-700', icon: 'Zap' },
-      { id: 7, name: 'Fundamentals of CS', code: 'CS101', arabicName: 'أساسيات علوم الحاسب', color: 'from-red-600 to-rose-700', icon: 'Layers' },
-      { id: 8, name: 'Human Rights', code: 'HU103', arabicName: 'حقوق الإنسان', color: 'from-pink-600 to-rose-700', icon: 'Users' },
+      { id: 7, name: 'Fundamentals of CS', code: 'CS101', arabicName: 'أساسيات علوم الحاسب', color: 'from-cyan-600 to-sky-700', icon: 'Layers' },
+      { id: 8, name: 'Human Rights', code: 'HU103', arabicName: 'حقوق الإنسان', color: 'from-pink-600 to-sky-700', icon: 'Users' },
     ];
 
     const allLecturesData = {
@@ -579,7 +579,7 @@ Civil & Political + Economic & Social rights.` },
 
       const isCompleted = (code, lecId) => !!completed[`${code}-${lecId}`];
 
-      const filtered = useMemo(() => subjectsData.filter(s =>
+      const filtecyan = useMemo(() => subjectsData.filter(s =>
         s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.arabicName.includes(searchQuery) ||
         s.code.toLowerCase().includes(searchQuery.toLowerCase())
@@ -736,8 +736,8 @@ Civil & Political + Economic & Social rights.` },
 
       // ==================== VIEWS ====================
       const NavBar = ({ title, onBack, right }) => (
-        <div className="sticky top-0 z-40 glass-strong border-b border-red-900/40 px-4 py-3 flex items-center justify-between safe-top">
-          <button onClick={onBack} className="flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold text-sm">
+        <div className="sticky top-0 z-40 glass-strong border-b border-cyan-900/40 px-4 py-3 flex items-center justify-between safe-top">
+          <button onClick={onBack} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold text-sm">
             <Icons.ChevronRight className="w-5 h-5" /> {title || 'رجوع'}
           </button>
           {right}
@@ -747,7 +747,7 @@ Civil & Political + Economic & Social rights.` },
       const Home = () => (
         <div className="relative min-h-screen pb-24">
           {/* Background effects */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#120000] via-[#050000] to-black pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#120000] via-[#030c13] to-black pointer-events-none" />
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[80vw] h-[80vw] max-w-[420px] max-h-[420px] rounded-full opacity-30 pointer-events-none"
             style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.25) 0%, transparent 70%)' }} />
 
@@ -755,30 +755,30 @@ Civil & Political + Economic & Social rights.` },
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-red-400/80 text-xs font-medium mb-0.5">جامعة بني سويف الأهلية</p>
+                <p className="text-cyan-400/80 text-xs font-medium mb-0.5">جامعة بني سويف الأهلية</p>
                 <h1 className="text-2xl font-extrabold text-white glow-text">بوابتك الجامعية</h1>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => setShowSearch(true)} className="w-10 h-10 rounded-xl bg-red-950/50 border border-red-900/50 flex items-center justify-center text-red-400">
+                <button onClick={() => setShowSearch(true)} className="w-10 h-10 rounded-xl bg-cyan-950/50 border border-cyan-900/50 flex items-center justify-center text-cyan-400">
                   <Icons.Search className="w-5 h-5" />
                 </button>
-                <button onClick={() => setView('settings')} className="w-10 h-10 rounded-xl bg-red-950/50 border border-red-900/50 flex items-center justify-center text-red-400">
+                <button onClick={() => setView('settings')} className="w-10 h-10 rounded-xl bg-cyan-950/50 border border-cyan-900/50 flex items-center justify-center text-cyan-400">
                   <Icons.Settings className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             {/* Progress Overview */}
-            <div className="glass border border-red-900/40 rounded-2xl p-4 mb-5 glow-red">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-4 mb-5 glow-cyan">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Icons.Trophy className="w-5 h-5 text-amber-400" />
                   <span className="font-bold text-white text-sm">تقدمك الدراسي</span>
                 </div>
-                <span className="text-red-400 font-bold text-lg">{overallProgress.percent}%</span>
+                <span className="text-cyan-400 font-bold text-lg">{overallProgress.percent}%</span>
               </div>
-              <div className="h-2.5 bg-[#1a0505] rounded-full overflow-hidden mb-2">
-                <div className="h-full bg-gradient-to-l from-red-500 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${overallProgress.percent}%` }} />
+              <div className="h-2.5 bg-[#10212a] rounded-full overflow-hidden mb-2">
+                <div className="h-full bg-gradient-to-l from-cyan-500 to-sky-400 rounded-full transition-all duration-700" style={{ width: `${overallProgress.percent}%` }} />
               </div>
               <p className="text-xs text-gray-500">{overallProgress.totalDone} من {overallProgress.totalReady} محاضرة مكتملة</p>
             </div>
@@ -792,9 +792,9 @@ Civil & Political + Economic & Social rights.` },
                 { icon: Icons.Note, label: 'ملاحظاتي', v: 'notes', desc: `${notes.length} ملاحظة` },
               ].map(({ icon: I, label, v, desc }) => (
                 <button key={v} onClick={() => setView(v)}
-                  className="glass border border-red-900/40 rounded-2xl p-4 text-right card-hover group">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-600/30 to-red-900/30 border border-red-800/40 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                    <I className="w-5 h-5 text-red-400" />
+                  className="glass border border-cyan-900/40 rounded-2xl p-4 text-right card-hover group">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-600/30 to-cyan-900/30 border border-cyan-800/40 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                    <I className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div className="font-bold text-white text-sm mb-0.5">{label}</div>
                   <div className="text-[11px] text-gray-500">{desc}</div>
@@ -810,34 +810,34 @@ Civil & Political + Economic & Social rights.` },
                 { icon: Icons.Bell, label: 'الإعلانات', v: 'announcements' },
               ].map(({ icon: I, label, v }) => (
                 <button key={v} onClick={() => setView(v)}
-                  className="glass border border-red-900/30 rounded-xl py-3 px-2 flex flex-col items-center gap-1.5 card-hover">
-                  <I className="w-5 h-5 text-red-400" />
+                  className="glass border border-cyan-900/30 rounded-xl py-3 px-2 flex flex-col items-center gap-1.5 card-hover">
+                  <I className="w-5 h-5 text-cyan-400" />
                   <span className="text-[11px] text-gray-300 font-medium">{label}</span>
                 </button>
               ))}
             </div>
 
             {/* Today Schedule */}
-            <div className="glass border border-red-900/40 rounded-2xl p-4 mb-4">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Icons.Clock className="w-4 h-4 text-red-400" />
+                  <Icons.Clock className="w-4 h-4 text-cyan-400" />
                   <h3 className="font-bold text-white text-sm">محاضرات اليوم ({today})</h3>
                 </div>
-                {selectedGroup && <span className="text-[10px] bg-red-950 text-red-300 px-2 py-0.5 rounded-full">{selectedGroup}</span>}
+                {selectedGroup && <span className="text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded-full">{selectedGroup}</span>}
               </div>
               {!selectedGroup ? (
-                <button onClick={() => setView('groups')} className="w-full text-center py-4 text-sm text-red-400 border border-dashed border-red-900/50 rounded-xl">
+                <button onClick={() => setView('groups')} className="w-full text-center py-4 text-sm text-cyan-400 border border-dashed border-cyan-900/50 rounded-xl">
                   اختر جروبك لعرض الجدول
                 </button>
               ) : todaySch && todaySch.slots.length ? (
                 <div className="space-y-2">
                   {todaySch.slots.slice(0, 3).map((s, i) => (
-                    <div key={i} className="bg-[#1a0505]/80 rounded-xl p-3 border border-red-900/20">
-                      <div className="text-red-400 text-xs font-bold mb-1" dir="ltr">{s.time}</div>
+                    <div key={i} className="bg-[#10212a]/80 rounded-xl p-3 border border-cyan-900/20">
+                      <div className="text-cyan-400 text-xs font-bold mb-1" dir="ltr">{s.time}</div>
                       {s.items.map((it, j) => (
                         <div key={j} className="text-sm text-gray-300 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
                           {it.subject} <span className="text-gray-600">• {it.hall}</span>
                         </div>
                       ))}
@@ -850,7 +850,7 @@ Civil & Political + Economic & Social rights.` },
             </div>
 
             {/* Favorites */}
-            <div className="glass border border-red-900/40 rounded-2xl p-4">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Icons.Star className="w-4 h-4 text-amber-400" />
                 <h3 className="font-bold text-white text-sm">المواد المفضلة</h3>
@@ -861,7 +861,7 @@ Civil & Political + Economic & Social rights.` },
                     const sub = subjectsData.find(s => s.code === c);
                     return (
                       <button key={c} onClick={() => { setSelectedSubject(sub); setView('lectures'); }}
-                        className="bg-red-950/60 text-red-300 text-xs px-3 py-1.5 rounded-full border border-red-900/40 hover:bg-red-900/40 transition">
+                        className="bg-cyan-950/60 text-cyan-300 text-xs px-3 py-1.5 rounded-full border border-cyan-900/40 hover:bg-cyan-900/40 transition">
                         {sub?.arabicName || c}
                       </button>
                     );
@@ -878,23 +878,23 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const Subjects = () => (
-        <div className="min-h-screen bg-[#050000] pb-8">
+        <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="المواد" onBack={() => setView('home')} />
           <div className="px-4 pt-4">
             <div className="relative mb-5">
               <input type="text" placeholder="ابحث عن مادة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[#0a0000] border border-red-900/50 text-white rounded-xl py-3 px-4 pr-11 focus:outline-none focus:border-red-500 text-sm" />
-              <Icons.Search className="absolute right-3.5 top-3.5 w-5 h-5 text-red-500" />
+                className="w-full bg-[#07151d] border border-cyan-900/50 text-white rounded-xl py-3 px-4 pr-11 focus:outline-none focus:border-cyan-500 text-sm" />
+              <Icons.Search className="absolute right-3.5 top-3.5 w-5 h-5 text-cyan-500" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filtered.map(sub => {
+              {filtecyan.map(sub => {
                 const p = getProgress(sub.code);
                 const isFav = favorites.includes(sub.code);
                 return (
                   <div key={sub.id} onClick={() => { setSelectedSubject(sub); setView('lectures'); }}
-                    className="glass border border-red-900/30 rounded-2xl p-4 cursor-pointer card-hover relative">
+                    className="glass border border-cyan-900/30 rounded-2xl p-4 cursor-pointer card-hover relative">
                     <button onClick={e => { e.stopPropagation(); toggleFav(sub.code); }}
-                      className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-red-900/30">
+                      className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-cyan-900/30">
                       <Icons.Star className={`w-4 h-4 ${isFav ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
                     </button>
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${sub.color} flex items-center justify-center mb-3 shadow-lg`}>
@@ -906,8 +906,8 @@ Civil & Political + Economic & Social rights.` },
                       <span>{p.done}/{p.ready} مكتمل</span>
                       <span>{p.percent}% جاهز</span>
                     </div>
-                    <div className="h-1.5 bg-[#1a0505] rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-l from-red-500 to-rose-400 rounded-full" style={{ width: `${p.donePercent}%` }} />
+                    <div className="h-1.5 bg-[#10212a] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-l from-cyan-500 to-sky-400 rounded-full" style={{ width: `${p.donePercent}%` }} />
                     </div>
                   </div>
                 );
@@ -920,7 +920,7 @@ Civil & Political + Economic & Social rights.` },
       const Lectures = () => {
         const lectures = allLecturesData[selectedSubject?.code] || allLecturesData.default;
         return (
-          <div className="min-h-screen bg-[#050000] pb-8">
+          <div className="min-h-screen bg-[#030c13] pb-8">
             <NavBar title="المحاضرات" onBack={() => setView('subjects')}
               right={<button onClick={() => toggleFav(selectedSubject?.code)} className="p-2">
                 <Icons.Star className={`w-5 h-5 ${favorites.includes(selectedSubject?.code) ? 'text-amber-400 fill-amber-400' : 'text-gray-500'}`} />
@@ -932,7 +932,7 @@ Civil & Political + Economic & Social rights.` },
                 {lectures.map(lec => {
                   const done = isCompleted(selectedSubject?.code, lec.id);
                   return (
-                    <div key={lec.id} className={`glass border rounded-2xl p-4 ${done ? 'border-green-900/40' : 'border-red-900/30'}`}>
+                    <div key={lec.id} className={`glass border rounded-2xl p-4 ${done ? 'border-green-900/40' : 'border-cyan-900/30'}`}>
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
                           <h4 className="font-bold text-white text-sm leading-snug">{lec.title}</h4>
@@ -949,7 +949,7 @@ Civil & Political + Economic & Social rights.` },
                         )}
                       </div>
                       {!lec.hasContent ? (
-                        <span className="inline-block mt-1 bg-red-950/50 text-red-400 text-[10px] px-2 py-0.5 rounded">قريباً</span>
+                        <span className="inline-block mt-1 bg-cyan-950/50 text-cyan-400 text-[10px] px-2 py-0.5 rounded">قريباً</span>
                       ) : (
                         <div className="flex flex-wrap gap-2 mt-3">
                           <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryAr, lang: 'ar', lecture: lec })}
@@ -961,7 +961,7 @@ Civil & Political + Economic & Social rights.` },
                             <Icons.Eye className="w-3.5 h-3.5" /> EN
                           </button>
                           <button onClick={() => explain(lec.title)}
-                            className="flex items-center gap-1 bg-red-600 hover:bg-red-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            className="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold">
                             <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
                           </button>
                         </div>
@@ -975,17 +975,17 @@ Civil & Political + Economic & Social rights.` },
             {/* Preview Modal */}
             {preview.open && (
               <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-[#0a0000] border border-red-900/60 rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
-                  <div className="p-4 border-b border-red-900/40 flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-red-400 flex items-center gap-2 truncate"><Icons.BookOpen className="w-4 h-4 shrink-0" />{preview.title}</h3>
+                <div className="bg-[#07151d] border border-cyan-900/60 rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+                  <div className="p-4 border-b border-cyan-900/40 flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-cyan-400 flex items-center gap-2 truncate"><Icons.BookOpen className="w-4 h-4 shrink-0" />{preview.title}</h3>
                     <button onClick={() => setPreview({ ...preview, open: false })} className="text-gray-400 hover:text-white p-1"><Icons.X className="w-5 h-5" /></button>
                   </div>
                   <div className="p-5 overflow-y-auto flex-1 text-gray-200 text-sm whitespace-pre-wrap leading-relaxed" dir={preview.lang === 'ar' ? 'rtl' : 'ltr'}>
                     {preview.content}
                   </div>
-                  <div className="p-4 border-t border-red-900/40 flex gap-2 justify-end flex-wrap">
+                  <div className="p-4 border-t border-cyan-900/40 flex gap-2 justify-end flex-wrap">
                     <button onClick={() => { setPreview({ ...preview, open: false }); explain(preview.title); }}
-                      className="flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-xs font-bold">
+                      className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold">
                       <Icons.Bot className="w-4 h-4" /> اطلب شرح
                     </button>
                     <button onClick={() => downloadText(preview.title, preview.content)}
@@ -1001,14 +1001,14 @@ Civil & Political + Economic & Social rights.` },
       };
 
       const BotView = () => (
-        <div className="min-h-screen bg-[#050000] flex flex-col pb-2">
+        <div className="min-h-screen bg-[#030c13] flex flex-col pb-2">
           <NavBar title="المساعد الذكي" onBack={() => setView('home')}
-            right={<button onClick={() => setChat([{ id: 1, sender: 'bot', text: 'تم مسح المحادثة. كيف يمكنني مساعدتك؟', time: formatTime() }])} className="p-2 text-gray-500 hover:text-red-400"><Icons.Trash className="w-4 h-4" /></button>} />
+            right={<button onClick={() => setChat([{ id: 1, sender: 'bot', text: 'تم مسح المحادثة. كيف يمكنني مساعدتك؟', time: formatTime() }])} className="p-2 text-gray-500 hover:text-cyan-400"><Icons.Trash className="w-4 h-4" /></button>} />
           <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-3">
             <div className="flex-1 overflow-y-auto py-4 space-y-3 min-h-[50vh]">
               {chat.map(m => (
                 <div key={m.id} className={`flex message-enter ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.sender === 'user' ? 'bg-red-700 text-white rounded-br-md' : 'bg-[#140505] border border-red-900/30 text-gray-200 rounded-bl-md'}`}>
+                  <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.sender === 'user' ? 'bg-cyan-700 text-white rounded-br-md' : 'bg-[#140505] border border-cyan-900/30 text-gray-200 rounded-bl-md'}`}>
                     <div className="flex items-center gap-1.5 mb-1.5 opacity-60 text-[10px]">
                       {m.sender === 'user' ? <Icons.User className="w-3 h-3" /> : <Icons.Bot className="w-3 h-3" />}
                       {m.sender === 'user' ? 'أنت' : 'المساعد'}
@@ -1020,9 +1020,9 @@ Civil & Political + Economic & Social rights.` },
               ))}
               {typing && (
                 <div className="flex justify-start">
-                  <div className="bg-[#140505] border border-red-900/30 rounded-2xl px-4 py-3 flex gap-1.5">
+                  <div className="bg-[#140505] border border-cyan-900/30 rounded-2xl px-4 py-3 flex gap-1.5">
                     {[0, 0.15, 0.3].map((d, i) => (
-                      <span key={i} className="w-2 h-2 bg-red-500 rounded-full" style={{ animation: `bounce-dot 1s infinite ${d}s` }} />
+                      <span key={i} className="w-2 h-2 bg-cyan-500 rounded-full" style={{ animation: `bounce-dot 1s infinite ${d}s` }} />
                     ))}
                   </div>
                 </div>
@@ -1032,16 +1032,16 @@ Civil & Political + Economic & Social rights.` },
             {/* Suggestions */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {['اشرح أنظمة الأعداد', 'ما هو Hardware؟', 'نصيحة دراسية', 'تقدمي كام؟'].map(s => (
-                <button key={s} onClick={() => { setInput(s); }} className="shrink-0 text-[11px] bg-red-950/40 border border-red-900/40 text-red-300 px-3 py-1.5 rounded-full">
+                <button key={s} onClick={() => { setInput(s); }} className="shrink-0 text-[11px] bg-cyan-950/40 border border-cyan-900/40 text-cyan-300 px-3 py-1.5 rounded-full">
                   {s}
                 </button>
               ))}
             </div>
             <form onSubmit={send} className="flex gap-2 pb-3 pt-1">
               <input value={input} onChange={e => setInput(e.target.value)} placeholder="اكتب سؤالك..." disabled={typing}
-                className="flex-1 bg-[#0a0000] border border-red-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-red-500" />
+                className="flex-1 bg-[#07151d] border border-cyan-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-cyan-500" />
               <button type="submit" disabled={!input.trim() || typing}
-                className="bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+                className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
                 <Icons.Send className="w-5 h-5" style={{ transform: 'scaleX(-1)' }} />
               </button>
             </form>
@@ -1050,19 +1050,19 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const Groups = () => (
-        <div className="min-h-screen bg-[#050000] flex flex-col items-center justify-center p-6">
-          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-red-400 font-semibold text-sm">
+        <div className="min-h-screen bg-[#030c13] flex flex-col items-center justify-center p-6">
+          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-cyan-400 font-semibold text-sm">
             <Icons.ChevronRight className="w-5 h-5" /> العودة
           </button>
-          <Icons.Users className="w-14 h-14 text-red-500 mb-4 animate-float" />
+          <Icons.Users className="w-14 h-14 text-cyan-500 mb-4 animate-float" />
           <h2 className="text-2xl font-bold text-white mb-2 glow-text">اختر جروبك</h2>
           <p className="text-gray-500 text-sm mb-8 text-center">سيتم حفظ اختيارك تلقائياً</p>
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             {['جروب 1', 'جروب 2'].map(g => (
               <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }}
-                className={`flex-1 glass border-2 rounded-2xl p-6 flex flex-col items-center gap-3 card-hover ${selectedGroup === g ? 'border-red-500 glow-red' : 'border-red-900/50'}`}>
-                <div className="w-14 h-14 rounded-full bg-red-950/60 flex items-center justify-center">
-                  <Icons.Users className="w-7 h-7 text-red-400" />
+                className={`flex-1 glass border-2 rounded-2xl p-6 flex flex-col items-center gap-3 card-hover ${selectedGroup === g ? 'border-cyan-500 glow-cyan' : 'border-cyan-900/50'}`}>
+                <div className="w-14 h-14 rounded-full bg-cyan-950/60 flex items-center justify-center">
+                  <Icons.Users className="w-7 h-7 text-cyan-400" />
                 </div>
                 <span className="text-white text-lg font-bold">{g}</span>
                 {selectedGroup === g && <span className="text-[10px] text-green-400">✓ مختار حالياً</span>}
@@ -1075,29 +1075,29 @@ Civil & Political + Economic & Social rights.` },
       const Schedule = () => {
         const data = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
         return (
-          <div className="min-h-screen bg-[#050000] pb-8">
+          <div className="min-h-screen bg-[#030c13] pb-8">
             <NavBar title={`جدول ${selectedGroup}`} onBack={() => setView('groups')}
-              right={<button onClick={() => setView('groups')} className="text-xs text-red-400">تغيير</button>} />
+              right={<button onClick={() => setView('groups')} className="text-xs text-cyan-400">تغيير</button>} />
             <div className="px-4 pt-2 space-y-4">
               {data.map((day, i) => (
-                <div key={i} className={`glass border rounded-2xl p-4 ${day.day === today ? 'border-red-500/60 glow-red' : 'border-red-900/30'}`}>
-                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-red-900/20">
-                    <h3 className="text-lg font-bold text-red-400">{day.day}</h3>
-                    {day.day === today && <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full">اليوم</span>}
+                <div key={i} className={`glass border rounded-2xl p-4 ${day.day === today ? 'border-cyan-500/60 glow-cyan' : 'border-cyan-900/30'}`}>
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-cyan-900/20">
+                    <h3 className="text-lg font-bold text-cyan-400">{day.day}</h3>
+                    {day.day === today && <span className="text-[10px] bg-cyan-600 text-white px-2 py-0.5 rounded-full">اليوم</span>}
                   </div>
                   {day.slots.length === 0 ? (
                     <p className="text-gray-600 text-sm text-center py-2">لا توجد محاضرات</p>
                   ) : day.slots.map((slot, si) => (
-                    <div key={si} className="bg-[#120505]/80 p-3 rounded-xl border border-red-900/15 mb-2 last:mb-0">
-                      <div className="flex items-center text-red-400 font-bold text-xs mb-2" dir="ltr">
+                    <div key={si} className="bg-[#0b1c25]/80 p-3 rounded-xl border border-cyan-900/15 mb-2 last:mb-0">
+                      <div className="flex items-center text-cyan-400 font-bold text-xs mb-2" dir="ltr">
                         <Icons.Clock className="w-3.5 h-3.5 ml-1.5" />{slot.time}
                       </div>
                       {slot.items.map((it, ii) => (
-                        <div key={ii} className="bg-[#1a0808]/60 p-2.5 rounded-lg mb-1.5 last:mb-0">
+                        <div key={ii} className="bg-[#102631]/60 p-2.5 rounded-lg mb-1.5 last:mb-0">
                           <div className="font-semibold text-white text-sm">{it.subject}</div>
                           <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-gray-500">
-                            <span className="flex items-center gap-1"><Icons.User className="w-3 h-3 text-red-500/70" />{it.doctor}</span>
-                            <span className="flex items-center gap-1"><Icons.MapPin className="w-3 h-3 text-red-500/70" />{it.hall}</span>
+                            <span className="flex items-center gap-1"><Icons.User className="w-3 h-3 text-cyan-500/70" />{it.doctor}</span>
+                            <span className="flex items-center gap-1"><Icons.MapPin className="w-3 h-3 text-cyan-500/70" />{it.hall}</span>
                           </div>
                         </div>
                       ))}
@@ -1111,16 +1111,16 @@ Civil & Political + Economic & Social rights.` },
       };
 
       const NotesView = () => (
-        <div className="min-h-screen bg-[#050000] pb-8">
+        <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="ملاحظاتي" onBack={() => setView('home')} />
           <div className="px-4 pt-3">
-            <div className="glass border border-red-900/40 rounded-2xl p-4 mb-5">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-4 mb-5">
               <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder="عنوان الملاحظة..."
-                className="w-full bg-transparent border-b border-red-900/40 text-white text-sm py-2 mb-3 focus:outline-none focus:border-red-500" />
+                className="w-full bg-transparent border-b border-cyan-900/40 text-white text-sm py-2 mb-3 focus:outline-none focus:border-cyan-500" />
               <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="اكتب ملاحظاتك هنا..." rows={4}
                 className="w-full bg-transparent text-gray-300 text-sm focus:outline-none resize-none" />
               <div className="flex gap-2 mt-3">
-                <button onClick={saveNote} className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5">
+                <button onClick={saveNote} className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5">
                   <Icons.Check className="w-4 h-4" /> {editingNote ? 'تحديث' : 'حفظ'}
                 </button>
                 {editingNote && (
@@ -1136,12 +1136,12 @@ Civil & Political + Economic & Social rights.` },
             ) : (
               <div className="space-y-3">
                 {notes.slice().reverse().map(n => (
-                  <div key={n.id} className="glass border border-red-900/30 rounded-xl p-4">
+                  <div key={n.id} className="glass border border-cyan-900/30 rounded-xl p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-bold text-white text-sm">{n.title}</h4>
                       <div className="flex gap-1">
                         <button onClick={() => { setEditingNote(n.id); setNoteTitle(n.title); setNoteText(n.text); }} className="p-1.5 text-gray-500 hover:text-blue-400"><Icons.Edit className="w-4 h-4" /></button>
-                        <button onClick={() => deleteNote(n.id)} className="p-1.5 text-gray-500 hover:text-red-400"><Icons.Trash className="w-4 h-4" /></button>
+                        <button onClick={() => deleteNote(n.id)} className="p-1.5 text-gray-500 hover:text-cyan-400"><Icons.Trash className="w-4 h-4" /></button>
                       </div>
                     </div>
                     <p className="text-gray-400 text-xs whitespace-pre-wrap leading-relaxed">{n.text}</p>
@@ -1154,18 +1154,18 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const TimerView = () => (
-        <div className="min-h-screen bg-[#050000] flex flex-col items-center justify-center p-6">
-          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-red-400 font-semibold text-sm">
+        <div className="min-h-screen bg-[#030c13] flex flex-col items-center justify-center p-6">
+          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-cyan-400 font-semibold text-sm">
             <Icons.ChevronRight className="w-5 h-5" /> العودة
           </button>
           <div className="text-center mb-8">
-            <Icons.Timer className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <Icons.Timer className="w-10 h-10 text-cyan-400 mx-auto mb-3" />
             <h2 className="text-xl font-bold text-white">مؤقت بومودورو</h2>
             <p className="text-gray-500 text-xs mt-1">{timerMode === 'focus' ? 'وقت التركيز' : 'وقت الاستراحة'}</p>
           </div>
           <div className="relative w-56 h-56 mb-8">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#1a0505" strokeWidth="6" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#10212a" strokeWidth="6" />
               <circle cx="50" cy="50" r="45" fill="none" stroke={timerMode === 'focus' ? '#ef4444' : '#22c55e'} strokeWidth="6"
                 strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 45}`}
                 strokeDashoffset={`${2 * Math.PI * 45 * (1 - timerSeconds / (timerMode === 'focus' ? 25 * 60 : 5 * 60))}`}
@@ -1177,52 +1177,52 @@ Civil & Political + Economic & Social rights.` },
           </div>
           <div className="flex gap-3">
             <button onClick={() => setTimerRunning(!timerRunning)}
-              className={`px-8 py-3 rounded-xl font-bold text-sm ${timerRunning ? 'bg-amber-600 text-white' : 'bg-red-600 text-white'}`}>
+              className={`px-8 py-3 rounded-xl font-bold text-sm ${timerRunning ? 'bg-amber-600 text-white' : 'bg-cyan-600 text-white'}`}>
               {timerRunning ? 'إيقاف' : 'ابدأ'}
             </button>
             <button onClick={() => { setTimerRunning(false); setTimerSeconds(timerMode === 'focus' ? 25 * 60 : 5 * 60); }}
-              className="px-5 py-3 rounded-xl border border-red-900/50 text-red-400 text-sm font-bold">
+              className="px-5 py-3 rounded-xl border border-cyan-900/50 text-cyan-400 text-sm font-bold">
               إعادة
             </button>
           </div>
           <div className="flex gap-2 mt-6">
             <button onClick={() => { setTimerMode('focus'); setTimerSeconds(25 * 60); setTimerRunning(false); }}
-              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'focus' ? 'bg-red-600 text-white' : 'bg-red-950/40 text-gray-400'}`}>تركيز 25</button>
+              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'focus' ? 'bg-cyan-600 text-white' : 'bg-cyan-950/40 text-gray-400'}`}>تركيز 25</button>
             <button onClick={() => { setTimerMode('break'); setTimerSeconds(5 * 60); setTimerRunning(false); }}
-              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'break' ? 'bg-green-600 text-white' : 'bg-red-950/40 text-gray-400'}`}>استراحة 5</button>
+              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'break' ? 'bg-green-600 text-white' : 'bg-cyan-950/40 text-gray-400'}`}>استراحة 5</button>
           </div>
         </div>
       );
 
       const GPAView = () => (
-        <div className="min-h-screen bg-[#050000] pb-8">
+        <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="حاسبة المعدل" onBack={() => setView('home')} />
           <div className="px-4 pt-3">
-            <div className="glass border border-red-900/40 rounded-2xl p-5 mb-5 text-center">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-5 mb-5 text-center">
               <p className="text-gray-500 text-xs mb-1">المعدل التراكمي المتوقع</p>
-              <p className="text-4xl font-extrabold text-red-400">{calcGPA()}</p>
+              <p className="text-4xl font-extrabold text-cyan-400">{calcGPA()}</p>
               <p className="text-[10px] text-gray-600 mt-1">من 4.0</p>
             </div>
             <div className="space-y-3 mb-4">
               {gpaCourses.map((c, i) => (
-                <div key={i} className="glass border border-red-900/30 rounded-xl p-3 flex gap-2 items-center">
+                <div key={i} className="glass border border-cyan-900/30 rounded-xl p-3 flex gap-2 items-center">
                   <input value={c.name} onChange={e => { const n = [...gpaCourses]; n[i].name = e.target.value; setGpaCourses(n); }}
                     placeholder="المادة" className="flex-1 bg-transparent text-sm text-white focus:outline-none min-w-0" />
                   <select value={c.grade} onChange={e => { const n = [...gpaCourses]; n[i].grade = e.target.value; setGpaCourses(n); }}
-                    className="bg-[#1a0505] border border-red-900/40 text-white text-xs rounded-lg px-2 py-1.5">
+                    className="bg-[#10212a] border border-cyan-900/40 text-white text-xs rounded-lg px-2 py-1.5">
                     <option value="">درجة</option>
                     {['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'].map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                   <input type="number" value={c.hours} onChange={e => { const n = [...gpaCourses]; n[i].hours = e.target.value; setGpaCourses(n); }}
-                    placeholder="ساعات" className="w-16 bg-transparent text-sm text-white text-center focus:outline-none border border-red-900/30 rounded-lg py-1" />
+                    placeholder="ساعات" className="w-16 bg-transparent text-sm text-white text-center focus:outline-none border border-cyan-900/30 rounded-lg py-1" />
                   {gpaCourses.length > 1 && (
-                    <button onClick={() => setGpaCourses(gpaCourses.filter((_, j) => j !== i))} className="text-gray-600 hover:text-red-400"><Icons.X className="w-4 h-4" /></button>
+                    <button onClick={() => setGpaCourses(gpaCourses.filter((_, j) => j !== i))} className="text-gray-600 hover:text-cyan-400"><Icons.X className="w-4 h-4" /></button>
                   )}
                 </div>
               ))}
             </div>
             <button onClick={() => setGpaCourses([...gpaCourses, { name: '', grade: '', hours: '' }])}
-              className="w-full border border-dashed border-red-900/50 text-red-400 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+              className="w-full border border-dashed border-cyan-900/50 text-cyan-400 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
               <Icons.Plus className="w-4 h-4" /> إضافة مادة
             </button>
           </div>
@@ -1230,16 +1230,16 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const AnnouncementsView = () => (
-        <div className="min-h-screen bg-[#050000] pb-8">
+        <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="الإعلانات" onBack={() => setView('home')} />
           <div className="px-4 pt-3 space-y-3">
             {announcements.map(a => (
               <div key={a.id} className={`glass border rounded-2xl p-4 ${
-                a.type === 'warning' ? 'border-amber-800/40' : a.type === 'success' ? 'border-green-800/40' : a.type === 'tip' ? 'border-blue-800/40' : 'border-red-900/30'
+                a.type === 'warning' ? 'border-amber-800/40' : a.type === 'success' ? 'border-green-800/40' : a.type === 'tip' ? 'border-blue-800/40' : 'border-cyan-900/30'
               }`}>
                 <div className="flex items-start gap-3">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    a.type === 'warning' ? 'bg-amber-950 text-amber-400' : a.type === 'success' ? 'bg-green-950 text-green-400' : a.type === 'tip' ? 'bg-blue-950 text-blue-400' : 'bg-red-950 text-red-400'
+                    a.type === 'warning' ? 'bg-amber-950 text-amber-400' : a.type === 'success' ? 'bg-green-950 text-green-400' : a.type === 'tip' ? 'bg-blue-950 text-blue-400' : 'bg-cyan-950 text-cyan-400'
                   }`}>
                     <Icons.Bell className="w-4 h-4" />
                   </div>
@@ -1256,16 +1256,16 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const SettingsView = () => (
-        <div className="min-h-screen bg-[#050000] pb-8">
+        <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="الإعدادات" onBack={() => setView('home')} />
           <div className="px-4 pt-3 space-y-3">
-            <div className="glass border border-red-900/30 rounded-2xl p-4">
+            <div className="glass border border-cyan-900/30 rounded-2xl p-4">
               <h3 className="font-bold text-white text-sm mb-3">البيانات المحفوظة</h3>
               <div className="space-y-2 text-xs text-gray-400">
-                <div className="flex justify-between"><span>المفضلة</span><span className="text-red-400">{favorites.length}</span></div>
-                <div className="flex justify-between"><span>محاضرات مكتملة</span><span className="text-red-400">{Object.keys(completed).length}</span></div>
-                <div className="flex justify-between"><span>ملاحظات</span><span className="text-red-400">{notes.length}</span></div>
-                <div className="flex justify-between"><span>الجروب</span><span className="text-red-400">{selectedGroup || '—'}</span></div>
+                <div className="flex justify-between"><span>المفضلة</span><span className="text-cyan-400">{favorites.length}</span></div>
+                <div className="flex justify-between"><span>محاضرات مكتملة</span><span className="text-cyan-400">{Object.keys(completed).length}</span></div>
+                <div className="flex justify-between"><span>ملاحظات</span><span className="text-cyan-400">{notes.length}</span></div>
+                <div className="flex justify-between"><span>الجروب</span><span className="text-cyan-400">{selectedGroup || '—'}</span></div>
               </div>
             </div>
             <button onClick={() => {
@@ -1274,11 +1274,11 @@ Civil & Political + Economic & Social rights.` },
                 setFavorites([]); setCompleted({}); setNotes([]); setSelectedGroup(null);
                 showToast('تم مسح جميع البيانات');
               }
-            }} className="w-full glass border border-red-900/40 text-red-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+            }} className="w-full glass border border-cyan-900/40 text-cyan-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
               <Icons.Trash className="w-4 h-4" /> مسح كل البيانات المحلية
             </button>
-            <div className="glass border border-red-900/30 rounded-2xl p-4 text-center">
-              <Icons.Graduation className="w-8 h-8 text-red-500 mx-auto mb-2" />
+            <div className="glass border border-cyan-900/30 rounded-2xl p-4 text-center">
+              <Icons.Graduation className="w-8 h-8 text-cyan-500 mx-auto mb-2" />
               <p className="text-white font-bold text-sm">بوابة جامعة بني سويف الأهلية</p>
               <p className="text-gray-500 text-xs mt-1">إصدار محسّن 2026 • للاستخدام التعليمي</p>
             </div>
@@ -1292,7 +1292,7 @@ Civil & Political + Economic & Social rights.` },
           <div className="p-4 flex items-center gap-3">
             <button onClick={() => { setShowSearch(false); setGlobalSearch(''); }} className="text-gray-400"><Icons.X className="w-6 h-6" /></button>
             <input autoFocus value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="ابحث في كل المحاضرات..."
-              className="flex-1 bg-[#110000] border border-red-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-red-500" />
+              className="flex-1 bg-[#091923] border border-cyan-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-cyan-500" />
           </div>
           <div className="flex-1 overflow-y-auto px-4 pb-8">
             {globalSearch && searchResults.length === 0 && <p className="text-center text-gray-600 mt-10 text-sm">لا توجد نتائج</p>}
@@ -1301,8 +1301,8 @@ Civil & Political + Economic & Social rights.` },
                 setShowSearch(false); setGlobalSearch('');
                 setSelectedSubject(r.subject); setView('lectures');
                 setTimeout(() => setPreview({ open: true, title: r.lecture.title, content: r.lecture.summaryAr, lang: 'ar', lecture: r.lecture }), 200);
-              }} className="w-full text-right glass border border-red-900/30 rounded-xl p-3 mb-2 hover:border-red-500/40 transition">
-                <div className="text-xs text-red-400 mb-0.5">{r.subject.arabicName}</div>
+              }} className="w-full text-right glass border border-cyan-900/30 rounded-xl p-3 mb-2 hover:border-cyan-500/40 transition">
+                <div className="text-xs text-cyan-400 mb-0.5">{r.subject.arabicName}</div>
                 <div className="text-sm text-white font-medium">{r.lecture.title}</div>
               </button>
             ))}
@@ -1312,7 +1312,7 @@ Civil & Political + Economic & Social rights.` },
 
       // Bottom Nav (mobile)
       const BottomNav = () => view !== 'home' ? null : (
-        <div className="fixed bottom-0 inset-x-0 z-30 glass-strong border-t border-red-900/40 safe-bottom">
+        <div className="fixed bottom-0 inset-x-0 z-30 glass-strong border-t border-cyan-900/40 safe-bottom">
           <div className="flex justify-around py-2 max-w-lg mx-auto">
             {[
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
@@ -1320,7 +1320,7 @@ Civil & Political + Economic & Social rights.` },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
               { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
             ].map(({ icon: I, label, v }) => (
-              <button key={v} onClick={() => setView(v)} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${view === v ? 'text-red-400' : 'text-gray-500'}`}>
+              <button key={v} onClick={() => setView(v)} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${view === v ? 'text-cyan-400' : 'text-gray-500'}`}>
                 <I className="w-5 h-5" />
                 <span className="text-[10px] font-medium">{label}</span>
               </button>
@@ -1330,7 +1330,7 @@ Civil & Political + Economic & Social rights.` },
       );
 
       return (
-        <div dir="rtl" className="font-cairo min-h-screen bg-[#050000] text-gray-200">
+        <div dir="rtl" className="font-cairo min-h-screen bg-[#030c13] text-gray-200">
           {view === 'home' && <Home />}
           {view === 'subjects' && <Subjects />}
           {view === 'lectures' && <Lectures />}
@@ -1348,7 +1348,7 @@ Civil & Political + Economic & Social rights.` },
           {/* Toast */}
           {toast && (
             <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-xl shadow-lg font-semibold text-sm flex items-center gap-2 animate-slide-up ${
-              toast.type === 'error' ? 'bg-red-700 text-white' : 'bg-green-600 text-white'
+              toast.type === 'error' ? 'bg-cyan-700 text-white' : 'bg-green-600 text-white'
             }`}>
               <Icons.CheckCircle className="w-4 h-4" /> {toast.msg || toast}
             </div>
