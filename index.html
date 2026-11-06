@@ -342,36 +342,49 @@ Derivatives of trig, exponential and log functions.` },
         { id: 3, title: 'المحاضرة الثالثة: التكامل', doctor: 'د. دعاء', hasContent: false, duration: '60 دقيقة', summaryAr: '', summaryEn: '' },
       ],
       'EL101': [
-        { id: 1, title: 'المحاضرة الأولى: مقدمة في الإلكترونيات', doctor: 'د. شريف', hasContent: true, duration: '50 دقيقة',
-          summaryAr: `الإلكترونيات ⚡
+        {
+          id: 4,
+          title: 'Electronics – Section 4: Ohm’s Law & Kirchhoff’s Laws',
+          doctor: 'TA: Salma Saeed',
+          hasContent: true,
+          duration: 'ملخص + نص المحاضرة',
+          summaryAr: `ملخص Section 4 – الإلكترونيات ⚡
 
-المكونات الأساسية:
-• المقاومة (Resistor): تقاوم مرور التيار
-• المكثف (Capacitor): يخزن الشحنة
-• الدايود (Diode): يسمح بمرور التيار في اتجاه واحد
-• الترانزستور (Transistor): يضخم أو يحوّل الإشارات
+الموضوعات:
+• المقاومة والمقاومية النوعية
+• قانون أوم واتفاقية الإشارة
+• المقاومات الثابتة والمتغيرة
+• التوصيلية الكهربائية
+• العقد والفروع والحلقات
+• التوصيل على التوالي والتوازي
+• قانون كيرشوف للتيار KCL
+• قانون كيرشوف للجهد KVL
 
-قانون أوم: V = I × R
-حيث V الجهد، I التيار، R المقاومة.`,
-          summaryEn: `Electronics ⚡
+القوانين الأساسية:
+R = ρℓ/A
+V = IR
+G = 1/R
+Req(series) = R1 + R2 + ...
+1/Req(parallel) = 1/R1 + 1/R2 + ...
+ΣI(in) = ΣI(out)
+ΣV = 0
 
-Basic components:
-• Resistor — opposes current
-• Capacitor — stores charge
-• Diode — one-way current
-• Transistor — amplifies/switches
+افتح روابط الملفات بالأسفل لمراجعة الملخص الكامل والنص المستخرج من شرائح المحاضرة.`,
+          summaryEn: `Electronics Section 4: Resistance, Ohm’s Law, passive sign convention, conductance, nodes/branches/loops, series and parallel circuits, KCL and KVL.
 
-Ohm's Law: V = I × R` },
-        { id: 2, title: 'المحاضرة الثانية: الدوائر الكهربائية', doctor: 'د. شريف', hasContent: true, duration: '55 دقيقة',
-          summaryAr: `أنواع التوصيل:
-• التوالي (Series): نفس التيار، الجهد يتوزع
-• التوازي (Parallel): نفس الجهد، التيار يتوزع
+Key formulas:
+R = ρℓ/A
+V = IR
+G = 1/R
+ΣI(in) = ΣI(out)
+ΣV = 0
 
-قوانين كيرشوف:
-• قانون التيار (KCL)
-• قانون الجهد (KVL)`,
-          summaryEn: `Series vs Parallel circuits
-Kirchhoff's Laws (KCL & KVL)` },
+Use the links below to open the full summary and extracted slide text.`,
+          externalLinks: [
+            { label: 'فتح الملخص الكامل', url: 'https://github.com/ahmed526548/My-university-38/blob/main/lectures/Electronics/Electronics-Section-4-Summary.md' },
+            { label: 'فتح نص شرائح المحاضرة', url: 'https://github.com/ahmed526548/My-university-38/blob/main/lectures/Electronics/Electronics-Section-4-Slides-Text-Extract.md' }
+          ]
+        }
       ],
       'HU102': [
         { id: 1, title: 'المحاضرة الأولى: ما هو التفكير العلمي؟', doctor: 'د. حمادة محمود', hasContent: true, duration: '45 دقيقة',
@@ -964,6 +977,12 @@ Civil & Political + Economic & Social rights.` },
                             className="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold">
                             <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
                           </button>
+                          {lec.externalLinks?.map(link => (
+                            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
+                              className="flex items-center gap-1 border border-cyan-700/50 text-cyan-300 hover:bg-cyan-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                              <Icons.External className="w-3.5 h-3.5" /> {link.label}
+                            </a>
+                          ))}
                         </div>
                       )}
                     </div>
