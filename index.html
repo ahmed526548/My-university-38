@@ -381,8 +381,8 @@ G = 1/R
 
 Use the links below to open the full summary and extracted slide text.`,
           externalLinks: [
-            { label: 'فتح الملخص الكامل', url: 'https://github.com/ahmed526548/My-university-38/blob/main/lectures/Electronics/Electronics-Section-4-Summary.md' },
-            { label: 'فتح نص شرائح المحاضرة', url: 'https://github.com/ahmed526548/My-university-38/blob/main/lectures/Electronics/Electronics-Section-4-Slides-Text-Extract.md' }
+            { label: 'عرض الملخص داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Summary.md' },
+            { label: 'عرض نص الشرائح داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Slides-Text-Extract.md' }
           ]
         }
       ],
@@ -529,6 +529,7 @@ Civil & Political + Economic & Social rights.` },
         try { return JSON.parse(localStorage.getItem('notes') || '[]'); } catch { return []; }
       });
       const [preview, setPreview] = useState({ open: false, title: '', content: '', lang: 'ar', lecture: null });
+      const [documentPreview, setDocumentPreview] = useState({ open: false, title: '', url: '' });
       const [chat, setChat] = useState([{
         id: 1, sender: 'bot',
         text: 'أهلاً بك! أنا المساعد الجامعي الذكي 🎓\n\nاسألني عن أي محاضرة أو مفهوم وسأشرحه لك.\n\nجرب: "اشرح أنظمة الأعداد" أو "ما هو Hardware؟"',
@@ -978,10 +979,10 @@ Civil & Political + Economic & Social rights.` },
                             <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
                           </button>
                           {lec.externalLinks?.map(link => (
-                            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
+                            <button key={link.url} onClick={() => setDocumentPreview({ open: true, title: link.label, url: link.url })}
                               className="flex items-center gap-1 border border-cyan-700/50 text-cyan-300 hover:bg-cyan-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
-                              <Icons.External className="w-3.5 h-3.5" /> {link.label}
-                            </a>
+                              <Icons.Eye className="w-3.5 h-3.5" /> {link.label}
+                            </button>
                           ))}
                         </div>
                       )}
@@ -990,6 +991,22 @@ Civil & Political + Economic & Social rights.` },
                 })}
               </div>
             </div>
+
+            {/* Embedded document viewer */}
+            {documentPreview.open && (
+              <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+                <div className="bg-[#07151d] border border-cyan-900/60 rounded-2xl w-full max-w-5xl h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+                  <div className="p-3 sm:p-4 border-b border-cyan-900/40 flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-bold text-cyan-300 truncate">{documentPreview.title}</h3>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-300 border border-cyan-800 rounded-lg px-3 py-2">فتح في تبويب جديد</a>
+                      <button onClick={() => setDocumentPreview({ open: false, title: '', url: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
+                    </div>
+                  </div>
+                  <iframe title={documentPreview.title} src={documentPreview.url} className="w-full flex-1 bg-white" />
+                </div>
+              </div>
+            )}
 
             {/* Preview Modal */}
             {preview.open && (
