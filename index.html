@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>بوابة جامعة بني سويف الأهلية | BSNU Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+          colors: {
+            uni: {
+              50: '#fff1f1', 100: '#ffdfdf', 200: '#ffc5c5', 300: '#ff9b9b',
+              400: '#ff6363', 500: '#ff2d2d', 600: '#ed1515', 700: '#c80d0d',
+              800: '#a50f0f', 900: '#881414', 950: '#4a0505'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.35s ease-out',
+            'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            pulseSoft: { '0%, 100%': { opacity: '0.4' }, '50%': { opacity: '0.8' } },
+            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Cairo', sans-serif; background: #050000; margin: 0; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0000; }
+    ::-webkit-scrollbar-thumb { background: #7f1d1d; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #991b1b; }
+    .glass { background: rgba(17, 0, 0, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .glass-strong { background: rgba(10, 0, 0, 0.85); backdrop-filter: blur(24px); }
+    .glow-red { box-shadow: 0 0 40px rgba(220, 38, 38, 0.15); }
+    .glow-text { text-shadow: 0 0 30px rgba(239, 68, 68, 0.4); }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-4px); border-color: rgba(239, 68, 68, 0.5); box-shadow: 0 12px 40px rgba(220, 38, 38, 0.12); }
+    .message-enter { animation: slideUp 0.3s ease-out; }
+    @keyframes bounce-dot {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-5px); }
+    }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    input, textarea, button { font-family: inherit; }
+    .progress-ring { transition: stroke-dashoffset 0.6s ease; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    // ==================== ICONS (Expanded & Improved) ====================
+    const Icon = ({ d, className = "w-5 h-5", strokeWidth = 1.8 }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <path d={d} />
+      </svg>
+    );
+
+    const Icons = {
+      BookOpen: (p) => <Icon {...p} d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />,
+      Bot: (p) => <Icon {...p} d="M12 8V4H8M2 14h2M20 14h2M15 13v2M9 13v2M12 18v4M8 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z" />,
+      Calendar: (p) => <Icon {...p} d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />,
+      Search: (p) => <Icon {...p} d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3" />,
+      ChevronRight: (p) => <Icon {...p} d="M9 18l6-6-6-6" />,
+      ChevronLeft: (p) => <Icon {...p} d="M15 18l-6-6 6-6" />,
+      Send: (p) => <Icon {...p} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
+      User: (p) => <Icon {...p} d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />,
+      Clock: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2" />,
+      MapPin: (p) => <Icon {...p} d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
+      Eye: (p) => <Icon {...p} d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      Download: (p) => <Icon {...p} d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+      Star: (p) => <Icon {...p} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />,
+      X: (p) => <Icon {...p} d="M18 6L6 18M6 6l12 12" />,
+      Check: (p) => <Icon {...p} d="M20 6L9 17l-5-5" />,
+      CheckCircle: (p) => <Icon {...p} d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3" />,
+      Home: (p) => <Icon {...p} d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10" />,
+      Settings: (p) => <Icon {...p} d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      Note: (p) => <Icon {...p} d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />,
+      Calculator: (p) => <Icon {...p} d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />,
+      Timer: (p) => <Icon {...p} d="M10 2h4M12 14v-4M4.93 4.93l1.41 1.41M2 12h2M19.07 4.93l-1.41 1.41M22 12h-2M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" />,
+      Bell: (p) => <Icon {...p} d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />,
+      Trophy: (p) => <Icon {...p} d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" />,
+      Flame: (p) => <Icon {...p} d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />,
+      Zap: (p) => <Icon {...p} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />,
+      Plus: (p) => <Icon {...p} d="M12 5v14M5 12h14" />,
+      Trash: (p) => <Icon {...p} d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />,
+      Edit: (p) => <Icon {...p} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />,
+      Filter: (p) => <Icon {...p} d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />,
+      Share: (p) => <Icon {...p} d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />,
+      Moon: (p) => <Icon {...p} d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
+      Sun: (p) => <Icon {...p} d="M12 3v1M12 20v1M4.22 4.22l.71.71M18.36 18.36l.71.71M1 12h1M21 12h1M4.22 19.78l.71-.71M18.36 5.64l.71-.71M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
+      Info: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" />,
+      Graduation: (p) => <Icon {...p} d="M22 10v6M2 10l10-5 10 5-10 5zM6 12v5c3 3 9 3 12 0v-5" />,
+      Layers: (p) => <Icon {...p} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
+      Target: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />,
+      Message: (p) => <Icon {...p} d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+      Sparkles: (p) => <Icon {...p} d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM19 14l.75 2.25L22 17l-2.25.75L19 20l-.75-2.25L16 17l2.25-.75L19 14zM5 6l.5 1.5L7 8l-1.5.5L5 10l-.5-1.5L3 8l1.5-.5L5 6z" />,
+      Refresh: (p) => <Icon {...p} d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />,
+      Copy: (p) => <Icon {...p} d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />,
+      External: (p) => <Icon {...p} d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />,
+    };
+
+    // ==================== DATA ====================
+    const subjectsData = [
+      { id: 1, name: 'Communication Presentation', code: 'HU101', arabicName: 'العرض والتواصل', color: 'from-rose-600 to-red-700', icon: 'Message' },
+      { id: 2, name: 'Scientific Thinking', code: 'HU102', arabicName: 'التفكير العلمي', color: 'from-violet-600 to-purple-700', icon: 'Sparkles' },
+      { id: 3, name: 'Math 1', code: 'MA101', arabicName: 'رياضيات 1', color: 'from-blue-600 to-indigo-700', icon: 'Calculator' },
+      { id: 4, name: 'Math 0', code: 'MA100', arabicName: 'رياضيات 0', color: 'from-cyan-600 to-teal-700', icon: 'Calculator' },
+      { id: 5, name: 'English', code: 'EN101', arabicName: 'اللغة الإنجليزية', color: 'from-emerald-600 to-green-700', icon: 'BookOpen' },
+      { id: 6, name: 'Electronics', code: 'EL101', arabicName: 'الإلكترونيات', color: 'from-amber-600 to-orange-700', icon: 'Zap' },
+      { id: 7, name: 'Fundamentals of CS', code: 'CS101', arabicName: 'أساسيات علوم الحاسب', color: 'from-red-600 to-rose-700', icon: 'Layers' },
+      { id: 8, name: 'Human Rights', code: 'HU103', arabicName: 'حقوق الإنسان', color: 'from-pink-600 to-rose-700', icon: 'Users' },
+    ];
+
+    const allLecturesData = {
+      'CS101': [
+        {
+          id: 1, title: 'المحاضرة الأولى: Introduction (مقدمة)', doctor: 'د. محمد قايد', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `أهلاً بك في عالم علوم الحاسب! 🚀
+
+الحاسب آلة ذكية تعمل وفق نموذج أساسي:
+Input → Processing → Output → Storage
+
+لماذا نعتمد على الحاسوب؟
+⚡ سريع جداً في التنفيذ
+🎯 دقيق ولا يخطئ في الحسابات
+📚 قدرة تخزين ضخمة
+🔄 يعمل 24/7 بدون تعب
+
+الحاسوب = Hardware (المكونات المادية) + Software (البرمجيات)
+
+في هذه المحاضرة نتعرف على المفاهيم الأساسية التي ستبنى عليها كل المواد اللاحقة.`,
+          summaryEn: `Welcome to Computer Science! 🚀
+
+A computer is a smart machine following:
+Input → Processing → Output → Storage
+
+Why computers?
+⚡ Extremely fast
+🎯 Highly accurate
+📚 Massive storage
+🔄 Works continuously
+
+Computer = Hardware + Software
+
+This lecture covers the foundational concepts for the entire course.`
+        },
+        {
+          id: 2, title: 'المحاضرة الثانية: Number System (أنظمة الأعداد)', doctor: 'د. محمد قايد', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `أنظمة الأعداد 🔢 — أساس كل شيء في الحاسوب
+
+1. النظام العشري (Decimal): 0-9 — النظام الذي نستخدمه يومياً
+2. النظام الثنائي (Binary): 0 و 1 فقط — لغة الحاسوب الحقيقية
+3. النظام الثماني (Octal): 0-7
+4. النظام السادس عشر (Hexadecimal): 0-9 + A-F
+
+التحويل بين الأنظمة مهم جداً:
+- من عشري إلى ثنائي: القسمة المتكررة على 2
+- من ثنائي إلى عشري: ضرب كل رقم في 2^موضعه
+
+مثال: 13 بالعشري = 1101 بالثنائي`,
+          summaryEn: `Number Systems 🔢
+
+1. Decimal (0-9) — everyday system
+2. Binary (0,1) — computer language
+3. Octal (0-7)
+4. Hexadecimal (0-9 + A-F)
+
+Conversion is essential:
+- Decimal → Binary: repeated division by 2
+- Binary → Decimal: multiply by powers of 2
+
+Example: 13 decimal = 1101 binary`
+        },
+        {
+          id: 3, title: 'المحاضرة الثالثة: Hardware (المكونات المادية)', doctor: 'د. محمد قايد', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `Hardware 🖥️ — المكونات المادية
+
+1. وحدات الإدخال (Input): لوحة المفاتيح، الماوس، الميكروفون، الكاميرا
+2. وحدة المعالجة المركزية (CPU): "المخ" — تنفذ التعليمات
+3. وحدات الإخراج (Output): الشاشة، السماعات، الطابعة
+4. الذاكرة:
+   • RAM: سريعة ومؤقتة (تُفقد عند إطفاء الجهاز)
+   • التخزين الدائم: Hard Disk / SSD
+
+المكونات الرئيسية داخل الصندوق:
+Motherboard, CPU, RAM, GPU, Power Supply, Storage`,
+          summaryEn: `Hardware 🖥️
+
+1. Input Devices: Keyboard, Mouse, Mic, Camera
+2. CPU: The brain — executes instructions
+3. Output Devices: Monitor, Speakers, Printer
+4. Memory:
+   • RAM: Fast & volatile
+   • Storage: HDD / SSD (permanent)
+
+Key internal components:
+Motherboard, CPU, RAM, GPU, PSU, Storage`
+        },
+        {
+          id: 4, title: 'المحاضرة الرابعة: Software (البرمجيات)', doctor: 'د. محمد قايد', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `Software 💻 — البرمجيات
+
+أنواع البرمجيات:
+• برمجيات النظام (System Software): نظام التشغيل (Windows, Linux, macOS) + برامج التشغيل
+• برمجيات التطبيقات (Application Software): Word, Chrome, Photoshop, الألعاب
+• لغات البرمجة: Python, Java, C++, JavaScript
+
+نظام التشغيل يدير الموارد ويوفر واجهة بين المستخدم والعتاد.
+اللغات عالية المستوى أسهل للبشر، وتُترجم إلى لغة الآلة.`,
+          summaryEn: `Software 💻
+
+• System Software: OS (Windows, Linux...) + Drivers
+• Application Software: Word, Chrome, Games...
+• Programming Languages: Python, Java, C++, JS
+
+The OS manages resources and acts as the interface between user and hardware.
+High-level languages are human-friendly and get translated to machine code.`
+        },
+        {
+          id: 5, title: 'المحاضرة الخامسة: Networks (الشبكات)', doctor: 'د. محمد قايد', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `الشبكات 🌐
+
+أنواع الشبكات حسب المدى:
+• LAN (Local Area Network): شبكة محلية (منزل، مكتب)
+• MAN (Metropolitan): على مستوى مدينة
+• WAN (Wide Area Network): عالمية (الإنترنت)
+
+أجهزة مهمة:
+Router, Switch, Modem, Access Point
+
+بروتوكولات أساسية:
+TCP/IP, HTTP/HTTPS, DNS, IP Address
+
+كل جهاز على الشبكة له عنوان IP فريد.`,
+          summaryEn: `Networks 🌐
+
+• LAN — Local (home/office)
+• MAN — City level
+• WAN — Global (Internet)
+
+Key devices: Router, Switch, Modem, AP
+
+Core protocols: TCP/IP, HTTP/HTTPS, DNS, IP
+
+Every device needs a unique IP address.`
+        },
+        {
+          id: 6, title: 'المحاضرة السادسة: Security (أمن المعلومات)', doctor: 'د. محمد قايد', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `أمن المعلومات 🔒
+
+مثلث CIA:
+• Confidentiality (السرية)
+• Integrity (سلامة البيانات)
+• Availability (التوافر)
+
+نصائح عملية:
+✅ كلمات مرور قوية وطويلة
+✅ تفعيل المصادقة الثنائية (2FA)
+✅ تحديث النظام والبرامج باستمرار
+✅ عدم فتح روابط مشبوهة
+✅ النسخ الاحتياطي المنتظم
+
+التهديدات الشائعة: Phishing, Malware, Ransomware`,
+          summaryEn: `Security 🔒
+
+CIA Triad:
+• Confidentiality
+• Integrity
+• Availability
+
+Practical tips:
+✅ Strong long passwords
+✅ Enable 2FA
+✅ Keep software updated
+✅ Avoid suspicious links
+✅ Regular backups
+
+Common threats: Phishing, Malware, Ransomware`
+        },
+      ],
+      'MA101': [
+        { id: 1, title: 'المحاضرة الأولى: المقدمات والتفاضل', doctor: 'د. دعاء', hasContent: true, duration: '60 دقيقة',
+          summaryAr: `التفاضل 📐
+
+المشتقة تقيس معدل التغير اللحظي.
+
+قاعدة القوة: مشتقة xⁿ = n·xⁿ⁻¹
+
+أمثلة:
+• مشتقة x² = 2x
+• مشتقة x³ = 3x²
+• مشتقة √x = 1/(2√x)
+
+تطبيقات: السرعة، التسارع، القيم العظمى والصغرى، تحسين الدوال.`,
+          summaryEn: `Differentiation 📐
+
+Derivative measures instantaneous rate of change.
+
+Power rule: d/dx (xⁿ) = n·xⁿ⁻¹
+
+Examples:
+• d/dx (x²) = 2x
+• d/dx (x³) = 3x²
+
+Applications: velocity, acceleration, maxima/minima.` },
+        { id: 2, title: 'المحاضرة الثانية: قواعد التفاضل المتقدمة', doctor: 'د. دعاء', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `قواعد مهمة:
+• قاعدة الجمع: (f+g)' = f' + g'
+• قاعدة الضرب: (f·g)' = f'g + fg'
+• قاعدة القسمة: (f/g)' = (f'g - fg') / g²
+• قاعدة السلسلة: (f(g(x)))' = f'(g(x)) · g'(x)
+
+مشتقات الدوال المثلثية والأسية واللوغاريتمية.`,
+          summaryEn: `Key rules:
+• Sum rule
+• Product rule
+• Quotient rule
+• Chain rule
+
+Derivatives of trig, exponential and log functions.` },
+        { id: 3, title: 'المحاضرة الثالثة: التكامل', doctor: 'د. دعاء', hasContent: false, duration: '60 دقيقة', summaryAr: '', summaryEn: '' },
+      ],
+      'EL101': [
+        { id: 1, title: 'المحاضرة الأولى: مقدمة في الإلكترونيات', doctor: 'د. شريف', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `الإلكترونيات ⚡
+
+المكونات الأساسية:
+• المقاومة (Resistor): تقاوم مرور التيار
+• المكثف (Capacitor): يخزن الشحنة
+• الدايود (Diode): يسمح بمرور التيار في اتجاه واحد
+• الترانزستور (Transistor): يضخم أو يحوّل الإشارات
+
+قانون أوم: V = I × R
+حيث V الجهد، I التيار، R المقاومة.`,
+          summaryEn: `Electronics ⚡
+
+Basic components:
+• Resistor — opposes current
+• Capacitor — stores charge
+• Diode — one-way current
+• Transistor — amplifies/switches
+
+Ohm's Law: V = I × R` },
+        { id: 2, title: 'المحاضرة الثانية: الدوائر الكهربائية', doctor: 'د. شريف', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `أنواع التوصيل:
+• التوالي (Series): نفس التيار، الجهد يتوزع
+• التوازي (Parallel): نفس الجهد، التيار يتوزع
+
+قوانين كيرشوف:
+• قانون التيار (KCL)
+• قانون الجهد (KVL)`,
+          summaryEn: `Series vs Parallel circuits
+Kirchhoff's Laws (KCL & KVL)` },
+      ],
+      'HU102': [
+        { id: 1, title: 'المحاضرة الأولى: ما هو التفكير العلمي؟', doctor: 'د. حمادة محمود', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `التفكير العلمي 🧠
+
+الخطوات الأساسية:
+1. الملاحظة
+2. طرح السؤال / المشكلة
+3. وضع الفرضية
+4. التجربة والاختبار
+5. تحليل النتائج
+6. الاستنتاج
+
+خصائص التفكير العلمي:
+موضوعي • قابل للاختبار • مبني على الدليل • قابل للتكرار • منفتح على التصحيح`,
+          summaryEn: `Scientific Thinking 🧠
+
+Steps: Observe → Question → Hypothesize → Test → Analyze → Conclude
+
+Traits: Objective, testable, evidence-based, reproducible, open to correction.` },
+        { id: 2, title: 'المحاضرة الثانية: أنواع الاستدلال', doctor: 'د. حمادة محمود', hasContent: true, duration: '40 دقيقة',
+          summaryAr: `الاستدلال الاستقرائي vs الاستنباطي
+الفرق بين العلم واللاعلم
+مغالطات شائعة يجب تجنبها.`,
+          summaryEn: `Inductive vs Deductive reasoning
+Science vs Pseudoscience
+Common fallacies.` },
+      ],
+      'HU101': [
+        { id: 1, title: 'المحاضرة الأولى: مهارات العرض', doctor: 'د. طه', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `مهارات العرض الفعّال 🎤
+
+• التخطيط الجيد للمحتوى
+• لغة الجسد ونبرة الصوت
+• استخدام الشرائح بذكاء
+• التفاعل مع الجمهور
+• التعامل مع الأسئلة`,
+          summaryEn: `Effective Presentation Skills 🎤
+Planning, body language, slides, audience engagement, Q&A.` },
+      ],
+      'EN101': [
+        { id: 1, title: 'Lecture 1: Academic Writing Basics', doctor: 'د. شيماء', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `أساسيات الكتابة الأكاديمية
+البنية: Introduction → Body → Conclusion
+الجمل الموضوعية والداعمة.`,
+          summaryEn: `Academic Writing Basics
+Structure: Introduction → Body → Conclusion
+Topic sentences and supporting details.` },
+      ],
+      'HU103': [
+        { id: 1, title: 'المحاضرة الأولى: مفهوم حقوق الإنسان', doctor: 'د. عادلي أبو هشيمة', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `حقوق الإنسان أساسية ومتأصلة في الكرامة الإنسانية.
+الإعلان العالمي لحقوق الإنسان 1948.
+حقوق مدنية وسياسية + حقوق اقتصادية واجتماعية.`,
+          summaryEn: `Human Rights are inherent to human dignity.
+UDHR 1948.
+Civil & Political + Economic & Social rights.` },
+      ],
+      'MA100': [
+        { id: 1, title: 'المحاضرة الأولى: مراجعة الجبر', doctor: 'د. عبد المنعم', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `مراجعة أساسية:
+المعادلات الخطية، المتباينات، الأسس والجذور، اللوغاريتمات.`,
+          summaryEn: `Algebra Review: Linear equations, inequalities, exponents, roots, logarithms.` },
+      ],
+      'default': [{ id: 1, title: 'جاري إضافة محاضرات هذه المادة...', doctor: 'غير محدد', hasContent: false, duration: '-', summaryAr: '', summaryEn: '' }]
+    };
+
+    const scheduleGroup1 = [
+      { day: 'الأحد', slots: [
+        { time: '09:30 AM', items: [{ subject: 'Comm Presentation', doctor: 'د. طه', hall: 'مدرج 3' }] },
+        { time: '11:30 AM', items: [{ subject: 'Section Math 0', doctor: 'م. محمد جاد', hall: 'مبنى G 211' }] },
+      ]},
+      { day: 'الإثنين', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Scientific Thinking', doctor: 'د. حمادة محمود', hall: 'مدرج 4' }] },
+        { time: '11:00 AM', items: [{ subject: 'Human Rights', doctor: 'د. عادلي أبو هشيمة', hall: 'مدرج 1' }] },
+        { time: '01:00 PM', items: [{ subject: 'Fundamentals of CS', doctor: 'د. محمد قايد', hall: 'مدرج 2' }] }
+      ]},
+      { day: 'الثلاثاء', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Sec Math 1', doctor: 'م. أسماء', hall: 'D 301' }, { subject: 'Sec Math 1', doctor: 'م. رضا', hall: 'B 314' }] },
+        { time: '11:00 AM', items: [{ subject: 'Sec Electronics', doctor: 'م. سلمى', hall: 'H 203' }, { subject: 'Sec Fundamentals', doctor: 'م. هيام', hall: 'E 312' }] },
+      ]},
+      { day: 'الأربعاء', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Math 1', doctor: 'د. دعاء', hall: 'مدرج 2' }] },
+        { time: '11:00 AM', items: [{ subject: 'English', doctor: 'د. شيماء', hall: 'مدرج 3' }] },
+        { time: '01:00 PM', items: [{ subject: 'Electronics', doctor: 'د. شريف', hall: 'مدرج 4' }] },
+        { time: '03:00 PM', items: [{ subject: 'Math 0', doctor: 'د. عبد المنعم', hall: 'قاعة 4' }] }
+      ]},
+      { day: 'الخميس', slots: [] },
+    ];
+
+    const scheduleGroup2 = [
+      { day: 'الأحد', slots: [
+        { time: '09:30 AM', items: [{ subject: 'Comm Presentation', doctor: 'د. طه', hall: 'مدرج 3' }] },
+        { time: '11:30 AM', items: [{ subject: 'Section Math 0', doctor: 'م. محمد جاد', hall: 'G 211' }] },
+        { time: '01:00 PM', items: [{ subject: 'Math 1', doctor: 'د. محمد حسين', hall: 'C 309' }] }
+      ]},
+      { day: 'الإثنين', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Scientific Thinking', doctor: 'د. حمادة محمود', hall: 'مدرج 4' }] },
+        { time: '11:00 AM', items: [{ subject: 'Human Rights', doctor: 'د. عادلي أبو هشيمة', hall: 'مدرج 1' }] },
+        { time: '01:00 PM', items: [{ subject: 'Fundamentals of CS', doctor: 'د. محمد قايد', hall: 'مدرج 2' }] }
+      ]},
+      { day: 'الثلاثاء', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Sec Fundamentals', doctor: 'م. هيام', hall: 'E 312' }, { subject: 'Sec Electronics', doctor: 'م. سلمى', hall: 'H 203' }] },
+        { time: '11:00 AM', items: [{ subject: 'Sec Math 1', doctor: 'م. أسماء', hall: 'D 301' }, { subject: 'Sec Math 1', doctor: 'م. رضا', hall: 'B 314' }] },
+      ]},
+      { day: 'الأربعاء', slots: [
+        { time: '11:00 AM', items: [{ subject: 'English', doctor: 'د. شيماء', hall: 'مدرج 3' }] },
+        { time: '01:00 PM', items: [{ subject: 'Electronics', doctor: 'د. شريف', hall: 'مدرج 4' }] },
+        { time: '03:00 PM', items: [{ subject: 'Math 0', doctor: 'د. عبد المنعم', hall: 'قاعة 4' }] }
+      ]},
+      { day: 'الخميس', slots: [] },
+    ];
+
+    const announcements = [
+      { id: 1, title: 'بداية الفصل الدراسي', body: 'مرحباً بكم في العام الجامعي الجديد. نتمنى لكم التوفيق والنجاح.', date: '2026-09-15', type: 'info' },
+      { id: 2, title: 'تسجيل الجروبات', body: 'يرجى التأكد من اختيار الجروب الصحيح في جدول المحاضرات.', date: '2026-09-20', type: 'warning' },
+      { id: 3, title: 'تحديث مكتبة المحاضرات', body: 'تم إضافة ملخصات جديدة لمادة أساسيات علوم الحاسب.', date: '2026-10-05', type: 'success' },
+      { id: 4, title: 'نصيحة دراسية', body: 'استخدم المساعد الذكي لطلب شرح أي محاضرة، وحدد المفضلة للمتابعة السريعة.', date: '2026-10-12', type: 'tip' },
+    ];
+
+    const getTodayArabic = () => {
+      const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      return days[new Date().getDay()];
+    };
+
+    const formatTime = () => new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+    // ==================== APP ====================
+    function App() {
+      const [view, setView] = useState('home');
+      const [selectedSubject, setSelectedSubject] = useState(null);
+      const [selectedGroup, setSelectedGroup] = useState(() => localStorage.getItem('group') || null);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [toast, setToast] = useState(null);
+      const [favorites, setFavorites] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('fav') || '[]'); } catch { return []; }
+      });
+      const [completed, setCompleted] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('completed') || '{}'); } catch { return {}; }
+      });
+      const [notes, setNotes] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('notes') || '[]'); } catch { return []; }
+      });
+      const [preview, setPreview] = useState({ open: false, title: '', content: '', lang: 'ar', lecture: null });
+      const [chat, setChat] = useState([{
+        id: 1, sender: 'bot',
+        text: 'أهلاً بك! أنا المساعد الجامعي الذكي 🎓\n\nاسألني عن أي محاضرة أو مفهوم وسأشرحه لك.\n\nجرب: "اشرح أنظمة الأعداد" أو "ما هو Hardware؟"',
+        time: formatTime()
+      }]);
+      const [input, setInput] = useState('');
+      const [typing, setTyping] = useState(false);
+      const [gpaCourses, setGpaCourses] = useState([{ name: '', grade: '', hours: '' }]);
+      const [timerSeconds, setTimerSeconds] = useState(25 * 60);
+      const [timerRunning, setTimerRunning] = useState(false);
+      const [timerMode, setTimerMode] = useState('focus'); // focus | break
+      const [noteText, setNoteText] = useState('');
+      const [noteTitle, setNoteTitle] = useState('');
+      const [editingNote, setEditingNote] = useState(null);
+      const [globalSearch, setGlobalSearch] = useState('');
+      const [showSearch, setShowSearch] = useState(false);
+      const endRef = useRef(null);
+      const timerRef = useRef(null);
+
+      // Persist
+      useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
+      useEffect(() => { localStorage.setItem('fav', JSON.stringify(favorites)); }, [favorites]);
+      useEffect(() => { localStorage.setItem('completed', JSON.stringify(completed)); }, [completed]);
+      useEffect(() => { localStorage.setItem('notes', JSON.stringify(notes)); }, [notes]);
+      useEffect(() => { if (selectedGroup) localStorage.setItem('group', selectedGroup); }, [selectedGroup]);
+      useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chat, typing]);
+
+      // Timer
+      useEffect(() => {
+        if (timerRunning && timerSeconds > 0) {
+          timerRef.current = setInterval(() => setTimerSeconds(s => s - 1), 1000);
+        } else if (timerSeconds === 0) {
+          setTimerRunning(false);
+          setToast(timerMode === 'focus' ? 'انتهى وقت التركيز! خذ استراحة ☕' : 'انتهت الاستراحة، عد للتركيز 💪');
+          if (timerMode === 'focus') { setTimerMode('break'); setTimerSeconds(5 * 60); }
+          else { setTimerMode('focus'); setTimerSeconds(25 * 60); }
+        }
+        return () => clearInterval(timerRef.current);
+      }, [timerRunning, timerSeconds, timerMode]);
+
+      const showToast = (msg, type = 'success') => setToast({ msg, type });
+
+      const toggleFav = (code) => {
+        setFavorites(prev => {
+          const next = prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code];
+          showToast(prev.includes(code) ? 'تمت الإزالة من المفضلة' : 'تمت الإضافة للمفضلة ⭐');
+          return next;
+        });
+      };
+
+      const toggleComplete = (code, lecId) => {
+        setCompleted(prev => {
+          const key = `${code}-${lecId}`;
+          const next = { ...prev };
+          if (next[key]) delete next[key];
+          else next[key] = true;
+          showToast(next[key] ? 'تم تحديد المحاضرة كمكتملة ✅' : 'تم إلغاء الإكمال');
+          return next;
+        });
+      };
+
+      const isCompleted = (code, lecId) => !!completed[`${code}-${lecId}`];
+
+      const filtered = useMemo(() => subjectsData.filter(s =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.arabicName.includes(searchQuery) ||
+        s.code.toLowerCase().includes(searchQuery.toLowerCase())
+      ), [searchQuery]);
+
+      const getProgress = (code) => {
+        const lec = allLecturesData[code] || allLecturesData.default;
+        const ready = lec.filter(l => l.hasContent).length;
+        const done = lec.filter(l => isCompleted(code, l.id)).length;
+        return { total: lec.length, ready, done, percent: Math.round((ready / lec.length) * 100), donePercent: Math.round((done / Math.max(ready, 1)) * 100) };
+      };
+
+      const overallProgress = useMemo(() => {
+        let totalReady = 0, totalDone = 0;
+        subjectsData.forEach(s => {
+          const p = getProgress(s.code);
+          totalReady += p.ready;
+          totalDone += p.done;
+        });
+        return { totalReady, totalDone, percent: totalReady ? Math.round((totalDone / totalReady) * 100) : 0 };
+      }, [completed]);
+
+      const today = getTodayArabic();
+      const currentSchedule = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
+      const todaySch = currentSchedule.find(d => d.day === today);
+
+      // Smart Bot
+      const reply = useCallback((text) => {
+        setTyping(true);
+        const l = text.toLowerCase();
+        let r = '';
+
+        // Search in all lecture content
+        let found = null;
+        for (const [code, lecs] of Object.entries(allLecturesData)) {
+          if (code === 'default') continue;
+          for (const lec of lecs) {
+            if (lec.hasContent && (lec.title.includes(text) || lec.summaryAr.includes(text) || lec.summaryEn.toLowerCase().includes(l) ||
+              (l.includes('أنظمة') && lec.title.includes('Number')) ||
+              (l.includes('hardware') || l.includes('هاردوير') || l.includes('مكونات')) && lec.title.includes('Hardware') ||
+              (l.includes('software') || l.includes('برمج')) && lec.title.includes('Software') ||
+              (l.includes('شبكة') || l.includes('network')) && lec.title.includes('Network') ||
+              (l.includes('أمن') || l.includes('security')) && lec.title.includes('Security') ||
+              (l.includes('تفاضل') || l.includes('derivative')) && lec.title.includes('تفاضل') ||
+              (l.includes('إلكترون') || l.includes('electronic')) && lec.title.includes('إلكترون') ||
+              (l.includes('تفكير') || l.includes('scientific')) && lec.title.includes('تفكير')
+            )) {
+              found = lec;
+              break;
+            }
+          }
+          if (found) break;
+        }
+
+        if (found) {
+          r = `📚 ${found.title}\nالمحاضر: ${found.doctor}\nالمدة: ${found.duration}\n\n${found.summaryAr}\n\n---\nهل تريد النسخة الإنجليزية أو شرحاً إضافياً؟`;
+        } else if (l.includes('مرحبا') || l.includes('اهلا') || l.includes('السلام') || l.includes('hello') || l.includes('hi')) {
+          r = 'أهلاً وسهلاً! 👋\nأنا هنا لمساعدتك في فهم المحاضرات والإجابة على أسئلتك.\nاسأل عن أي موضوع من موادك.';
+        } else if (l.includes('جدول') || l.includes('schedule')) {
+          r = selectedGroup
+            ? `جدولك الحالي (${selectedGroup}):\nيمكنك مراجعة التفاصيل من قسم "جدول المحاضرات".`
+            : 'لم تختر جروبك بعد. اذهب إلى قسم الجدول واختر جروب 1 أو جروب 2.';
+        } else if (l.includes('مفضلة') || l.includes('favorite')) {
+          r = favorites.length
+            ? `المواد المفضلة لديك:\n${favorites.map(c => '• ' + c).join('\n')}`
+            : 'لم تضف أي مادة للمفضلة بعد. اضغط على النجمة بجانب أي مادة.';
+        } else if (l.includes('تقدم') || l.includes('progress')) {
+          r = `تقدمك الدراسي:\nأكملت ${overallProgress.totalDone} من ${overallProgress.totalReady} محاضرة متاحة (${overallProgress.percent}%).\nاستمر! 💪`;
+        } else if (l.includes('نصيحة') || l.includes('tip') || l.includes('advice')) {
+          r = 'نصائح سريعة:\n1. راجع الملخصات بعد كل محاضرة\n2. استخدم مؤقت الدراسة (بومودورو)\n3. اكتب ملاحظاتك الخاصة\n4. اطلب شرحاً مني لأي جزء غير واضح\n5. حدد المحاضرات كمكتملة لتتبع تقدمك';
+        } else {
+          r = `تم استلام سؤالك: "${text}"\n\nجرب أن تسأل بشكل أدق عن اسم المحاضرة أو المفهوم (مثل: أنظمة الأعداد، Hardware، التفاضل، قانون أوم...)\n\nأو اكتب "نصيحة" للحصول على نصائح دراسية.`;
+        }
+
+        setTimeout(() => {
+          setChat(prev => [...prev, { id: Date.now(), sender: 'bot', text: r, time: formatTime() }]);
+          setTyping(false);
+        }, 700 + Math.random() * 400);
+      }, [favorites, selectedGroup, overallProgress]);
+
+      const send = (e) => {
+        e?.preventDefault();
+        if (!input.trim() || typing) return;
+        const t = input.trim();
+        setInput('');
+        setChat(prev => [...prev, { id: Date.now(), sender: 'user', text: t, time: formatTime() }]);
+        reply(t);
+      };
+
+      const explain = (title) => {
+        setView('bot');
+        setTimeout(() => {
+          setChat(prev => [...prev, { id: Date.now(), sender: 'user', text: `أريد شرح: ${title}`, time: formatTime() }]);
+          reply(title);
+        }, 120);
+      };
+
+      const downloadText = (title, content) => {
+        const blob = new Blob([`${title}\n\n${content}`], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title.replace(/[^\w\u0600-\u06FF\s]/g, '').slice(0, 40)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('تم تحميل الملخص بنجاح 📥');
+      };
+
+      const saveNote = () => {
+        if (!noteTitle.trim() || !noteText.trim()) return showToast('اكتب عنواناً ومحتوى للملاحظة', 'error');
+        if (editingNote) {
+          setNotes(prev => prev.map(n => n.id === editingNote ? { ...n, title: noteTitle, text: noteText, updated: Date.now() } : n));
+          showToast('تم تحديث الملاحظة');
+        } else {
+          setNotes(prev => [...prev, { id: Date.now(), title: noteTitle, text: noteText, created: Date.now() }]);
+          showToast('تم حفظ الملاحظة 📝');
+        }
+        setNoteTitle(''); setNoteText(''); setEditingNote(null);
+      };
+
+      const deleteNote = (id) => {
+        setNotes(prev => prev.filter(n => n.id !== id));
+        showToast('تم حذف الملاحظة');
+      };
+
+      const calcGPA = () => {
+        const gradeMap = { 'A+': 4, 'A': 3.7, 'B+': 3.3, 'B': 3, 'C+': 2.7, 'C': 2.3, 'D': 1.7, 'F': 0 };
+        let totalPoints = 0, totalHours = 0;
+        gpaCourses.forEach(c => {
+          const g = gradeMap[c.grade.toUpperCase()];
+          const h = parseFloat(c.hours);
+          if (g !== undefined && h > 0) { totalPoints += g * h; totalHours += h; }
+        });
+        return totalHours ? (totalPoints / totalHours).toFixed(2) : '—';
+      };
+
+      const formatTimer = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+      // Global search results
+      const searchResults = useMemo(() => {
+        if (!globalSearch.trim()) return [];
+        const q = globalSearch.toLowerCase();
+        const res = [];
+        subjectsData.forEach(sub => {
+          const lecs = allLecturesData[sub.code] || [];
+          lecs.forEach(lec => {
+            if (lec.hasContent && (lec.title.includes(globalSearch) || lec.summaryAr.includes(globalSearch) || lec.summaryEn.toLowerCase().includes(q) || sub.arabicName.includes(globalSearch))) {
+              res.push({ type: 'lecture', subject: sub, lecture: lec });
+            }
+          });
+        });
+        return res.slice(0, 12);
+      }, [globalSearch]);
+
+      // ==================== VIEWS ====================
+      const NavBar = ({ title, onBack, right }) => (
+        <div className="sticky top-0 z-40 glass-strong border-b border-red-900/40 px-4 py-3 flex items-center justify-between safe-top">
+          <button onClick={onBack} className="flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold text-sm">
+            <Icons.ChevronRight className="w-5 h-5" /> {title || 'رجوع'}
+          </button>
+          {right}
+        </div>
+      );
+
+      const Home = () => (
+        <div className="relative min-h-screen pb-24">
+          {/* Background effects */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#120000] via-[#050000] to-black pointer-events-none" />
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[80vw] h-[80vw] max-w-[420px] max-h-[420px] rounded-full opacity-30 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.25) 0%, transparent 70%)' }} />
+
+          <div className="relative z-10 px-4 pt-8 pb-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-red-400/80 text-xs font-medium mb-0.5">جامعة بني سويف الأهلية</p>
+                <h1 className="text-2xl font-extrabold text-white glow-text">بوابتك الجامعية</h1>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setShowSearch(true)} className="w-10 h-10 rounded-xl bg-red-950/50 border border-red-900/50 flex items-center justify-center text-red-400">
+                  <Icons.Search className="w-5 h-5" />
+                </button>
+                <button onClick={() => setView('settings')} className="w-10 h-10 rounded-xl bg-red-950/50 border border-red-900/50 flex items-center justify-center text-red-400">
+                  <Icons.Settings className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Progress Overview */}
+            <div className="glass border border-red-900/40 rounded-2xl p-4 mb-5 glow-red">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Icons.Trophy className="w-5 h-5 text-amber-400" />
+                  <span className="font-bold text-white text-sm">تقدمك الدراسي</span>
+                </div>
+                <span className="text-red-400 font-bold text-lg">{overallProgress.percent}%</span>
+              </div>
+              <div className="h-2.5 bg-[#1a0505] rounded-full overflow-hidden mb-2">
+                <div className="h-full bg-gradient-to-l from-red-500 to-rose-400 rounded-full transition-all duration-700" style={{ width: `${overallProgress.percent}%` }} />
+              </div>
+              <p className="text-xs text-gray-500">{overallProgress.totalDone} من {overallProgress.totalReady} محاضرة مكتملة</p>
+            </div>
+
+            {/* Main Actions */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[
+                { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', v: 'subjects', desc: 'ملخصات وشرح' },
+                { icon: Icons.Bot, label: 'المساعد الذكي', v: 'bot', desc: 'اسأل أي شيء' },
+                { icon: Icons.Calendar, label: 'جدول المحاضرات', v: selectedGroup ? 'schedule' : 'groups', desc: selectedGroup || 'اختر جروبك' },
+                { icon: Icons.Note, label: 'ملاحظاتي', v: 'notes', desc: `${notes.length} ملاحظة` },
+              ].map(({ icon: I, label, v, desc }) => (
+                <button key={v} onClick={() => setView(v)}
+                  className="glass border border-red-900/40 rounded-2xl p-4 text-right card-hover group">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-600/30 to-red-900/30 border border-red-800/40 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                    <I className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div className="font-bold text-white text-sm mb-0.5">{label}</div>
+                  <div className="text-[11px] text-gray-500">{desc}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Secondary tools */}
+            <div className="grid grid-cols-3 gap-2.5 mb-6">
+              {[
+                { icon: Icons.Timer, label: 'مؤقت دراسة', v: 'timer' },
+                { icon: Icons.Calculator, label: 'حاسبة GPA', v: 'gpa' },
+                { icon: Icons.Bell, label: 'الإعلانات', v: 'announcements' },
+              ].map(({ icon: I, label, v }) => (
+                <button key={v} onClick={() => setView(v)}
+                  className="glass border border-red-900/30 rounded-xl py-3 px-2 flex flex-col items-center gap-1.5 card-hover">
+                  <I className="w-5 h-5 text-red-400" />
+                  <span className="text-[11px] text-gray-300 font-medium">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Today Schedule */}
+            <div className="glass border border-red-900/40 rounded-2xl p-4 mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Icons.Clock className="w-4 h-4 text-red-400" />
+                  <h3 className="font-bold text-white text-sm">محاضرات اليوم ({today})</h3>
+                </div>
+                {selectedGroup && <span className="text-[10px] bg-red-950 text-red-300 px-2 py-0.5 rounded-full">{selectedGroup}</span>}
+              </div>
+              {!selectedGroup ? (
+                <button onClick={() => setView('groups')} className="w-full text-center py-4 text-sm text-red-400 border border-dashed border-red-900/50 rounded-xl">
+                  اختر جروبك لعرض الجدول
+                </button>
+              ) : todaySch && todaySch.slots.length ? (
+                <div className="space-y-2">
+                  {todaySch.slots.slice(0, 3).map((s, i) => (
+                    <div key={i} className="bg-[#1a0505]/80 rounded-xl p-3 border border-red-900/20">
+                      <div className="text-red-400 text-xs font-bold mb-1" dir="ltr">{s.time}</div>
+                      {s.items.map((it, j) => (
+                        <div key={j} className="text-sm text-gray-300 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                          {it.subject} <span className="text-gray-600">• {it.hall}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm text-center py-3">لا توجد محاضرات اليوم 🎉</p>
+              )}
+            </div>
+
+            {/* Favorites */}
+            <div className="glass border border-red-900/40 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Icons.Star className="w-4 h-4 text-amber-400" />
+                <h3 className="font-bold text-white text-sm">المواد المفضلة</h3>
+              </div>
+              {favorites.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {favorites.map(c => {
+                    const sub = subjectsData.find(s => s.code === c);
+                    return (
+                      <button key={c} onClick={() => { setSelectedSubject(sub); setView('lectures'); }}
+                        className="bg-red-950/60 text-red-300 text-xs px-3 py-1.5 rounded-full border border-red-900/40 hover:bg-red-900/40 transition">
+                        {sub?.arabicName || c}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-xs">اضغط النجمة على أي مادة لإضافتها هنا</p>
+              )}
+            </div>
+
+            <footer className="mt-8 text-center text-gray-700 text-[10px]">جامعة بني سويف الأهلية • 2026</footer>
+          </div>
+        </div>
+      );
+
+      const Subjects = () => (
+        <div className="min-h-screen bg-[#050000] pb-8">
+          <NavBar title="المواد" onBack={() => setView('home')} />
+          <div className="px-4 pt-4">
+            <div className="relative mb-5">
+              <input type="text" placeholder="ابحث عن مادة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-[#0a0000] border border-red-900/50 text-white rounded-xl py-3 px-4 pr-11 focus:outline-none focus:border-red-500 text-sm" />
+              <Icons.Search className="absolute right-3.5 top-3.5 w-5 h-5 text-red-500" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filtered.map(sub => {
+                const p = getProgress(sub.code);
+                const isFav = favorites.includes(sub.code);
+                return (
+                  <div key={sub.id} onClick={() => { setSelectedSubject(sub); setView('lectures'); }}
+                    className="glass border border-red-900/30 rounded-2xl p-4 cursor-pointer card-hover relative">
+                    <button onClick={e => { e.stopPropagation(); toggleFav(sub.code); }}
+                      className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-red-900/30">
+                      <Icons.Star className={`w-4 h-4 ${isFav ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
+                    </button>
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${sub.color} flex items-center justify-center mb-3 shadow-lg`}>
+                      {React.createElement(Icons[sub.icon] || Icons.BookOpen, { className: 'w-6 h-6 text-white' })}
+                    </div>
+                    <h3 className="font-bold text-white text-sm mb-0.5">{sub.arabicName}</h3>
+                    <p className="text-xs text-gray-500 mb-2">{sub.code}</p>
+                    <div className="flex justify-between text-[10px] text-gray-500 mb-1">
+                      <span>{p.done}/{p.ready} مكتمل</span>
+                      <span>{p.percent}% جاهز</span>
+                    </div>
+                    <div className="h-1.5 bg-[#1a0505] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-l from-red-500 to-rose-400 rounded-full" style={{ width: `${p.donePercent}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+
+      const Lectures = () => {
+        const lectures = allLecturesData[selectedSubject?.code] || allLecturesData.default;
+        return (
+          <div className="min-h-screen bg-[#050000] pb-8">
+            <NavBar title="المحاضرات" onBack={() => setView('subjects')}
+              right={<button onClick={() => toggleFav(selectedSubject?.code)} className="p-2">
+                <Icons.Star className={`w-5 h-5 ${favorites.includes(selectedSubject?.code) ? 'text-amber-400 fill-amber-400' : 'text-gray-500'}`} />
+              </button>} />
+            <div className="px-4 pt-2">
+              <h2 className="text-xl font-bold text-white mb-1">{selectedSubject?.arabicName}</h2>
+              <p className="text-gray-500 text-xs mb-5">{selectedSubject?.code} • {lectures.filter(l => l.hasContent).length} محاضرة متاحة</p>
+              <div className="space-y-3">
+                {lectures.map(lec => {
+                  const done = isCompleted(selectedSubject?.code, lec.id);
+                  return (
+                    <div key={lec.id} className={`glass border rounded-2xl p-4 ${done ? 'border-green-900/40' : 'border-red-900/30'}`}>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white text-sm leading-snug">{lec.title}</h4>
+                          <div className="flex flex-wrap gap-2 mt-1.5 text-[11px] text-gray-500">
+                            <span className="flex items-center gap-1"><Icons.User className="w-3 h-3" />{lec.doctor}</span>
+                            {lec.duration && <span className="flex items-center gap-1"><Icons.Clock className="w-3 h-3" />{lec.duration}</span>}
+                          </div>
+                        </div>
+                        {lec.hasContent && (
+                          <button onClick={() => toggleComplete(selectedSubject.code, lec.id)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${done ? 'bg-green-900/40 border-green-700 text-green-400' : 'border-gray-700 text-gray-600'}`}>
+                            <Icons.Check className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      {!lec.hasContent ? (
+                        <span className="inline-block mt-1 bg-red-950/50 text-red-400 text-[10px] px-2 py-0.5 rounded">قريباً</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryAr, lang: 'ar', lecture: lec })}
+                            className="flex items-center gap-1 border border-blue-700/50 text-blue-400 hover:bg-blue-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            <Icons.Eye className="w-3.5 h-3.5" /> عربي
+                          </button>
+                          <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryEn, lang: 'en', lecture: lec })}
+                            className="flex items-center gap-1 border border-amber-700/50 text-amber-400 hover:bg-amber-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            <Icons.Eye className="w-3.5 h-3.5" /> EN
+                          </button>
+                          <button onClick={() => explain(lec.title)}
+                            className="flex items-center gap-1 bg-red-600 hover:bg-red-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Preview Modal */}
+            {preview.open && (
+              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-[#0a0000] border border-red-900/60 rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+                  <div className="p-4 border-b border-red-900/40 flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-red-400 flex items-center gap-2 truncate"><Icons.BookOpen className="w-4 h-4 shrink-0" />{preview.title}</h3>
+                    <button onClick={() => setPreview({ ...preview, open: false })} className="text-gray-400 hover:text-white p-1"><Icons.X className="w-5 h-5" /></button>
+                  </div>
+                  <div className="p-5 overflow-y-auto flex-1 text-gray-200 text-sm whitespace-pre-wrap leading-relaxed" dir={preview.lang === 'ar' ? 'rtl' : 'ltr'}>
+                    {preview.content}
+                  </div>
+                  <div className="p-4 border-t border-red-900/40 flex gap-2 justify-end flex-wrap">
+                    <button onClick={() => { setPreview({ ...preview, open: false }); explain(preview.title); }}
+                      className="flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-xs font-bold">
+                      <Icons.Bot className="w-4 h-4" /> اطلب شرح
+                    </button>
+                    <button onClick={() => downloadText(preview.title, preview.content)}
+                      className="flex items-center gap-1.5 border border-green-700/50 text-green-400 hover:bg-green-900/20 px-3 py-2 rounded-xl text-xs font-bold">
+                      <Icons.Download className="w-4 h-4" /> تحميل
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const BotView = () => (
+        <div className="min-h-screen bg-[#050000] flex flex-col pb-2">
+          <NavBar title="المساعد الذكي" onBack={() => setView('home')}
+            right={<button onClick={() => setChat([{ id: 1, sender: 'bot', text: 'تم مسح المحادثة. كيف يمكنني مساعدتك؟', time: formatTime() }])} className="p-2 text-gray-500 hover:text-red-400"><Icons.Trash className="w-4 h-4" /></button>} />
+          <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-3">
+            <div className="flex-1 overflow-y-auto py-4 space-y-3 min-h-[50vh]">
+              {chat.map(m => (
+                <div key={m.id} className={`flex message-enter ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.sender === 'user' ? 'bg-red-700 text-white rounded-br-md' : 'bg-[#140505] border border-red-900/30 text-gray-200 rounded-bl-md'}`}>
+                    <div className="flex items-center gap-1.5 mb-1.5 opacity-60 text-[10px]">
+                      {m.sender === 'user' ? <Icons.User className="w-3 h-3" /> : <Icons.Bot className="w-3 h-3" />}
+                      {m.sender === 'user' ? 'أنت' : 'المساعد'}
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.text}</p>
+                    <span className="text-[9px] opacity-40 block mt-1.5" dir="ltr">{m.time}</span>
+                  </div>
+                </div>
+              ))}
+              {typing && (
+                <div className="flex justify-start">
+                  <div className="bg-[#140505] border border-red-900/30 rounded-2xl px-4 py-3 flex gap-1.5">
+                    {[0, 0.15, 0.3].map((d, i) => (
+                      <span key={i} className="w-2 h-2 bg-red-500 rounded-full" style={{ animation: `bounce-dot 1s infinite ${d}s` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div ref={endRef} />
+            </div>
+            {/* Suggestions */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {['اشرح أنظمة الأعداد', 'ما هو Hardware؟', 'نصيحة دراسية', 'تقدمي كام؟'].map(s => (
+                <button key={s} onClick={() => { setInput(s); }} className="shrink-0 text-[11px] bg-red-950/40 border border-red-900/40 text-red-300 px-3 py-1.5 rounded-full">
+                  {s}
+                </button>
+              ))}
+            </div>
+            <form onSubmit={send} className="flex gap-2 pb-3 pt-1">
+              <input value={input} onChange={e => setInput(e.target.value)} placeholder="اكتب سؤالك..." disabled={typing}
+                className="flex-1 bg-[#0a0000] border border-red-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-red-500" />
+              <button type="submit" disabled={!input.trim() || typing}
+                className="bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+                <Icons.Send className="w-5 h-5" style={{ transform: 'scaleX(-1)' }} />
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+
+      const Groups = () => (
+        <div className="min-h-screen bg-[#050000] flex flex-col items-center justify-center p-6">
+          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-red-400 font-semibold text-sm">
+            <Icons.ChevronRight className="w-5 h-5" /> العودة
+          </button>
+          <Icons.Users className="w-14 h-14 text-red-500 mb-4 animate-float" />
+          <h2 className="text-2xl font-bold text-white mb-2 glow-text">اختر جروبك</h2>
+          <p className="text-gray-500 text-sm mb-8 text-center">سيتم حفظ اختيارك تلقائياً</p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+            {['جروب 1', 'جروب 2'].map(g => (
+              <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }}
+                className={`flex-1 glass border-2 rounded-2xl p-6 flex flex-col items-center gap-3 card-hover ${selectedGroup === g ? 'border-red-500 glow-red' : 'border-red-900/50'}`}>
+                <div className="w-14 h-14 rounded-full bg-red-950/60 flex items-center justify-center">
+                  <Icons.Users className="w-7 h-7 text-red-400" />
+                </div>
+                <span className="text-white text-lg font-bold">{g}</span>
+                {selectedGroup === g && <span className="text-[10px] text-green-400">✓ مختار حالياً</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+
+      const Schedule = () => {
+        const data = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
+        return (
+          <div className="min-h-screen bg-[#050000] pb-8">
+            <NavBar title={`جدول ${selectedGroup}`} onBack={() => setView('groups')}
+              right={<button onClick={() => setView('groups')} className="text-xs text-red-400">تغيير</button>} />
+            <div className="px-4 pt-2 space-y-4">
+              {data.map((day, i) => (
+                <div key={i} className={`glass border rounded-2xl p-4 ${day.day === today ? 'border-red-500/60 glow-red' : 'border-red-900/30'}`}>
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-red-900/20">
+                    <h3 className="text-lg font-bold text-red-400">{day.day}</h3>
+                    {day.day === today && <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full">اليوم</span>}
+                  </div>
+                  {day.slots.length === 0 ? (
+                    <p className="text-gray-600 text-sm text-center py-2">لا توجد محاضرات</p>
+                  ) : day.slots.map((slot, si) => (
+                    <div key={si} className="bg-[#120505]/80 p-3 rounded-xl border border-red-900/15 mb-2 last:mb-0">
+                      <div className="flex items-center text-red-400 font-bold text-xs mb-2" dir="ltr">
+                        <Icons.Clock className="w-3.5 h-3.5 ml-1.5" />{slot.time}
+                      </div>
+                      {slot.items.map((it, ii) => (
+                        <div key={ii} className="bg-[#1a0808]/60 p-2.5 rounded-lg mb-1.5 last:mb-0">
+                          <div className="font-semibold text-white text-sm">{it.subject}</div>
+                          <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-gray-500">
+                            <span className="flex items-center gap-1"><Icons.User className="w-3 h-3 text-red-500/70" />{it.doctor}</span>
+                            <span className="flex items-center gap-1"><Icons.MapPin className="w-3 h-3 text-red-500/70" />{it.hall}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      };
+
+      const NotesView = () => (
+        <div className="min-h-screen bg-[#050000] pb-8">
+          <NavBar title="ملاحظاتي" onBack={() => setView('home')} />
+          <div className="px-4 pt-3">
+            <div className="glass border border-red-900/40 rounded-2xl p-4 mb-5">
+              <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder="عنوان الملاحظة..."
+                className="w-full bg-transparent border-b border-red-900/40 text-white text-sm py-2 mb-3 focus:outline-none focus:border-red-500" />
+              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="اكتب ملاحظاتك هنا..." rows={4}
+                className="w-full bg-transparent text-gray-300 text-sm focus:outline-none resize-none" />
+              <div className="flex gap-2 mt-3">
+                <button onClick={saveNote} className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5">
+                  <Icons.Check className="w-4 h-4" /> {editingNote ? 'تحديث' : 'حفظ'}
+                </button>
+                {editingNote && (
+                  <button onClick={() => { setEditingNote(null); setNoteTitle(''); setNoteText(''); }} className="px-4 border border-gray-700 text-gray-400 rounded-xl text-sm">إلغاء</button>
+                )}
+              </div>
+            </div>
+            {notes.length === 0 ? (
+              <div className="text-center py-12 text-gray-600">
+                <Icons.Note className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">لا توجد ملاحظات بعد</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {notes.slice().reverse().map(n => (
+                  <div key={n.id} className="glass border border-red-900/30 rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-bold text-white text-sm">{n.title}</h4>
+                      <div className="flex gap-1">
+                        <button onClick={() => { setEditingNote(n.id); setNoteTitle(n.title); setNoteText(n.text); }} className="p-1.5 text-gray-500 hover:text-blue-400"><Icons.Edit className="w-4 h-4" /></button>
+                        <button onClick={() => deleteNote(n.id)} className="p-1.5 text-gray-500 hover:text-red-400"><Icons.Trash className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-xs whitespace-pre-wrap leading-relaxed">{n.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      const TimerView = () => (
+        <div className="min-h-screen bg-[#050000] flex flex-col items-center justify-center p-6">
+          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-red-400 font-semibold text-sm">
+            <Icons.ChevronRight className="w-5 h-5" /> العودة
+          </button>
+          <div className="text-center mb-8">
+            <Icons.Timer className="w-10 h-10 text-red-400 mx-auto mb-3" />
+            <h2 className="text-xl font-bold text-white">مؤقت بومودورو</h2>
+            <p className="text-gray-500 text-xs mt-1">{timerMode === 'focus' ? 'وقت التركيز' : 'وقت الاستراحة'}</p>
+          </div>
+          <div className="relative w-56 h-56 mb-8">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#1a0505" strokeWidth="6" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke={timerMode === 'focus' ? '#ef4444' : '#22c55e'} strokeWidth="6"
+                strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 45}`}
+                strokeDashoffset={`${2 * Math.PI * 45 * (1 - timerSeconds / (timerMode === 'focus' ? 25 * 60 : 5 * 60))}`}
+                className="progress-ring" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-4xl font-bold text-white tabular-nums" dir="ltr">{formatTimer(timerSeconds)}</span>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setTimerRunning(!timerRunning)}
+              className={`px-8 py-3 rounded-xl font-bold text-sm ${timerRunning ? 'bg-amber-600 text-white' : 'bg-red-600 text-white'}`}>
+              {timerRunning ? 'إيقاف' : 'ابدأ'}
+            </button>
+            <button onClick={() => { setTimerRunning(false); setTimerSeconds(timerMode === 'focus' ? 25 * 60 : 5 * 60); }}
+              className="px-5 py-3 rounded-xl border border-red-900/50 text-red-400 text-sm font-bold">
+              إعادة
+            </button>
+          </div>
+          <div className="flex gap-2 mt-6">
+            <button onClick={() => { setTimerMode('focus'); setTimerSeconds(25 * 60); setTimerRunning(false); }}
+              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'focus' ? 'bg-red-600 text-white' : 'bg-red-950/40 text-gray-400'}`}>تركيز 25</button>
+            <button onClick={() => { setTimerMode('break'); setTimerSeconds(5 * 60); setTimerRunning(false); }}
+              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'break' ? 'bg-green-600 text-white' : 'bg-red-950/40 text-gray-400'}`}>استراحة 5</button>
+          </div>
+        </div>
+      );
+
+      const GPAView = () => (
+        <div className="min-h-screen bg-[#050000] pb-8">
+          <NavBar title="حاسبة المعدل" onBack={() => setView('home')} />
+          <div className="px-4 pt-3">
+            <div className="glass border border-red-900/40 rounded-2xl p-5 mb-5 text-center">
+              <p className="text-gray-500 text-xs mb-1">المعدل التراكمي المتوقع</p>
+              <p className="text-4xl font-extrabold text-red-400">{calcGPA()}</p>
+              <p className="text-[10px] text-gray-600 mt-1">من 4.0</p>
+            </div>
+            <div className="space-y-3 mb-4">
+              {gpaCourses.map((c, i) => (
+                <div key={i} className="glass border border-red-900/30 rounded-xl p-3 flex gap-2 items-center">
+                  <input value={c.name} onChange={e => { const n = [...gpaCourses]; n[i].name = e.target.value; setGpaCourses(n); }}
+                    placeholder="المادة" className="flex-1 bg-transparent text-sm text-white focus:outline-none min-w-0" />
+                  <select value={c.grade} onChange={e => { const n = [...gpaCourses]; n[i].grade = e.target.value; setGpaCourses(n); }}
+                    className="bg-[#1a0505] border border-red-900/40 text-white text-xs rounded-lg px-2 py-1.5">
+                    <option value="">درجة</option>
+                    {['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'].map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                  <input type="number" value={c.hours} onChange={e => { const n = [...gpaCourses]; n[i].hours = e.target.value; setGpaCourses(n); }}
+                    placeholder="ساعات" className="w-16 bg-transparent text-sm text-white text-center focus:outline-none border border-red-900/30 rounded-lg py-1" />
+                  {gpaCourses.length > 1 && (
+                    <button onClick={() => setGpaCourses(gpaCourses.filter((_, j) => j !== i))} className="text-gray-600 hover:text-red-400"><Icons.X className="w-4 h-4" /></button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setGpaCourses([...gpaCourses, { name: '', grade: '', hours: '' }])}
+              className="w-full border border-dashed border-red-900/50 text-red-400 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+              <Icons.Plus className="w-4 h-4" /> إضافة مادة
+            </button>
+          </div>
+        </div>
+      );
+
+      const AnnouncementsView = () => (
+        <div className="min-h-screen bg-[#050000] pb-8">
+          <NavBar title="الإعلانات" onBack={() => setView('home')} />
+          <div className="px-4 pt-3 space-y-3">
+            {announcements.map(a => (
+              <div key={a.id} className={`glass border rounded-2xl p-4 ${
+                a.type === 'warning' ? 'border-amber-800/40' : a.type === 'success' ? 'border-green-800/40' : a.type === 'tip' ? 'border-blue-800/40' : 'border-red-900/30'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    a.type === 'warning' ? 'bg-amber-950 text-amber-400' : a.type === 'success' ? 'bg-green-950 text-green-400' : a.type === 'tip' ? 'bg-blue-950 text-blue-400' : 'bg-red-950 text-red-400'
+                  }`}>
+                    <Icons.Bell className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{a.title}</h4>
+                    <p className="text-gray-400 text-xs mt-1 leading-relaxed">{a.body}</p>
+                    <p className="text-[10px] text-gray-600 mt-2" dir="ltr">{a.date}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      const SettingsView = () => (
+        <div className="min-h-screen bg-[#050000] pb-8">
+          <NavBar title="الإعدادات" onBack={() => setView('home')} />
+          <div className="px-4 pt-3 space-y-3">
+            <div className="glass border border-red-900/30 rounded-2xl p-4">
+              <h3 className="font-bold text-white text-sm mb-3">البيانات المحفوظة</h3>
+              <div className="space-y-2 text-xs text-gray-400">
+                <div className="flex justify-between"><span>المفضلة</span><span className="text-red-400">{favorites.length}</span></div>
+                <div className="flex justify-between"><span>محاضرات مكتملة</span><span className="text-red-400">{Object.keys(completed).length}</span></div>
+                <div className="flex justify-between"><span>ملاحظات</span><span className="text-red-400">{notes.length}</span></div>
+                <div className="flex justify-between"><span>الجروب</span><span className="text-red-400">{selectedGroup || '—'}</span></div>
+              </div>
+            </div>
+            <button onClick={() => {
+              if (confirm('هل أنت متأكد من مسح كل البيانات المحلية؟')) {
+                localStorage.clear();
+                setFavorites([]); setCompleted({}); setNotes([]); setSelectedGroup(null);
+                showToast('تم مسح جميع البيانات');
+              }
+            }} className="w-full glass border border-red-900/40 text-red-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+              <Icons.Trash className="w-4 h-4" /> مسح كل البيانات المحلية
+            </button>
+            <div className="glass border border-red-900/30 rounded-2xl p-4 text-center">
+              <Icons.Graduation className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <p className="text-white font-bold text-sm">بوابة جامعة بني سويف الأهلية</p>
+              <p className="text-gray-500 text-xs mt-1">إصدار محسّن 2026 • للاستخدام التعليمي</p>
+            </div>
+          </div>
+        </div>
+      );
+
+      // Global Search Overlay
+      const SearchOverlay = () => showSearch && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md animate-fade-in flex flex-col">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => { setShowSearch(false); setGlobalSearch(''); }} className="text-gray-400"><Icons.X className="w-6 h-6" /></button>
+            <input autoFocus value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="ابحث في كل المحاضرات..."
+              className="flex-1 bg-[#110000] border border-red-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-red-500" />
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 pb-8">
+            {globalSearch && searchResults.length === 0 && <p className="text-center text-gray-600 mt-10 text-sm">لا توجد نتائج</p>}
+            {searchResults.map((r, i) => (
+              <button key={i} onClick={() => {
+                setShowSearch(false); setGlobalSearch('');
+                setSelectedSubject(r.subject); setView('lectures');
+                setTimeout(() => setPreview({ open: true, title: r.lecture.title, content: r.lecture.summaryAr, lang: 'ar', lecture: r.lecture }), 200);
+              }} className="w-full text-right glass border border-red-900/30 rounded-xl p-3 mb-2 hover:border-red-500/40 transition">
+                <div className="text-xs text-red-400 mb-0.5">{r.subject.arabicName}</div>
+                <div className="text-sm text-white font-medium">{r.lecture.title}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+
+      // Bottom Nav (mobile)
+      const BottomNav = () => view !== 'home' ? null : (
+        <div className="fixed bottom-0 inset-x-0 z-30 glass-strong border-t border-red-900/40 safe-bottom">
+          <div className="flex justify-around py-2 max-w-lg mx-auto">
+            {[
+              { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
+              { icon: Icons.BookOpen, label: 'المواد', v: 'subjects' },
+              { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
+              { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
+            ].map(({ icon: I, label, v }) => (
+              <button key={v} onClick={() => setView(v)} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${view === v ? 'text-red-400' : 'text-gray-500'}`}>
+                <I className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+
+      return (
+        <div dir="rtl" className="font-cairo min-h-screen bg-[#050000] text-gray-200">
+          {view === 'home' && <Home />}
+          {view === 'subjects' && <Subjects />}
+          {view === 'lectures' && <Lectures />}
+          {view === 'bot' && <BotView />}
+          {view === 'groups' && <Groups />}
+          {view === 'schedule' && <Schedule />}
+          {view === 'notes' && <NotesView />}
+          {view === 'timer' && <TimerView />}
+          {view === 'gpa' && <GPAView />}
+          {view === 'announcements' && <AnnouncementsView />}
+          {view === 'settings' && <SettingsView />}
+          <SearchOverlay />
+          <BottomNav />
+
+          {/* Toast */}
+          {toast && (
+            <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-xl shadow-lg font-semibold text-sm flex items-center gap-2 animate-slide-up ${
+              toast.type === 'error' ? 'bg-red-700 text-white' : 'bg-green-600 text-white'
+            }`}>
+              <Icons.CheckCircle className="w-4 h-4" /> {toast.msg || toast}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
