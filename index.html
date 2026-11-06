@@ -530,6 +530,9 @@ Civil & Political + Economic & Social rights.` },
       });
       const [preview, setPreview] = useState({ open: false, title: '', content: '', lang: 'ar', lecture: null });
       const [documentPreview, setDocumentPreview] = useState({ open: false, title: '', url: '' });
+      const [documentContent, setDocumentContent] = useState('');
+      const [documentLoading, setDocumentLoading] = useState(false);
+      const [documentError, setDocumentError] = useState('');
       const [chat, setChat] = useState([{
         id: 1, sender: 'bot',
         text: 'أهلاً بك! أنا المساعد الجامعي الذكي 🎓\n\nاسألني عن أي محاضرة أو مفهوم وسأشرحه لك.\n\nجرب: "اشرح أنظمة الأعداد" أو "ما هو Hardware؟"',
@@ -551,6 +554,17 @@ Civil & Political + Economic & Social rights.` },
 
       // Persist
       useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
+      useEffect(() => {
+        if (!documentPreview.open || !documentPreview.url) return;
+        let cancelled = false;
+        setDocumentLoading(true); setDocumentError(''); setDocumentContent('');
+        fetch(documentPreview.url)
+          .then(response => { if (!response.ok) throw new Error('تعذر تحميل الملف (' + response.status + ')'); return response.text(); })
+          .then(text => { if (!cancelled) setDocumentContent(text); })
+          .catch(() => { if (!cancelled) setDocumentError('مش قادرين نحمل المحتوى داخل الصفحة حاليًا. استخدم زر «فتح في تبويب جديد».'); })
+          .finally(() => { if (!cancelled) setDocumentLoading(false); });
+        return () => { cancelled = true; };
+      }, [documentPreview.open, documentPreview.url]);
       useEffect(() => { localStorage.setItem('fav', JSON.stringify(favorites)); }, [favorites]);
       useEffect(() => { localStorage.setItem('completed', JSON.stringify(completed)); }, [completed]);
       useEffect(() => { localStorage.setItem('notes', JSON.stringify(notes)); }, [notes]);
@@ -1003,7 +1017,18 @@ Civil & Political + Economic & Social rights.` },
                       <button onClick={() => setDocumentPreview({ open: false, title: '', url: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
                     </div>
                   </div>
-                  <iframe title={documentPreview.title} src={documentPreview.url} className="w-full flex-1 bg-white" />
+                  <div className="w-full flex-1 overflow-auto bg-[#0b1c25] p-4 sm:p-6">
+                    {documentLoading ? (
+                      <div className="h-full flex items-center justify-center text-cyan-300 text-sm">جاري تحميل محتوى المحاضرة...</div>
+                    ) : documentError ? (
+                      <div className="h-full flex flex-col items-center justify-center gap-3 text-center text-amber-300 text-sm">
+                        <p>{documentError}</p>
+                        <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">فتح المحتوى مباشرة</a>
+                      </div>
+                    ) : (
+                      <pre dir="auto" className="whitespace-pre-wrap break-words font-cairo text-sm sm:text-base leading-8 text-gray-100">{documentContent || 'لا يوجد محتوى لعرضه.'}</pre>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
