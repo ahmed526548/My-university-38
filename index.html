@@ -381,8 +381,8 @@ G = 1/R
 
 Use the links below to open the full summary and extracted slide text.`,
           externalLinks: [
-            { label: 'عرض الملخص داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Summary.md' },
-            { label: 'عرض نص الشرائح داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Slides-Text-Extract.md' }
+            { label: 'عرض الملخص داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Summary.md', content: "# Electronics – Section 4\n## ملخص وشرح المحاضرة\n\n### 1) المقاومة الكهربائية (Resistance)\nالمقاومة خاصية المادة التي تعارض مرور التيار الكهربائي، ورمزها R ووحدتها الأوم (Ω).\n\nمقاومة مادة منتظمة المقطع:\n`R = ρℓ/A`\n\n- ρ: المقاومية النوعية (Ω·m)\n- ℓ: الطول (m)\n- A: مساحة المقطع (m²)\n\nزيادة طول المادة تزيد مقاومتها، وزيادة مساحة المقطع تقلل مقاومتها.\n\n### 2) قانون أوم (Ohm’s Law)\n`V = IR`\nومنها: `I = V/R` و `R = V/I`.\n\nمثال: مقاومة 4 Ω موصلة بجهد 12 V:\n`I = 12/4 = 3 A`.\n\n### 3) اتفاقية الإشارة (Passive Sign Convention)\nإذا دخل التيار إلى الطرف الموجب للمقاومة وخرج من الطرف السالب: `V = IR`.\nإذا كانت مراجع اتجاه التيار وقطبية الجهد متعاكسة وفق تعريف المسألة: `V = -IR`.\nحدد الاتجاه والقطبية أولًا والتزم بهما.\n\n### 4) أنواع المقاومات\n- Fixed Resistor: مقاومة ثابتة.\n- Variable Resistor: مقاومة يمكن تغيير قيمتها.\n\n### 5) التوصيلية (Conductance)\nمقلوب المقاومة، ورمزها G:\n`G = 1/R`\nوحدتها السيمنز (S)، ويُستخدم أيضًا mho.\n\nمثال: إذا كانت R = 5 Ω فإن G = 0.2 S.\n\n### 6) العقد والفروع والحلقات\n- Node: نقطة اتصال فرعين أو أكثر.\n- Branch: جزء يحتوي عنصرًا واحدًا مثل مقاومة أو مصدر جهد.\n- Loop: مسار مغلق يبدأ وينتهي عند النقطة نفسها.\n\n### 7) التوالي والتوازي\n**التوالي (Series):** التيار نفسه يمر في العناصر:\n`Req = R1 + R2 + ...`\n\n**التوازي (Parallel):** الجهد نفسه على العناصر:\n`1/Req = 1/R1 + 1/R2 + ...`\nولمقاومتين:\n`Req = (R1 × R2)/(R1 + R2)`\n\nمثال: 2 Ω و3 Ω:\n- توالي: 5 Ω\n- توازي: 1.2 Ω\n\n### 8) قانون كيرشوف للتيار (KCL)\nمجموع التيارات الداخلة إلى أي عقدة يساوي مجموع التيارات الخارجة:\n`ΣI(in) = ΣI(out)`.\n\n### 9) قانون كيرشوف للجهد (KVL)\nالمجموع الجبري لفروق الجهد حول أي مسار مغلق يساوي صفرًا:\n`ΣV = 0`.\n\n### خطوات حل مسائل الدوائر\n1. اقرأ الرسم وحدد العناصر والقيم واتجاهات التيار وقطبية الجهد.\n2. استخدم قانون أوم عند الحاجة.\n3. استخدم KCL لحساب التيارات عند العقد.\n4. استخدم KVL لحساب الجهود حول الحلقات.\n5. التزم باتفاقية الإشارات.\n6. راجع الوحدات: V للجهد، A للتيار، Ω للمقاومة، وS للتوصيلية.\n\n### ورقة القوانين السريعة\n- `V = IR`\n- `I = V/R`\n- `R = V/I`\n- `R = ρℓ/A`\n- `G = 1/R`\n- `Req(series) = R1 + R2 + ...`\n- `Req(parallel) = (R1R2)/(R1+R2)` لمقاومتين\n- `ΣI(in) = ΣI(out)`\n- `ΣV = 0`\n\n> ملاحظة: هذا ملف نصي مستخرج ومنسق من ملف الشرح المرفوع، وليس نسخة DOCX الأصلية.\n" },
+            { label: 'عرض نص الشرائح داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Slides-Text-Extract.md', content: "# Electronics – Section 4 (Lecture Slides: extracted text)\n**TA: SALMA SAEED**\n\n## Topics covered\n- Ohm’s Law\n- Resistance and resistivity\n- Passive sign convention\n- Fixed and variable resistors\n- Conductance\n- Nodes, branches, and loops\n- Series and parallel connections\n- Kirchhoff’s Current Law (KCL)\n- Kirchhoff’s Voltage Law (KVL)\n- Worked examples\n- Assignment 2 and Assignment 3\n\n## Extracted lecture text\n\n### Ohm’s Law\nMaterials resist the flow of electric charge. This property is called resistance and is represented by R. The resistance of a uniform material depends on its cross-sectional area A, length ℓ, and resistivity ρ. Copper and aluminum have low resistivity; mica and paper have high resistivity.\n\nThe circuit element used to model resistance is the resistor.\n\n### Passive sign convention\nThe current direction and voltage polarity must follow the passive sign convention:\n- If current flows from higher potential to lower potential: v = iR.\n- If current flows from lower potential to higher potential: v = −iR.\n\n### Resistors\nA resistor may be fixed or variable. Most resistors are fixed, meaning their resistance remains constant.\n\n### Conductance\nConductance G is the reciprocal of resistance and measures how well an element conducts electric current. Units include mho (℧) and siemens (S).\n\n### Nodes, branches, and loops\n- A branch represents a single element such as a voltage source or resistor.\n- A node is the connection point between two or more branches.\n- A loop is any closed path in a circuit.\n- Series elements share a single node and carry the same current.\n- Parallel elements connect to the same two nodes and have the same voltage.\n\n### Kirchhoff’s laws\nThe slides include sections on Kirchhoff’s Current Law and Kirchhoff’s Voltage Law, followed by worked examples.\n\n### Assignments\nThe presentation includes Assignment 2 (Problems 1–4) and Assignment 3 (Problems 5–6).\n\nAssignment form: https://forms.gle/V3FFcc421KS3ZTtk8\n\n> Important: This is the text extract of the PowerPoint. Diagrams, circuit images, and some numerical details from slide images are not represented here. The original PPTX binary could not be transferred from the available file workspace.\n" }
           ]
         }
       ],
@@ -529,10 +529,7 @@ Civil & Political + Economic & Social rights.` },
         try { return JSON.parse(localStorage.getItem('notes') || '[]'); } catch { return []; }
       });
       const [preview, setPreview] = useState({ open: false, title: '', content: '', lang: 'ar', lecture: null });
-      const [documentPreview, setDocumentPreview] = useState({ open: false, title: '', url: '' });
-      const [documentContent, setDocumentContent] = useState('');
-      const [documentLoading, setDocumentLoading] = useState(false);
-      const [documentError, setDocumentError] = useState('');
+      const [documentPreview, setDocumentPreview] = useState({ open: false, title: '', url: '', content: '' });
       const [chat, setChat] = useState([{
         id: 1, sender: 'bot',
         text: 'أهلاً بك! أنا المساعد الجامعي الذكي 🎓\n\nاسألني عن أي محاضرة أو مفهوم وسأشرحه لك.\n\nجرب: "اشرح أنظمة الأعداد" أو "ما هو Hardware؟"',
@@ -554,17 +551,6 @@ Civil & Political + Economic & Social rights.` },
 
       // Persist
       useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
-      useEffect(() => {
-        if (!documentPreview.open || !documentPreview.url) return;
-        let cancelled = false;
-        setDocumentLoading(true); setDocumentError(''); setDocumentContent('');
-        fetch(documentPreview.url)
-          .then(response => { if (!response.ok) throw new Error('تعذر تحميل الملف (' + response.status + ')'); return response.text(); })
-          .then(text => { if (!cancelled) setDocumentContent(text); })
-          .catch(() => { if (!cancelled) setDocumentError('مش قادرين نحمل المحتوى داخل الصفحة حاليًا. استخدم زر «فتح في تبويب جديد».'); })
-          .finally(() => { if (!cancelled) setDocumentLoading(false); });
-        return () => { cancelled = true; };
-      }, [documentPreview.open, documentPreview.url]);
       useEffect(() => { localStorage.setItem('fav', JSON.stringify(favorites)); }, [favorites]);
       useEffect(() => { localStorage.setItem('completed', JSON.stringify(completed)); }, [completed]);
       useEffect(() => { localStorage.setItem('notes', JSON.stringify(notes)); }, [notes]);
@@ -993,7 +979,7 @@ Civil & Political + Economic & Social rights.` },
                             <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
                           </button>
                           {lec.externalLinks?.map(link => (
-                            <button key={link.url} onClick={() => setDocumentPreview({ open: true, title: link.label, url: link.url })}
+                            <button key={link.url} onClick={() => setDocumentPreview({ open: true, title: link.label, url: link.url, content: link.content })}
                               className="flex items-center gap-1 border border-cyan-700/50 text-cyan-300 hover:bg-cyan-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
                               <Icons.Eye className="w-3.5 h-3.5" /> {link.label}
                             </button>
@@ -1014,20 +1000,11 @@ Civil & Political + Economic & Social rights.` },
                     <h3 className="text-sm font-bold text-cyan-300 truncate">{documentPreview.title}</h3>
                     <div className="flex items-center gap-2 shrink-0">
                       <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-300 border border-cyan-800 rounded-lg px-3 py-2">فتح في تبويب جديد</a>
-                      <button onClick={() => setDocumentPreview({ open: false, title: '', url: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
+                      <button onClick={() => setDocumentPreview({ open: false, title: '', url: '', content: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
                     </div>
                   </div>
                   <div className="w-full flex-1 overflow-auto bg-[#0b1c25] p-4 sm:p-6">
-                    {documentLoading ? (
-                      <div className="h-full flex items-center justify-center text-cyan-300 text-sm">جاري تحميل محتوى المحاضرة...</div>
-                    ) : documentError ? (
-                      <div className="h-full flex flex-col items-center justify-center gap-3 text-center text-amber-300 text-sm">
-                        <p>{documentError}</p>
-                        <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">فتح المحتوى مباشرة</a>
-                      </div>
-                    ) : (
-                      <pre dir="auto" className="whitespace-pre-wrap break-words font-cairo text-sm sm:text-base leading-8 text-gray-100">{documentContent || 'لا يوجد محتوى لعرضه.'}</pre>
-                    )}
+                    <pre dir="auto" className="whitespace-pre-wrap break-words font-cairo text-sm sm:text-base leading-8 text-gray-100">{documentPreview.content || 'المحتوى غير مضاف لهذه المحاضرة بعد.'}</pre>
                   </div>
                 </div>
               </div>
