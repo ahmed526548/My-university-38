@@ -400,6 +400,35 @@
       .portal-root .soft-nav-item svg { width: 17px !important; height: 17px !important; }
       .portal-root .soft-nav-item span { font-size: 8px !important; }
     }
+
+    /* Mobile header fit: keep the university name readable beside compact actions */
+    @media (max-width: 420px) {
+      .portal-root .home-enter { gap: 8px !important; padding: 9px 10px !important; }
+      .portal-root .home-enter > div:first-child { gap: 8px !important; flex: 1 1 auto !important; min-width: 0 !important; }
+      .portal-root .home-university-name { display:block !important; white-space:normal !important; overflow:visible !important; font-size:9px !important; line-height:1.25 !important; }
+      .portal-root .home-theme-toggle,
+      .portal-root .home-header-action { width:34px !important; height:34px !important; min-width:34px !important; padding:0 !important; justify-content:center !important; }
+      .portal-root .home-theme-label { display:none !important; }
+      .portal-root .home-theme-toggle > span:first-child { width:13px !important; height:13px !important; }
+      .portal-root .home-header-action svg { width:17px !important; height:17px !important; }
+      .portal-root .home-enter > div:last-child { gap:5px !important; }
+    }
+    /* Performance mode for phones: remove costly blur filters and decorative motion */
+    @media (max-width: 768px) {
+      .portal-root [class*="blur-3xl"],
+      .portal-root [class*="blur-2xl"],
+      .portal-root .splash-screen { filter:none !important; display:none !important; animation:none !important; }
+      .portal-root .soft-panel,
+      .portal-root .glass,
+      .portal-root .glass-strong,
+      .portal-root .soft-surface,
+      .portal-root .soft-nav-shell {
+        -webkit-backdrop-filter:none !important;
+        backdrop-filter:none !important;
+        box-shadow:0 5px 14px rgba(0,0,0,.16) !important;
+      }
+      .portal-root .card-hover { transition:none !important; }
+    }
 </style>
 </head>
 <body>
@@ -942,7 +971,7 @@ Civil & Political + Economic & Social rights.` },
         window.addEventListener('popstate', handleBrowserBack);
         return () => window.removeEventListener('popstate', handleBrowserBack);
       }, []);
-      const [showSplash, setShowSplash] = useState(true);
+      const [showSplash, setShowSplash] = useState(false);
       const [selectedSubject, setSelectedSubject] = useState(null);
       const [selectedGroup, setSelectedGroup] = useState(() => localStorage.getItem('group') || null);
       const [searchQuery, setSearchQuery] = useState('');
@@ -977,11 +1006,7 @@ Civil & Political + Economic & Social rights.` },
       const endRef = useRef(null);
       const timerRef = useRef(null);
 
-      // Welcome splash: show briefly on every fresh page load
-      useEffect(() => {
-        const splashTimer = setTimeout(() => setShowSplash(false), 650);
-        return () => clearTimeout(splashTimer);
-      }, []);
+      // Skip the decorative splash so the portal is usable immediately.
 
       // Persist
       useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
@@ -1192,7 +1217,7 @@ Civil & Political + Economic & Social rights.` },
             <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع"
               className="flex h-9 items-center gap-2 rounded-lg border border-sky-300/25 bg-sky-950/50 px-2.5 text-[11px] font-bold text-sky-100 transition hover:border-sky-300/50">
               <span className="h-3 w-3 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
-              <span>المظهر</span>
+              <span className="home-theme-label">المظهر</span>
             </button>
             {right}
           </div>
@@ -1212,20 +1237,20 @@ Civil & Political + Economic & Social rights.` },
                   <Icons.Graduation className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[11px] font-semibold text-cyan-300/80">جامعة بني سويف الأهلية</p>
+                  <p className="home-university-name text-[10px] sm:text-[11px] font-semibold text-cyan-300/80">جامعة بني سويف الأهلية</p>
                   <h1 className="truncate text-base sm:text-lg font-extrabold text-white">بوابتك الجامعية</h1>
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع"
-                  className="flex h-10 items-center gap-2 rounded-xl border border-sky-300/25 bg-sky-950/50 px-2.5 text-xs font-bold text-sky-100 transition hover:border-sky-300/50">
+                  className="home-theme-toggle flex h-10 items-center gap-2 rounded-xl border border-sky-300/25 bg-sky-950/50 px-2.5 text-xs font-bold text-sky-100 transition hover:border-sky-300/50">
                   <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
                   <span>المظهر</span>
                 </button>
-                <button onClick={() => setShowSearch(true)} aria-label="بحث" className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
+                <button onClick={() => setShowSearch(true)} aria-label="بحث" className="home-header-action flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
                   <Icons.Search className="h-5 w-5" />
                 </button>
-                <button onClick={() => setView('settings')} aria-label="الإعدادات" className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
+                <button onClick={() => setView('settings')} aria-label="الإعدادات" className="home-header-action flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
                   <Icons.Settings className="h-5 w-5" />
                 </button>
               </div>
