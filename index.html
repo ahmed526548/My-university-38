@@ -351,7 +351,19 @@
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
 
-  </style>
+  
+    /* Compact, evenly spaced mobile navigation */
+    .portal-root .soft-nav-shell { gap: 4px !important; }
+    .portal-root .soft-nav-item { flex: 1 1 0 !important; min-width: 0 !important; padding-inline: 3px !important; }
+    .portal-root .soft-nav-item svg { width: 18px !important; height: 18px !important; flex: 0 0 auto !important; }
+    .portal-root .soft-nav-item span { font-size: 9px !important; line-height: 1.1 !important; letter-spacing: 0 !important; }
+    @media (max-width: 360px) {
+      .portal-root .soft-nav-shell { padding-inline: 5px !important; }
+      .portal-root .soft-nav-item { padding-inline: 1px !important; }
+      .portal-root .soft-nav-item svg { width: 17px !important; height: 17px !important; }
+      .portal-root .soft-nav-item span { font-size: 8px !important; }
+    }
+</style>
 </head>
 <body>
   <div id="root"></div>
@@ -1723,7 +1735,7 @@ Civil & Political + Economic & Social rights.` },
       // Persistent glass navigation across the main portal views
       const BottomNav = () => (
         <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
-          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-xl items-center justify-around rounded-2xl px-1.5 py-2">
+          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-lg items-center justify-between gap-1 rounded-2xl px-2 py-2">
             {[
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
               { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
@@ -1734,9 +1746,9 @@ Civil & Political + Economic & Social rights.` },
               const active = view === v || (v === 'subjects' && view === 'lectures');
               return (
                 <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => setView(v)}
-                  className={`soft-nav-item flex flex-col items-center justify-center gap-1 rounded-xl px-2.5 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
-                  <I className="h-5 w-5" />
-                  <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
+                  className={`soft-nav-item flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
+                  <I className="h-[18px] w-[18px] shrink-0" />
+                  <span className="text-[9px] leading-none font-semibold whitespace-nowrap">{label}</span>
                 </button>
               );
             })}
