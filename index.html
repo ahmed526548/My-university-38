@@ -4,6 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#07151d" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="بوابتي" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+          console.warn("تعذر تفعيل وضع التطبيق:", error);
+        });
+      });
+    }
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>بوابة جامعة بني سويف الأهلية | BSNU Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -594,43 +608,69 @@ Civil & Political + Economic & Social rights.` },
       const viewHistoryRef = useRef(['home']);
       const isHandlingPopRef = useRef(false);
 
-      // Keep Android/browser back gestures inside the app's own screen history.
+      // Keep one browser-history entry per in-app screen for Android back gestures.
       const setView = (nextView) => {
         const target = typeof nextView === 'function' ? nextView(viewRef.current) : nextView;
         if (!target || target === viewRef.current) return;
-        if (!isHandlingPopRef.current) {
-          const stack = viewHistoryRef.current;
-          if (stack.length > 1 && stack[stack.length - 2] === target) {
-            window.history.back();
-            return;
-          }
-          stack.push(target);
-          window.history.pushState({ universityPortal: true, view: target }, '', window.location.pathname + window.location.search + '#app');
+
+        const stack = viewHistoryRef.current;
+        if (!isHandlingPopRef.current && stack.length > 1 && stack[stack.length - 2] === target) {
+          window.history.back();
+          return;
         }
+
+        if (!isHandlingPopRef.current) {
+          stack.push(target);
+          window.history.pushState(
+            { universityPortal: true, view: target, portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+        }
+
         viewRef.current = target;
         setViewState(target);
       };
 
       useEffect(() => {
-        // Seed an in-app history entry so the first swipe-back returns to the portal home.
-        window.history.replaceState({ universityPortal: true, view: 'home' }, '', window.location.pathname + window.location.search + '#app');
-        window.history.pushState({ universityPortal: true, view: 'home' }, '', window.location.pathname + window.location.search + '#app');
+        const currentState = window.history.state;
+        if (!currentState || !currentState.universityPortal) {
+          window.history.replaceState(
+            { universityPortal: true, view: 'home', portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+          window.history.pushState(
+            { universityPortal: true, view: 'home', portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+        }
 
-        const handleBrowserBack = () => {
+        const handleBrowserBack = (event) => {
           const stack = viewHistoryRef.current;
           if (stack.length > 1) {
             stack.pop();
-            const previousView = stack[stack.length - 1] || 'home';
+            const previousView = (event.state && event.state.universityPortal && event.state.view)
+              || stack[stack.length - 1]
+              || 'home';
+            if (stack[stack.length - 1] !== previousView) stack.push(previousView);
+
             isHandlingPopRef.current = true;
             viewRef.current = previousView;
             setViewState(previousView);
             isHandlingPopRef.current = false;
-          } else {
-            // At the home screen, keep the app open instead of navigating away.
-            window.history.pushState({ universityPortal: true, view: 'home' }, '', window.location.pathname + window.location.search + '#app');
-            viewRef.current = 'home';
-            setViewState('home');
+            return;
           }
+
+          // Keep the root page in place when back is pressed from the home screen.
+          window.history.pushState(
+            { universityPortal: true, view: 'home', portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+          viewRef.current = 'home';
+          setViewState('home');
         };
 
         window.addEventListener('popstate', handleBrowserBack);
