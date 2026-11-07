@@ -285,6 +285,22 @@
     ::selection { background: rgba(56,189,248,.42); color: #f0faff; }
 
 
+    /* Developer credit and tidy social links */
+    .developer-footer { clear: both; }
+    .developer-social-link {
+      display:flex; width:42px; height:42px; align-items:center; justify-content:center;
+      border:1px solid var(--portal-accent-border,rgba(125,211,252,.3));
+      border-radius:14px; color:var(--portal-accent,#7dd3fc);
+      background:var(--portal-accent-soft,rgba(56,189,248,.10));
+      transition:transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .developer-social-link:hover { transform:translateY(-2px); background:var(--portal-accent-soft); border-color:var(--portal-accent); }
+    .developer-social-link:focus-visible { outline:2px solid var(--portal-accent); outline-offset:3px; }
+    @media (max-width:420px) {
+      .developer-footer { padding-left:12px; padding-right:12px; }
+      .developer-social-link { width:40px; height:40px; }
+    }
+
     /* Full-site color themes: each palette changes the entire portal, not only accents */
     :root {
       --portal-accent:#38bdf8; --portal-accent-soft:rgba(56,189,248,.18);
@@ -487,6 +503,9 @@
       Refresh: (p) => <Icon {...p} d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />,
       Copy: (p) => <Icon {...p} d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />,
       External: (p) => <Icon {...p} d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />,
+      Facebook: (p) => <Icon {...p} d="M14 8h3V4h-3a5 5 0 0 0-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9a1 1 0 0 1 1-1z" />,
+      Instagram: (p) => <Icon {...p} d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM17.5 6.5h.01" />,
+      WhatsApp: (p) => <Icon {...p} d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5zM9 8.5c.3-.6.6-.6.9-.6h.5c.2 0 .4.1.5.4l.7 1.6c.1.2.1.4-.1.6l-.5.6c-.2.2-.2.4 0 .6.5.9 1.3 1.6 2.2 2.1.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.4.5 0 .4-.2 1.2-.7 1.6-.5.4-1.1.6-1.8.5-1-.1-2.3-.7-3.7-1.9-1.2-1.1-2-2.4-2.2-3.3-.2-.8 0-1.5.4-2.1z" />,
     };
 
     // ==================== DATA ====================
@@ -1275,10 +1294,10 @@ Civil & Political + Economic & Social rights.` },
                 { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختر جروبك لعرض الجدول', v: selectedGroup ? 'schedule' : 'groups', accent: 'from-sky-400/20 to-cyan-500/5' },
               ].map(({ icon: I, label, desc, v, accent, featured }) => (
                 <button key={label} onClick={() => setView(v)}
-                  className={`home-action soft-panel group relative flex min-h-[150px] flex-col items-center justify-center overflow-hidden rounded-3xl p-5 text-center transition duration-300 hover:-translate-y-1 ${featured ? 'border-sky-200/30 bg-sky-400/10 shadow-[0_12px_42px_rgba(56,189,248,0.12)] sm:min-h-[178px]' : 'border-white/10 hover:border-sky-200/25 hover:shadow-[0_12px_35px_rgba(56,189,248,0.08)]'}`}>
+                  className={`home-action soft-panel group relative flex min-h-[138px] flex-col items-center justify-center overflow-hidden rounded-2xl p-4 text-center transition duration-300 hover:-translate-y-1 ${featured ? 'border-sky-200/30 bg-sky-400/10 shadow-[0_12px_42px_rgba(56,189,248,0.12)] sm:min-h-[160px]' : 'border-white/10 hover:border-sky-200/25 hover:shadow-[0_12px_35px_rgba(56,189,248,0.08)]'}`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-70`} />
-                  <div className={`relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border ${featured ? 'border-cyan-100/30 bg-cyan-200/15 text-cyan-100' : 'border-cyan-300/15 bg-cyan-400/10 text-cyan-300'} group-hover:scale-110 transition-transform`}>
-                    <I className="h-7 w-7" />
+                  <div className={`relative mb-2.5 flex h-12 w-12 items-center justify-center rounded-xl border ${featured ? 'border-cyan-100/30 bg-cyan-200/15 text-cyan-100' : 'border-cyan-300/15 bg-cyan-400/10 text-cyan-300'} group-hover:scale-105 transition-transform`}>
+                    <I className="h-6 w-6" />
                   </div>
                   <span className="relative text-base font-extrabold text-white">{label}</span>
                   <span className="relative mt-1 text-[11px] text-slate-400">{desc}</span>
@@ -1761,10 +1780,27 @@ Civil & Political + Economic & Social rights.` },
             }} className="w-full glass border border-cyan-900/40 text-cyan-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
               <Icons.Trash className="w-4 h-4" /> مسح كل البيانات المحلية
             </button>
+            <div className="glass border border-cyan-900/30 rounded-2xl p-4">
+              <h3 className="mb-3 text-sm font-extrabold text-white">أدوات إضافية</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { icon: Icons.Note, label: 'ملاحظاتي', view: 'notes' },
+                  { icon: Icons.Timer, label: 'مؤقت المذاكرة', view: 'timer' },
+                  { icon: Icons.Calculator, label: 'حساب المعدل', view: 'gpa' },
+                  { icon: Icons.Bell, label: 'الإعلانات', view: 'announcements' },
+                ].map(({ icon: I, label, view: target }) => (
+                  <button key={target} onClick={() => setView(target)}
+                    className="flex items-center gap-2 rounded-xl border border-cyan-200/10 bg-cyan-400/[0.06] px-3 py-3 text-right text-xs font-bold text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-400/10">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-300"><I className="h-4 w-4" /></span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="glass border border-cyan-900/30 rounded-2xl p-4 text-center">
-              <Icons.Graduation className="w-8 h-8 text-cyan-500 mx-auto mb-2" />
+              <Icons.Graduation className="w-7 h-7 text-cyan-400 mx-auto mb-2" />
               <p className="text-white font-bold text-sm">بوابة جامعة بني سويف الأهلية</p>
-              <p className="text-gray-500 text-xs mt-1">إصدار محسّن 2026 • للاستخدام التعليمي</p>
+              <p className="text-gray-400 text-xs mt-1">إصدار محسّن 2026 • للاستخدام التعليمي</p>
             </div>
           </div>
         </div>
@@ -1797,20 +1833,19 @@ Civil & Political + Economic & Social rights.` },
       // Persistent glass navigation across the main portal views
       const BottomNav = () => (
         <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
-          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-lg items-center justify-between gap-1 rounded-2xl px-2 py-2">
+          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-md items-center justify-between gap-2 rounded-2xl px-3 py-2">
             {[
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
               { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
               { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
-              { icon: Icons.Layers, label: 'المزيد', v: 'settings' },
             ].map(({ icon: I, label, v }) => {
               const active = view === v || (v === 'subjects' && view === 'lectures');
               return (
                 <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => setView(v)}
                   className={`soft-nav-item flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
-                  <I className="h-[18px] w-[18px] shrink-0" />
-                  <span className="text-[9px] leading-none font-semibold whitespace-nowrap">{label}</span>
+                  <I className="h-[19px] w-[19px] shrink-0" />
+                  <span className="text-[10px] leading-none font-semibold whitespace-nowrap">{label}</span>
                 </button>
               );
             })}
@@ -1851,6 +1886,22 @@ Civil & Political + Economic & Social rights.` },
           {view === 'gpa' && <GPAView />}
           {view === 'announcements' && <AnnouncementsView />}
           {view === 'settings' && <SettingsView />}
+          <footer className="developer-footer relative z-10 mx-auto mt-8 w-full max-w-6xl px-4 pb-32 pt-2 sm:px-6" aria-label="معلومات المطور">
+            <div className="overflow-hidden rounded-2xl border border-sky-300/15 bg-slate-950/35 px-5 py-5 text-center">
+              <div className="mx-auto mb-3 h-px w-16 bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
+              <p className="text-[10px] font-bold tracking-[.18em] text-sky-300/75">DESIGNED & DEVELOPED BY</p>
+              <p className="mt-1 text-lg font-black text-white">Ahmed Osama</p>
+              <div className="mt-4 flex items-center justify-center gap-3" dir="ltr">
+                <a href="https://www.facebook.com/ahmed.osama.185953?mibextid=ZbWKwL" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
+                  className="developer-social-link" title="Facebook"><Icons.Facebook className="h-5 w-5" /></a>
+                <a href="https://www.instagram.com/a7med_osama_2008y?srtk=MWR3ZWd4NmVqOW5q" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                  className="developer-social-link" title="Instagram"><Icons.Instagram className="h-5 w-5" /></a>
+                <a href="https://wa.me/201119136553" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
+                  className="developer-social-link" title="WhatsApp"><Icons.WhatsApp className="h-5 w-5" /></a>
+              </div>
+              <p className="mt-4 text-[10px] text-slate-500">© 2026 • بوابة جامعة بني سويف الأهلية</p>
+            </div>
+          </footer>
           <SearchOverlay />
           <BottomNav />
 
