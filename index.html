@@ -589,7 +589,48 @@ Civil & Political + Economic & Social rights.` },
 
     // ==================== APP ====================
     function App() {
-      const [view, setView] = useState('home');
+      const [view, setViewState] = useState('home');
+      const viewRef = useRef('home');
+      const viewHistoryRef = useRef(['home']);
+      const isHandlingPopRef = useRef(false);
+
+      // Keep Android/browser back gestures inside the app's own screen history.
+      const setView = (nextView) => {
+        const target = typeof nextView === 'function' ? nextView(viewRef.current) : nextView;
+        if (!target || target === viewRef.current) return;
+        if (!isHandlingPopRef.current) {
+          viewHistoryRef.current.push(target);
+          window.history.pushState({ universityPortal: true, view: target }, '', window.location.pathname + window.location.search + '#app');
+        }
+        viewRef.current = target;
+        setViewState(target);
+      };
+
+      useEffect(() => {
+        // Seed an in-app history entry so the first swipe-back returns to the portal home.
+        window.history.replaceState({ universityPortal: true, view: 'home' }, '', window.location.pathname + window.location.search + '#app');
+        window.history.pushState({ universityPortal: true, view: 'home' }, '', window.location.pathname + window.location.search + '#app');
+
+        const handleBrowserBack = () => {
+          const stack = viewHistoryRef.current;
+          if (stack.length > 1) {
+            stack.pop();
+            const previousView = stack[stack.length - 1] || 'home';
+            isHandlingPopRef.current = true;
+            viewRef.current = previousView;
+            setViewState(previousView);
+            isHandlingPopRef.current = false;
+          } else {
+            // At the home screen, keep the app open instead of navigating away.
+            window.history.pushState({ universityPortal: true, view: 'home' }, '', window.location.pathname + window.location.search + '#app');
+            viewRef.current = 'home';
+            setViewState('home');
+          }
+        };
+
+        window.addEventListener('popstate', handleBrowserBack);
+        return () => window.removeEventListener('popstate', handleBrowserBack);
+      }, []);
       const [showSplash, setShowSplash] = useState(true);
       const [selectedSubject, setSelectedSubject] = useState(null);
       const [selectedGroup, setSelectedGroup] = useState(() => localStorage.getItem('group') || null);
