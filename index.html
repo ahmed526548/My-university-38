@@ -284,6 +284,73 @@
     }
     ::selection { background: rgba(56,189,248,.42); color: #f0faff; }
 
+
+    /* User-selectable accent palettes */
+    :root {
+      --portal-accent: #38bdf8;
+      --portal-accent-soft: rgba(56,189,248,.22);
+      --portal-accent-border: rgba(125,211,252,.34);
+      --portal-accent-glow: rgba(14,165,233,.14);
+    }
+    :root[data-portal-theme="violet"] {
+      --portal-accent: #a78bfa;
+      --portal-accent-soft: rgba(167,139,250,.22);
+      --portal-accent-border: rgba(196,181,253,.36);
+      --portal-accent-glow: rgba(139,92,246,.16);
+    }
+    :root[data-portal-theme="emerald"] {
+      --portal-accent: #34d399;
+      --portal-accent-soft: rgba(52,211,153,.20);
+      --portal-accent-border: rgba(110,231,183,.34);
+      --portal-accent-glow: rgba(16,185,129,.15);
+    }
+    :root[data-portal-theme="amber"] {
+      --portal-accent: #fbbf24;
+      --portal-accent-soft: rgba(251,191,36,.18);
+      --portal-accent-border: rgba(252,211,77,.34);
+      --portal-accent-glow: rgba(245,158,11,.14);
+    }
+    :root[data-portal-theme] .portal-root .soft-panel,
+    :root[data-portal-theme] .portal-root .glass,
+    :root[data-portal-theme] .portal-root .glass-strong,
+    :root[data-portal-theme] .portal-root .soft-surface,
+    :root[data-portal-theme] .portal-root .soft-nav-shell {
+      border-color: var(--portal-accent-border) !important;
+      box-shadow: 0 14px 36px rgba(0,8,22,.30), 0 0 22px var(--portal-accent-glow), inset 0 1px 0 rgba(224,242,254,.10) !important;
+    }
+    :root[data-portal-theme] .portal-root .soft-nav-item[aria-current="page"] {
+      color: #f0f9ff !important;
+      background: var(--portal-accent-soft) !important;
+      box-shadow: inset 0 0 0 1px var(--portal-accent-border) !important;
+    }
+    :root[data-portal-theme] .portal-root .home-hero {
+      border-color: var(--portal-accent-border) !important;
+      box-shadow: 0 18px 48px var(--portal-accent-glow), inset 0 1px 0 rgba(224,242,254,.14) !important;
+    }
+    /* Lighter effects on phones to reduce GPU work while scrolling */
+    @media (max-width: 768px) {
+      body { background-attachment: scroll !important; }
+      .portal-root .soft-panel,
+      .portal-root .glass,
+      .portal-root .glass-strong,
+      .portal-root .soft-surface,
+      .portal-root .soft-nav-shell {
+        -webkit-backdrop-filter: blur(10px) !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 8px 22px rgba(0,0,0,.22) !important;
+      }
+      .portal-root .home-hero,
+      .portal-root .home-enter,
+      .portal-root .home-stagger > *,
+      .portal-root .portal-root > .min-h-screen {
+        animation-duration: .18s !important;
+      }
+      .portal-root .card-hover:hover { transform: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -739,6 +806,21 @@ Civil & Political + Economic & Social rights.` },
     // ==================== APP ====================
     function App() {
       const [view, setViewState] = useState('home');
+      const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
+      const [portalTheme, setPortalTheme] = useState(() => {
+        try {
+          const saved = localStorage.getItem('portalTheme');
+          return themeOptions.includes(saved) ? saved : 'sky';
+        } catch { return 'sky'; }
+      });
+      const cyclePortalTheme = () => {
+        setPortalTheme(current => themeOptions[(themeOptions.indexOf(current) + 1) % themeOptions.length]);
+      };
+      useEffect(() => {
+        document.documentElement.setAttribute('data-portal-theme', portalTheme);
+        try { localStorage.setItem('portalTheme', portalTheme); } catch {}
+      }, [portalTheme]);
+
       const viewRef = useRef('home');
       const viewHistoryRef = useRef(['home']);
       const isHandlingPopRef = useRef(false);
@@ -848,7 +930,7 @@ Civil & Political + Economic & Social rights.` },
 
       // Welcome splash: show briefly on every fresh page load
       useEffect(() => {
-        const splashTimer = setTimeout(() => setShowSplash(false), 2400);
+        const splashTimer = setTimeout(() => setShowSplash(false), 650);
         return () => clearTimeout(splashTimer);
       }, []);
 
@@ -1078,7 +1160,12 @@ Civil & Political + Economic & Social rights.` },
                   <h1 className="truncate text-base sm:text-lg font-extrabold text-white">بوابتك الجامعية</h1>
                 </div>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 items-center gap-2">
+                <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع"
+                  className="flex h-10 items-center gap-2 rounded-xl border border-sky-300/25 bg-sky-950/50 px-2.5 text-xs font-bold text-sky-100 transition hover:border-sky-300/50">
+                  <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
+                  <span>المظهر</span>
+                </button>
                 <button onClick={() => setShowSearch(true)} aria-label="بحث" className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
                   <Icons.Search className="h-5 w-5" />
                 </button>
