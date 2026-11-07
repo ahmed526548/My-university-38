@@ -599,7 +599,12 @@ Civil & Political + Economic & Social rights.` },
         const target = typeof nextView === 'function' ? nextView(viewRef.current) : nextView;
         if (!target || target === viewRef.current) return;
         if (!isHandlingPopRef.current) {
-          viewHistoryRef.current.push(target);
+          const stack = viewHistoryRef.current;
+          if (stack.length > 1 && stack[stack.length - 2] === target) {
+            window.history.back();
+            return;
+          }
+          stack.push(target);
           window.history.pushState({ universityPortal: true, view: target }, '', window.location.pathname + window.location.search + '#app');
         }
         viewRef.current = target;
