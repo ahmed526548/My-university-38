@@ -178,6 +178,37 @@
     .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
     input, textarea, button { font-family: inherit; }
     .progress-ring { transition: stroke-dashoffset 0.6s ease; }
+  
+    /* Site-wide Premium Soft Glass refresh */
+    :root { color-scheme: dark; --portal-sky: #7dd3fc; --portal-cyan: #67e8f9; }
+    html, body, #root { min-height: 100%; background: #061321 !important; }
+    body {
+      color: #e7f4ff !important;
+      background:
+        radial-gradient(ellipse at 12% 4%, rgba(56,189,248,.16), transparent 34%),
+        radial-gradient(ellipse at 88% 24%, rgba(34,211,238,.10), transparent 30%),
+        linear-gradient(155deg, #071827 0%, #081321 52%, #030b14 100%) !important;
+      background-attachment: fixed !important;
+    }
+    .glass, .glass-strong, .soft-panel, .soft-surface, .soft-nav-shell {
+      background: linear-gradient(145deg, rgba(20,43,67,.82), rgba(7,22,39,.78)) !important;
+      border: 1px solid rgba(125,211,252,.18) !important;
+      box-shadow: 0 14px 38px rgba(0,0,0,.24), inset 0 1px 0 rgba(226,245,255,.06) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(135%) !important;
+      backdrop-filter: blur(20px) saturate(135%) !important;
+    }
+    .soft-nav-shell { background: rgba(5,18,33,.90) !important; border-color: rgba(125,211,252,.22) !important; }
+    .soft-nav-item[aria-current="page"] { color: #e0f2fe !important; background: rgba(56,189,248,.18) !important; }
+    .home-action, .card-hover { transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease !important; }
+    .home-action:hover, .card-hover:hover { border-color: rgba(125,211,252,.34) !important; box-shadow: 0 16px 42px rgba(2,132,199,.13) !important; }
+    input, textarea, select, button { accent-color: #38bdf8; }
+    input:focus, textarea:focus, select:focus { outline-color: rgba(56,189,248,.65) !important; }
+    ::selection { background: rgba(56,189,248,.32); color: #f0f9ff; }
+    @media (prefers-reduced-motion: no-preference) {
+      .home-hero { animation: portalHeroIn .55s ease both; }
+      @keyframes portalHeroIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    }
+
   </style>
 </head>
 <body>
