@@ -54,6 +54,40 @@
     .card-hover:hover { transform: translateY(-4px); border-color: rgba(34, 211, 238, 0.5); box-shadow: 0 12px 40px rgba(6, 182, 212, 0.12); }
     .message-enter { animation: slideUp 0.3s ease-out; }
 
+    /* University welcome splash screen */
+    @keyframes splashFadeOut {
+      0%, 78% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; pointer-events: none; }
+    }
+    @keyframes splashMarkIn {
+      0% { opacity: 0; transform: translateY(14px) scale(.82); }
+      55% { opacity: 1; transform: translateY(-3px) scale(1.04); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes splashRing {
+      0% { transform: scale(.82); opacity: .65; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+    @keyframes splashProgress {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    .splash-screen {
+      animation: splashFadeOut 2.35s ease-in-out forwards;
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(8,145,178,.22), transparent 42%),
+        linear-gradient(160deg, #071923 0%, #030c13 58%, #02070b 100%);
+    }
+    .splash-mark { animation: splashMarkIn .85s .12s cubic-bezier(.2,.7,.2,1) both; }
+    .splash-ring { animation: splashRing 1.8s .35s ease-out infinite; }
+    .splash-progress { transform-origin: right; animation: splashProgress 1.85s .25s ease-out both; }
+    @media (prefers-reduced-motion: reduce) {
+      .splash-screen { animation-duration: .8s; }
+      .splash-mark { animation-duration: .01ms; }
+      .splash-ring { animation: none; }
+      .splash-progress { animation-duration: .5s; }
+    }
+
     /* Smooth cyan motion system */
     @keyframes riseIn {
       from { opacity: 0; transform: translate3d(0, 18px, 0); }
@@ -556,6 +590,7 @@ Civil & Political + Economic & Social rights.` },
     // ==================== APP ====================
     function App() {
       const [view, setView] = useState('home');
+      const [showSplash, setShowSplash] = useState(true);
       const [selectedSubject, setSelectedSubject] = useState(null);
       const [selectedGroup, setSelectedGroup] = useState(() => localStorage.getItem('group') || null);
       const [searchQuery, setSearchQuery] = useState('');
@@ -589,6 +624,12 @@ Civil & Political + Economic & Social rights.` },
       const [showSearch, setShowSearch] = useState(false);
       const endRef = useRef(null);
       const timerRef = useRef(null);
+
+      // Welcome splash: show briefly on every fresh page load
+      useEffect(() => {
+        const splashTimer = setTimeout(() => setShowSplash(false), 2400);
+        return () => clearTimeout(splashTimer);
+      }, []);
 
       // Persist
       useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
@@ -1384,7 +1425,27 @@ Civil & Political + Economic & Social rights.` },
       );
 
       return (
-        <div dir="rtl" className="font-cairo min-h-screen bg-[#030c13] text-gray-200">
+        <>
+          {showSplash && (
+            <div className="splash-screen fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center" role="status" aria-label="جاري تحميل بوابتك الجامعية">
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-300/20 splash-ring" />
+              <div className="splash-mark relative flex flex-col items-center">
+                <div className="relative mb-7 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-cyan-200/30 bg-cyan-300/10 text-cyan-200 shadow-[0_0_65px_rgba(6,182,212,0.28)]">
+                  <Icons.Graduation className="h-12 w-12" />
+                  <div className="absolute -inset-3 rounded-[2.4rem] border border-cyan-300/15" />
+                </div>
+                <p className="mb-2 text-xs font-bold tracking-[.22em] text-cyan-300">BSNU • UNIVERSITY PORTAL</p>
+                <h1 className="text-2xl font-black text-white sm:text-4xl">بوابتك الجامعية</h1>
+                <p className="mt-3 text-sm font-semibold text-cyan-100/80 sm:text-base">جامعة بني سويف الأهلية</p>
+                <p className="mt-2 text-xs text-slate-400">حاسبات ومعلومات</p>
+                <div className="mt-10 h-1 w-40 overflow-hidden rounded-full bg-cyan-950/80">
+                  <div className="splash-progress h-full w-full rounded-full bg-gradient-to-l from-sky-300 to-cyan-400" />
+                </div>
+                <p className="mt-3 text-[10px] text-slate-500">جاري تجهيز بوابتك...</p>
+              </div>
+            </div>
+          )}
+          <div dir="rtl" className="font-cairo min-h-screen bg-[#030c13] text-gray-200">
           {view === 'home' && <Home />}
           {view === 'subjects' && <Subjects />}
           {view === 'lectures' && <Lectures />}
@@ -1407,7 +1468,8 @@ Civil & Political + Economic & Social rights.` },
               <Icons.CheckCircle className="w-4 h-4" /> {toast.msg || toast}
             </div>
           )}
-        </div>
+          </div>
+        </>
       );
     }
 
