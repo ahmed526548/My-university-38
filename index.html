@@ -55,13 +55,24 @@
   </script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Cairo', sans-serif; background: #030c13; margin: 0; overflow-x: hidden; }
+    body { font-family: 'Cairo', sans-serif; background: #07101f; margin: 0; overflow-x: hidden; color: #e5edf7; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #07151d; }
     ::-webkit-scrollbar-thumb { background: #155e75; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #0e7490; }
-    .glass { background: rgba(8, 26, 38, 0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .glass-strong { background: rgba(5, 17, 27, 0.92); backdrop-filter: blur(24px); }
+    .glass { background: linear-gradient(145deg, rgba(22, 39, 62, .76), rgba(10, 23, 42, .68)); border: 1px solid rgba(186, 220, 255, .10); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .glass-strong { background: rgba(8, 18, 34, .88); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+    .soft-panel { background: linear-gradient(145deg, rgba(24, 43, 68, .78), rgba(10, 23, 42, .72)); border: 1px solid rgba(186, 220, 255, .12); box-shadow: 0 14px 38px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255,255,255,.035); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .soft-surface { background: rgba(15, 31, 52, .68); border: 1px solid rgba(170, 211, 245, .09); }
+    .soft-control { background: rgba(7, 19, 36, .72); border: 1px solid rgba(125, 190, 225, .18); transition: border-color .22s ease, background .22s ease, box-shadow .22s ease; }
+    .soft-control:focus { outline: none; border-color: rgba(125, 211, 252, .58); box-shadow: 0 0 0 3px rgba(56, 189, 248, .08); }
+    .soft-nav-shell { background: rgba(7, 17, 32, .84); border: 1px solid rgba(186, 220, 255, .12); box-shadow: 0 12px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+    .soft-nav-item { min-width: 58px; transition: color .22s ease, background .22s ease, transform .22s ease; }
+    .soft-nav-item[aria-current="page"] { color: #bae6fd; background: rgba(56,189,248,.11); box-shadow: inset 0 0 0 1px rgba(125,211,252,.13); }
+    .soft-nav-item:active { transform: scale(.95); }
+    .soft-chat-user { background: linear-gradient(135deg, rgba(14,116,144,.88), rgba(8,82,111,.84)); border: 1px solid rgba(125,211,252,.18); }
+    .soft-chat-assistant { background: rgba(19, 35, 57, .78); border: 1px solid rgba(186,220,255,.11); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+    .soft-page { background: radial-gradient(ellipse at 50% -15%, rgba(56,189,248,.10), transparent 48%), linear-gradient(180deg,#091629 0%,#07101f 58%,#050c18 100%); }
     .glow-cyan { box-shadow: 0 0 40px rgba(6, 182, 212, 0.15); }
     .glow-text { text-shadow: 0 0 30px rgba(34, 211, 238, 0.4); }
     .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -133,7 +144,7 @@
     }
     .nav-action { transition: color .2s ease, transform .2s ease, background-color .2s ease; }
     .nav-action:active { transform: scale(.92); }
-    .glow-cyan { animation: softGlow 5s ease-in-out infinite; }
+    .glow-cyan { box-shadow: 0 10px 32px rgba(56,189,248,.10); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: .01ms !important;
@@ -918,7 +929,7 @@ Civil & Political + Economic & Social rights.` },
 
       // ==================== VIEWS ====================
       const NavBar = ({ title, onBack, right }) => (
-        <div className="sticky top-0 z-40 glass-strong border-b border-cyan-900/40 px-4 py-3 flex items-center justify-between safe-top">
+        <div className="sticky top-0 z-40 glass-strong border-b border-sky-200/10 px-4 py-3 flex items-center justify-between safe-top">
           <button onClick={onBack} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold text-sm">
             <Icons.ChevronRight className="w-5 h-5" /> {title || 'رجوع'}
           </button>
@@ -1077,7 +1088,7 @@ Civil & Political + Economic & Social rights.` },
       const Lectures = () => {
         const lectures = allLecturesData[selectedSubject?.code] || allLecturesData.default;
         return (
-          <div className="min-h-screen bg-[#030c13] pb-8">
+          <div className="min-h-screen soft-page pb-28">
             <NavBar title="المحاضرات" onBack={() => setView('subjects')}
               right={<button onClick={() => toggleFav(selectedSubject?.code)} className="p-2">
                 <Icons.Star className={`w-5 h-5 ${favorites.includes(selectedSubject?.code) ? 'text-amber-400 fill-amber-400' : 'text-gray-500'}`} />
@@ -1089,7 +1100,7 @@ Civil & Political + Economic & Social rights.` },
                 {lectures.map(lec => {
                   const done = isCompleted(selectedSubject?.code, lec.id);
                   return (
-                    <div key={lec.id} className={`glass border rounded-2xl p-4 ${done ? 'border-green-900/40' : 'border-cyan-900/30'}`}>
+                    <div key={lec.id} className={`glass soft-panel card-hover rounded-2xl p-4 transition-all ${done ? 'border-emerald-400/25' : 'border-sky-200/10'}`}>
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
                           <h4 className="font-bold text-white text-sm leading-snug">{lec.title}</h4>
@@ -1182,14 +1193,14 @@ Civil & Political + Economic & Social rights.` },
       };
 
       const BotView = () => (
-        <div className="min-h-screen bg-[#030c13] flex flex-col pb-2">
+        <div className="min-h-screen soft-page flex flex-col pb-28">
           <NavBar title="المساعد الذكي" onBack={() => setView('home')}
             right={<button onClick={() => setChat([{ id: 1, sender: 'bot', text: 'تم مسح المحادثة. كيف يمكنني مساعدتك؟', time: formatTime() }])} className="p-2 text-gray-500 hover:text-cyan-400"><Icons.Trash className="w-4 h-4" /></button>} />
           <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-3">
             <div className="flex-1 overflow-y-auto py-4 space-y-3 min-h-[50vh]">
               {chat.map(m => (
                 <div key={m.id} className={`flex message-enter ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.sender === 'user' ? 'bg-cyan-700 text-white rounded-br-md' : 'bg-[#102631] border border-cyan-900/30 text-gray-200 rounded-bl-md'}`}>
+                  <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${m.sender === 'user' ? 'soft-chat-user text-white rounded-br-md' : 'soft-chat-assistant text-gray-100 rounded-bl-md'}`}>
                     <div className="flex items-center gap-1.5 mb-1.5 opacity-60 text-[10px]">
                       {m.sender === 'user' ? <Icons.User className="w-3 h-3" /> : <Icons.Bot className="w-3 h-3" />}
                       {m.sender === 'user' ? 'أنت' : 'المساعد'}
@@ -1201,7 +1212,7 @@ Civil & Political + Economic & Social rights.` },
               ))}
               {typing && (
                 <div className="flex justify-start">
-                  <div className="bg-[#102631] border border-cyan-900/30 rounded-2xl px-4 py-3 flex gap-1.5">
+                  <div className="soft-chat-assistant rounded-2xl px-4 py-3 flex gap-1.5">
                     {[0, 0.15, 0.3].map((d, i) => (
                       <span key={i} className="w-2 h-2 bg-cyan-500 rounded-full" style={{ animation: `bounce-dot 1s infinite ${d}s` }} />
                     ))}
@@ -1220,7 +1231,7 @@ Civil & Political + Economic & Social rights.` },
             </div>
             <form onSubmit={send} className="flex gap-2 pb-3 pt-1">
               <input value={input} onChange={e => setInput(e.target.value)} placeholder="اكتب سؤالك..." disabled={typing}
-                className="flex-1 bg-[#07151d] border border-cyan-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-cyan-500" />
+                className="soft-control flex-1 text-white rounded-xl py-3 px-4 text-sm" />
               <button type="submit" disabled={!input.trim() || typing}
                 className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
                 <Icons.Send className="w-5 h-5" style={{ transform: 'scaleX(-1)' }} />
@@ -1256,12 +1267,12 @@ Civil & Political + Economic & Social rights.` },
       const Schedule = () => {
         const data = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
         return (
-          <div className="min-h-screen bg-[#030c13] pb-8">
+          <div className="min-h-screen soft-page pb-28">
             <NavBar title={`جدول ${selectedGroup}`} onBack={() => setView('groups')}
               right={<button onClick={() => setView('groups')} className="text-xs text-cyan-400">تغيير</button>} />
             <div className="px-4 pt-2 space-y-4">
               {data.map((day, i) => (
-                <div key={i} className={`glass border rounded-2xl p-4 ${day.day === today ? 'border-cyan-500/60 glow-cyan' : 'border-cyan-900/30'}`}>
+                <div key={i} className={`glass soft-panel card-hover rounded-2xl p-4 ${day.day === today ? 'border-sky-300/35 glow-cyan' : 'border-sky-100/10'}`}>
                   <div className="flex items-center justify-between mb-3 pb-2 border-b border-cyan-900/20">
                     <h3 className="text-lg font-bold text-cyan-400">{day.day}</h3>
                     {day.day === today && <span className="text-[10px] bg-cyan-600 text-white px-2 py-0.5 rounded-full">اليوم</span>}
@@ -1269,12 +1280,12 @@ Civil & Political + Economic & Social rights.` },
                   {day.slots.length === 0 ? (
                     <p className="text-gray-600 text-sm text-center py-2">لا توجد محاضرات</p>
                   ) : day.slots.map((slot, si) => (
-                    <div key={si} className="bg-[#0b1c25]/80 p-3 rounded-xl border border-cyan-900/15 mb-2 last:mb-0">
+                    <div key={si} className="soft-surface p-3 rounded-xl mb-2 last:mb-0">
                       <div className="flex items-center text-cyan-400 font-bold text-xs mb-2" dir="ltr">
                         <Icons.Clock className="w-3.5 h-3.5 ml-1.5" />{slot.time}
                       </div>
                       {slot.items.map((it, ii) => (
-                        <div key={ii} className="bg-[#102631]/60 p-2.5 rounded-lg mb-1.5 last:mb-0">
+                        <div key={ii} className="bg-slate-950/25 border border-white/5 p-2.5 rounded-lg mb-1.5 last:mb-0">
                           <div className="font-semibold text-white text-sm">{it.subject}</div>
                           <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-gray-500">
                             <span className="flex items-center gap-1"><Icons.User className="w-3 h-3 text-cyan-500/70" />{it.doctor}</span>
@@ -1491,22 +1502,27 @@ Civil & Political + Economic & Social rights.` },
         </div>
       );
 
-      // Bottom Nav (mobile)
-      const BottomNav = () => view !== 'home' ? null : (
-        <div className="fixed bottom-0 inset-x-0 z-30 glass-strong border-t border-cyan-900/40 safe-bottom">
-          <div className="flex justify-around py-2 max-w-lg mx-auto">
+      // Persistent glass navigation across the main portal views
+      const BottomNav = () => (
+        <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
+          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-xl items-center justify-around rounded-2xl px-1.5 py-2">
             {[
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
-              { icon: Icons.BookOpen, label: 'المواد', v: 'subjects' },
+              { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
               { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
-            ].map(({ icon: I, label, v }) => (
-              <button key={v} onClick={() => setView(v)} className={`nav-action flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 ${view === v ? 'text-cyan-400' : 'text-gray-500'}`}>
-                <I className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{label}</span>
-              </button>
-            ))}
-          </div>
+              { icon: Icons.Layers, label: 'المزيد', v: 'settings' },
+            ].map(({ icon: I, label, v }) => {
+              const active = view === v || (v === 'subjects' && view === 'lectures');
+              return (
+                <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => setView(v)}
+                  className={`soft-nav-item flex flex-col items-center justify-center gap-1 rounded-xl px-2.5 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
+                  <I className="h-5 w-5" />
+                  <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
+                </button>
+              );
+            })}
+          </nav>
         </div>
       );
 
@@ -1531,7 +1547,7 @@ Civil & Political + Economic & Social rights.` },
               </div>
             </div>
           )}
-          <div dir="rtl" className="font-cairo min-h-screen bg-[#030c13] text-gray-200">
+          <div dir="rtl" className="portal-root font-cairo min-h-screen soft-page text-gray-200">
           {view === 'home' && <Home />}
           {view === 'subjects' && <Subjects />}
           {view === 'lectures' && <Lectures />}
