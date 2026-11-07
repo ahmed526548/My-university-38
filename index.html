@@ -73,6 +73,9 @@
     .soft-chat-user { background: linear-gradient(135deg, rgba(14,116,144,.88), rgba(8,82,111,.84)); border: 1px solid rgba(125,211,252,.18); }
     .soft-chat-assistant { background: rgba(19, 35, 57, .78); border: 1px solid rgba(186,220,255,.11); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
     .soft-page { background: radial-gradient(ellipse at 50% -15%, rgba(56,189,248,.10), transparent 48%), linear-gradient(180deg,#091629 0%,#07101f 58%,#050c18 100%); }
+    @keyframes softPageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .portal-root > .min-h-screen { padding-bottom: max(7rem, calc(6rem + env(safe-area-inset-bottom))); animation: softPageEnter .32s ease-out both; }
+    @media (prefers-reduced-motion: reduce) { .portal-root > .min-h-screen { animation: none; } }
     .glow-cyan { box-shadow: 0 0 40px rgba(6, 182, 212, 0.15); }
     .glow-text { text-shadow: 0 0 30px rgba(34, 211, 238, 0.4); }
     .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -944,7 +947,7 @@ Civil & Political + Economic & Social rights.` },
           <div className="absolute top-72 -right-24 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-5 sm:pt-8">
-            <header className="home-enter flex items-center justify-between gap-3 rounded-2xl border border-cyan-300/10 bg-[#081923]/80 px-4 py-3 shadow-[0_8px_35px_rgba(6,182,212,0.08)] backdrop-blur-xl">
+            <header className="home-enter soft-panel flex items-center justify-between gap-3 rounded-2xl px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-400/10 text-cyan-300">
                   <Icons.Graduation className="h-6 w-6" />
@@ -964,7 +967,7 @@ Civil & Political + Economic & Social rights.` },
               </div>
             </header>
 
-            <section className="home-hero relative mt-6 overflow-hidden rounded-[2rem] border border-cyan-200/15 bg-gradient-to-br from-[#102b39]/95 via-[#0a1d29]/95 to-[#08141e]/95 px-5 py-9 text-center shadow-[0_18px_70px_rgba(6,182,212,0.12)] sm:mt-8 sm:px-10 sm:py-12">
+            <section className="home-hero soft-panel relative mt-6 overflow-hidden rounded-[2rem] px-5 py-9 text-center sm:mt-8 sm:px-10 sm:py-12">
               <div className="absolute -top-20 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-cyan-300/15 blur-3xl" />
               <div className="relative">
                 <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold text-cyan-200">
@@ -983,7 +986,7 @@ Civil & Political + Economic & Social rights.` },
                 { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختر جروبك لعرض الجدول', v: selectedGroup ? 'schedule' : 'groups', accent: 'from-sky-400/20 to-cyan-500/5' },
               ].map(({ icon: I, label, desc, v, accent, featured }) => (
                 <button key={label} onClick={() => setView(v)}
-                  className={`home-action group relative flex min-h-[150px] flex-col items-center justify-center overflow-hidden rounded-3xl border p-5 text-center transition duration-300 hover:-translate-y-1 ${featured ? 'border-cyan-200/40 bg-gradient-to-br from-cyan-500/25 via-cyan-900/50 to-sky-950/70 shadow-[0_12px_42px_rgba(6,182,212,0.20)] sm:min-h-[178px]' : 'border-white/10 bg-[#10212b]/90 shadow-[0_8px_28px_rgba(0,0,0,0.22)] hover:border-cyan-200/35 hover:shadow-[0_12px_35px_rgba(6,182,212,0.12)]'}`}>
+                  className={`home-action soft-panel group relative flex min-h-[150px] flex-col items-center justify-center overflow-hidden rounded-3xl p-5 text-center transition duration-300 hover:-translate-y-1 ${featured ? 'border-sky-200/30 bg-sky-400/10 shadow-[0_12px_42px_rgba(56,189,248,0.12)] sm:min-h-[178px]' : 'border-white/10 hover:border-sky-200/25 hover:shadow-[0_12px_35px_rgba(56,189,248,0.08)]'}`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-70`} />
                   <div className={`relative mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border ${featured ? 'border-cyan-100/30 bg-cyan-200/15 text-cyan-100' : 'border-cyan-300/15 bg-cyan-400/10 text-cyan-300'} group-hover:scale-110 transition-transform`}>
                     <I className="h-7 w-7" />
@@ -997,7 +1000,7 @@ Civil & Political + Economic & Social rights.` },
             <section className="home-stagger mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {['جروب 1', 'جروب 2'].map((g, i) => (
                 <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }}
-                  className={`home-action flex items-center justify-between rounded-2xl border px-5 py-4 text-right transition hover:-translate-y-0.5 ${selectedGroup === g ? 'border-cyan-300/45 bg-cyan-400/10 shadow-[0_8px_28px_rgba(6,182,212,0.12)]' : 'border-cyan-100/10 bg-[#0b1b25]/85 hover:border-cyan-300/30'}`}>
+                  className={`home-action soft-panel flex items-center justify-between rounded-2xl px-5 py-4 text-right transition hover:-translate-y-0.5 ${selectedGroup === g ? 'border-sky-300/35 bg-sky-400/10 shadow-[0_8px_28px_rgba(56,189,248,0.10)]' : 'border-sky-100/10 hover:border-sky-200/25'}`}>
                   <div className="flex items-center gap-3">
                     <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300"><Icons.Users className="h-6 w-6" /></span>
                     <span><span className="block text-sm font-extrabold text-white">{g}</span><span className="mt-0.5 block text-[10px] text-slate-400">{selectedGroup === g ? 'الجروب المحدد حالياً' : 'عرض جدول المحاضرات'}</span></span>
@@ -1046,12 +1049,12 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const Subjects = () => (
-        <div className="min-h-screen bg-[#030c13] pb-8">
+        <div className="min-h-screen soft-page pb-28">
           <NavBar title="المواد" onBack={() => setView('home')} />
           <div className="px-4 pt-4">
             <div className="relative mb-5">
               <input type="text" placeholder="ابحث عن مادة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[#07151d] border border-cyan-900/50 text-white rounded-xl py-3 px-4 pr-11 focus:outline-none focus:border-cyan-500 text-sm" />
+                className="soft-control w-full text-white rounded-xl py-3 px-4 pr-11 text-sm" />
               <Icons.Search className="absolute right-3.5 top-3.5 w-5 h-5 text-cyan-500" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1060,7 +1063,7 @@ Civil & Political + Economic & Social rights.` },
                 const isFav = favorites.includes(sub.code);
                 return (
                   <div key={sub.id} onClick={() => { setSelectedSubject(sub); setView('lectures'); }}
-                    className="glass border border-cyan-900/30 rounded-2xl p-4 cursor-pointer card-hover relative">
+                    className="glass soft-panel rounded-2xl p-4 cursor-pointer card-hover relative transition-all">
                     <button onClick={e => { e.stopPropagation(); toggleFav(sub.code); }}
                       className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-cyan-900/30">
                       <Icons.Star className={`w-4 h-4 ${isFav ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
