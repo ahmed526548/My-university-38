@@ -1139,7 +1139,14 @@ Civil & Political + Economic & Social rights.` },
           <button onClick={onBack} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold text-sm">
             <Icons.ChevronRight className="w-5 h-5" /> {title || 'رجوع'}
           </button>
-          {right}
+          <div className="flex items-center gap-2">
+            <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع"
+              className="flex h-9 items-center gap-2 rounded-lg border border-sky-300/25 bg-sky-950/50 px-2.5 text-[11px] font-bold text-sky-100 transition hover:border-sky-300/50">
+              <span className="h-3 w-3 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
+              <span>المظهر</span>
+            </button>
+            {right}
+          </div>
         </div>
       );
 
