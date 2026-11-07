@@ -46,8 +46,8 @@
     ::-webkit-scrollbar-track { background: #07151d; }
     ::-webkit-scrollbar-thumb { background: #155e75; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #0e7490; }
-    .glass { background: rgba(17, 0, 0, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-    .glass-strong { background: rgba(10, 0, 0, 0.85); backdrop-filter: blur(24px); }
+    .glass { background: rgba(8, 26, 38, 0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .glass-strong { background: rgba(5, 17, 27, 0.92); backdrop-filter: blur(24px); }
     .glow-cyan { box-shadow: 0 0 40px rgba(6, 182, 212, 0.15); }
     .glow-text { text-shadow: 0 0 30px rgba(34, 211, 238, 0.4); }
     .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -1179,7 +1179,7 @@ Civil & Political + Economic & Social rights.` },
           <div className="relative w-56 h-56 mb-8">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="45" fill="none" stroke="#10212a" strokeWidth="6" />
-              <circle cx="50" cy="50" r="45" fill="none" stroke={timerMode === 'focus' ? '#ef4444' : '#22c55e'} strokeWidth="6"
+              <circle cx="50" cy="50" r="45" fill="none" stroke={timerMode === 'focus' ? '#22d3ee' : '#22c55e'} strokeWidth="6"
                 strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 45}`}
                 strokeDashoffset={`${2 * Math.PI * 45 * (1 - timerSeconds / (timerMode === 'focus' ? 25 * 60 : 5 * 60))}`}
                 className="progress-ring" />
