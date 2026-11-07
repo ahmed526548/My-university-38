@@ -1,0 +1,21 @@
+{
+  "name": "بوابتك الجامعية | BSNU Portal",
+  "short_name": "بوابتي",
+  "description": "بوابة جامعة بني سويف الأهلية - حاسبات ومعلومات",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#030c13",
+  "theme_color": "#07151d",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
