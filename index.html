@@ -10,11 +10,26 @@
   <meta name="apple-mobile-web-app-title" content="بوابتي" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
+    // One-time cleanup of stale installed service workers and cached app files.
+    // This prevents older app-shell versions from masking newly deployed HTML.
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js?v=3", { updateViaCache: "none" }).then((registration) => registration.update()).catch((error) => {
-          console.warn("تعذر تفعيل وضع التطبيق:", error);
-        });
+      window.addEventListener("load", async () => {
+        const resetKey = "bsnu-portal-cache-reset-v1";
+        if (sessionStorage.getItem(resetKey) === "done") return;
+        sessionStorage.setItem(resetKey, "done");
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+          if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+          }
+          const freshUrl = new URL(window.location.href);
+          freshUrl.searchParams.set("fresh", "1");
+          window.location.replace(freshUrl.href);
+        } catch (error) {
+          console.warn("تعذر تنظيف النسخة القديمة:", error);
+        }
       });
     }
   </script>
