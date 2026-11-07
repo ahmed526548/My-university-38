@@ -445,7 +445,171 @@
       }
       .portal-root .card-hover { transition:none !important; }
     }
-</style>
+
+    /* PREMIUM NAVY REDESIGN — unified visual language across every portal view */
+    :root {
+      --premium-bg:#071321;
+      --premium-deep:#040c17;
+      --premium-surface:rgba(13,29,49,.92);
+      --premium-surface-2:rgba(10,23,40,.96);
+      --premium-line:rgba(125,181,220,.15);
+      --premium-line-strong:rgba(91,190,245,.30);
+      --premium-text:#edf6ff;
+      --premium-muted:#91a8bf;
+      --premium-accent:#66c8f5;
+      --premium-accent-soft:rgba(56,189,248,.12);
+    }
+    html,body,#root { background:var(--premium-bg) !important; }
+    body {
+      color:var(--premium-text) !important;
+      background:
+        radial-gradient(ellipse at 12% 0%,rgba(31,111,166,.16),transparent 38%),
+        radial-gradient(ellipse at 88% 28%,rgba(28,89,137,.11),transparent 34%),
+        linear-gradient(160deg,#08182a 0%,#071321 52%,#040b15 100%) !important;
+      background-attachment:fixed !important;
+    }
+    .portal-root { color:var(--premium-text) !important; background:transparent !important; }
+    .portal-root .soft-page,
+    .portal-root > .min-h-screen {
+      background:linear-gradient(180deg,rgba(9,26,45,.98),rgba(5,14,26,.99)) !important;
+    }
+    .portal-root .glass,
+    .portal-root .glass-strong,
+    .portal-root .soft-panel,
+    .portal-root .soft-surface,
+    .portal-root .soft-nav-shell,
+    .portal-root .soft-chat-assistant {
+      background:linear-gradient(145deg,rgba(17,39,63,.94),rgba(8,21,38,.96)) !important;
+      border:1px solid var(--premium-line) !important;
+      box-shadow:0 12px 30px rgba(0,0,0,.20),inset 0 1px 0 rgba(230,244,255,.045) !important;
+      -webkit-backdrop-filter:blur(12px) saturate(120%) !important;
+      backdrop-filter:blur(12px) saturate(120%) !important;
+    }
+    .portal-root .soft-control,
+    .portal-root input,
+    .portal-root textarea,
+    .portal-root select {
+      background:rgba(4,14,27,.86) !important;
+      color:var(--premium-text) !important;
+      border:1px solid var(--premium-line-strong) !important;
+      border-radius:12px;
+    }
+    .portal-root input::placeholder,.portal-root textarea::placeholder { color:#71879d !important; }
+    .portal-root button:focus-visible,.portal-root a:focus-visible {
+      outline:2px solid var(--premium-accent) !important; outline-offset:3px;
+    }
+    .portal-root [class*="text-cyan-"],.portal-root [class*="text-sky-"] { color:var(--premium-accent) !important; }
+    .portal-root [class*="border-cyan-"],.portal-root [class*="border-sky-"] { border-color:var(--premium-line-strong) !important; }
+    .portal-root .soft-nav-shell {
+      max-width:440px !important;
+      border-radius:20px !important;
+      padding:8px 10px !important;
+      background:rgba(5,16,30,.96) !important;
+      border-color:rgba(104,190,237,.24) !important;
+      box-shadow:0 14px 40px rgba(0,0,0,.42) !important;
+    }
+    .portal-root .soft-nav-item { min-height:52px; border-radius:14px !important; gap:5px !important; }
+    .portal-root .soft-nav-item[aria-current="page"] {
+      color:#e5f6ff !important;
+      background:linear-gradient(145deg,rgba(35,133,190,.24),rgba(56,189,248,.09)) !important;
+      box-shadow:inset 0 0 0 1px rgba(103,200,245,.20) !important;
+    }
+    .portal-root .soft-nav-item svg { width:19px !important;height:19px !important; }
+    .portal-root .soft-nav-item span { font-size:10px !important; }
+    .portal-root .developer-footer > div { background:rgba(5,16,30,.78) !important; border-color:var(--premium-line) !important; }
+
+    /* Home dashboard */
+    .premium-home { isolation:isolate; background:transparent !important; }
+    .premium-container { max-width:1160px !important; }
+    .premium-ambient { position:absolute; pointer-events:none; border-radius:9999px; filter:blur(70px); opacity:.20; z-index:0; }
+    .premium-ambient-one { width:280px;height:280px;top:90px;left:-120px;background:#168ac4; }
+    .premium-ambient-two { width:250px;height:250px;top:430px;right:-130px;background:#155a91; }
+    .premium-header {
+      background:rgba(8,23,40,.82) !important;
+      border:1px solid rgba(128,190,225,.18) !important;
+      box-shadow:0 12px 32px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.04) !important;
+      backdrop-filter:blur(14px);
+    }
+    .premium-brand-mark {
+      color:#9bdfff;
+      background:linear-gradient(145deg,rgba(56,189,248,.20),rgba(15,75,116,.18));
+      border:1px solid rgba(112,201,244,.25);
+      box-shadow:0 8px 24px rgba(14,116,174,.12);
+    }
+    .premium-header .home-university-name { color:#8ccce9 !important; }
+    .premium-header h1 { color:#f2f8ff !important; }
+    .premium-icon-button {
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      min-width:40px;height:40px;padding:0 11px;border-radius:12px;
+      color:#b7d9ed;background:rgba(23,65,96,.30);
+      border:1px solid rgba(114,181,220,.20);
+      transition:background .18s ease,border-color .18s ease,transform .18s ease;
+    }
+    .premium-icon-button:hover { background:rgba(39,111,157,.24);border-color:rgba(117,204,244,.42); }
+    .premium-icon-button:active { transform:scale(.96); }
+    .premium-welcome {
+      position:relative;
+      background:
+        radial-gradient(ellipse at 82% 0%,rgba(49,154,208,.20),transparent 44%),
+        linear-gradient(125deg,rgba(17,48,76,.98),rgba(8,24,43,.98)) !important;
+      border:1px solid rgba(112,193,235,.22) !important;
+      box-shadow:0 22px 54px rgba(0,0,0,.25),inset 0 1px 0 rgba(236,248,255,.06) !important;
+    }
+    .premium-eyebrow { color:#a9e4ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.18); }
+    .premium-highlight { color:#8bd8ff; }
+    .premium-primary-cta { color:#052039;background:linear-gradient(135deg,#8bdcff,#42b8ed);box-shadow:0 8px 22px rgba(56,189,248,.18); }
+    .premium-primary-cta:hover { filter:brightness(1.06); }
+    .premium-secondary-cta { color:#d5ecfa;background:rgba(9,28,48,.58);border:1px solid rgba(137,197,229,.24); }
+    .premium-progress-card { background:rgba(4,17,32,.50);border:1px solid rgba(140,202,235,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+    .premium-kicker { color:#6eaed0;font-size:9px;font-weight:800;letter-spacing:.16em; }
+    .premium-shortcut {
+      min-height:94px;
+      background:linear-gradient(145deg,rgba(17,43,68,.94),rgba(8,23,41,.96));
+      border:1px solid rgba(119,177,211,.16);
+      box-shadow:0 10px 26px rgba(0,0,0,.14);
+      transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    }
+    .premium-shortcut:hover { transform:translateY(-2px);border-color:rgba(112,199,241,.38);background:linear-gradient(145deg,rgba(20,54,82,.96),rgba(8,25,45,.98)); }
+    .premium-shortcut-icon { color:#8bd8ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.16); }
+    .premium-panel {
+      background:linear-gradient(145deg,rgba(15,35,57,.94),rgba(8,21,38,.97));
+      border:1px solid rgba(119,177,211,.15);
+      box-shadow:0 12px 30px rgba(0,0,0,.16);
+    }
+    .premium-date-chip,.premium-time-chip { color:#a9e4ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.15); }
+    .premium-lecture-row { background:rgba(3,15,28,.38);border:1px solid rgba(126,182,214,.10); }
+    .premium-empty-state { color:#9bb2c7;background:rgba(4,16,29,.46);border:1px dashed rgba(113,174,210,.24); }
+    .premium-group-choice { background:rgba(4,17,31,.52);border:1px solid rgba(126,182,214,.14); }
+    .premium-group-choice.is-selected { background:rgba(33,115,164,.18);border-color:rgba(112,199,241,.40); }
+    .premium-favorite-chip { color:#b9e8ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.18); }
+    .premium-tool-tile { min-height:78px;background:rgba(13,32,52,.86);border:1px solid rgba(119,177,211,.14);transition:border-color .18s ease,background .18s ease; }
+    .premium-tool-tile:hover { background:rgba(20,53,80,.90);border-color:rgba(112,199,241,.34); }
+    @media (max-width:640px) {
+      .premium-container { padding-left:14px !important;padding-right:14px !important; }
+      .premium-header { padding:9px 10px !important;gap:7px !important; }
+      .premium-brand-mark { width:38px !important;height:38px !important; }
+      .premium-icon-button { min-width:35px !important;width:35px !important;height:35px !important;padding:0 !important;border-radius:11px !important; }
+      .premium-icon-button .home-theme-label { display:none !important; }
+      .premium-welcome { border-radius:24px !important; }
+      .premium-progress-card { max-width:none !important; }
+      .premium-shortcut { min-height:78px !important;padding:12px !important; }
+      .premium-shortcut-icon { width:42px !important;height:42px !important; }
+      .premium-ambient { filter:blur(45px);opacity:.12; }
+    }
+    @media (max-width:360px) {
+      .premium-container { padding-left:10px !important;padding-right:10px !important; }
+      .premium-header .home-university-name { font-size:8px !important; }
+      .premium-header h1 { font-size:14px !important; }
+    }
+    @media (max-width:768px) {
+      .portal-root .glass,.portal-root .glass-strong,.portal-root .soft-panel,.portal-root .soft-surface,.portal-root .soft-nav-shell,.portal-root .soft-chat-assistant {
+        -webkit-backdrop-filter:none !important;backdrop-filter:none !important;
+      }
+      .premium-ambient { display:none; }
+      .premium-shortcut:hover { transform:none; }
+    }
+
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -1244,114 +1408,135 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const Home = () => (
-        <div className="relative min-h-screen overflow-hidden pb-28">
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(8,145,178,0.20),transparent_48%),linear-gradient(180deg,#071923_0%,#030c13_58%,#02070b_100%)]" />
-          <div className="absolute -top-28 -left-20 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none" />
-          <div className="absolute top-72 -right-24 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-5 sm:pt-8">
-            <header className="home-enter soft-panel flex items-center justify-between gap-3 rounded-2xl px-4 py-3">
+        <div className="premium-home relative min-h-screen overflow-hidden pb-28">
+          <div className="premium-ambient premium-ambient-one" />
+          <div className="premium-ambient premium-ambient-two" />
+          <div className="premium-container relative z-10 mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8">
+            <header className="premium-header home-enter flex items-center justify-between gap-3 rounded-2xl px-4 py-3 sm:px-5">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-400/10 text-cyan-300">
+                <div className="premium-brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
                   <Icons.Graduation className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="home-university-name text-[10px] sm:text-[11px] font-semibold text-cyan-300/80">جامعة بني سويف الأهلية</p>
-                  <h1 className="truncate text-base sm:text-lg font-extrabold text-white">بوابتك الجامعية</h1>
+                  <p className="home-university-name text-[10px] font-semibold sm:text-[11px]">جامعة بني سويف الأهلية</p>
+                  <h1 className="truncate text-base font-black sm:text-lg">بوابتك الجامعية</h1>
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع"
-                  className="home-theme-toggle flex h-10 items-center gap-2 rounded-xl border border-sky-300/25 bg-sky-950/50 px-2.5 text-xs font-bold text-sky-100 transition hover:border-sky-300/50">
+                <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع" className="premium-icon-button home-theme-toggle">
                   <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
-                  <span>المظهر</span>
+                  <span className="home-theme-label">المظهر</span>
                 </button>
-                <button onClick={() => setShowSearch(true)} aria-label="بحث" className="home-header-action flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
-                  <Icons.Search className="h-5 w-5" />
-                </button>
-                <button onClick={() => setView('settings')} aria-label="الإعدادات" className="home-header-action flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-950/50 text-cyan-300 transition hover:border-cyan-300/40 hover:bg-cyan-900/40">
-                  <Icons.Settings className="h-5 w-5" />
-                </button>
+                <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
+                <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
               </div>
             </header>
 
-            <section className="home-hero soft-panel relative mt-6 overflow-hidden rounded-[2rem] px-5 py-9 text-center sm:mt-8 sm:px-10 sm:py-12">
-              <div className="absolute -top-20 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-cyan-300/15 blur-3xl" />
-              <div className="relative">
-                <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-200/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold text-cyan-200">
-                  <Icons.Sparkles className="h-3.5 w-3.5" /> أهلاً بك في رحلتك الجامعية
-                </span>
-                <h2 className="text-2xl font-black leading-tight text-white sm:text-4xl">مرحباً بك في بوابتك الجامعية</h2>
-                <p className="mt-3 text-sm font-semibold text-cyan-100/80 sm:text-lg">حاسبات ومعلومات</p>
-                <p className="mx-auto mt-2 max-w-xl text-xs leading-6 text-slate-400 sm:text-sm">كل أدواتك الدراسية ومحاضراتك وجدولك في مكان واحد</p>
-              </div>
-            </section>
-
-            <section className="home-stagger relative z-10 -mt-3 grid grid-cols-1 gap-3 sm:-mt-5 sm:grid-cols-3 sm:gap-4">
-              {[
-                { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', desc: 'المواد والملخصات والشرح', v: 'subjects', accent: 'from-sky-400/20 to-cyan-500/5' },
-                { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', accent: 'from-cyan-300/30 to-sky-500/10', featured: true },
-                { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختر جروبك لعرض الجدول', v: selectedGroup ? 'schedule' : 'groups', accent: 'from-sky-400/20 to-cyan-500/5' },
-              ].map(({ icon: I, label, desc, v, accent, featured }) => (
-                <button key={label} onClick={() => setView(v)}
-                  className={`home-action soft-panel group relative flex min-h-[138px] flex-col items-center justify-center overflow-hidden rounded-2xl p-4 text-center transition duration-300 hover:-translate-y-1 ${featured ? 'border-sky-200/30 bg-sky-400/10 shadow-[0_12px_42px_rgba(56,189,248,0.12)] sm:min-h-[160px]' : 'border-white/10 hover:border-sky-200/25 hover:shadow-[0_12px_35px_rgba(56,189,248,0.08)]'}`}>
-                  <div className={`absolute inset-0 bg-gradient-to-br ${accent} opacity-70`} />
-                  <div className={`relative mb-2.5 flex h-12 w-12 items-center justify-center rounded-xl border ${featured ? 'border-cyan-100/30 bg-cyan-200/15 text-cyan-100' : 'border-cyan-300/15 bg-cyan-400/10 text-cyan-300'} group-hover:scale-105 transition-transform`}>
-                    <I className="h-6 w-6" />
+            <section className="premium-welcome home-hero mt-5 overflow-hidden rounded-[1.8rem] p-5 sm:mt-7 sm:p-8 lg:p-10">
+              <div className="grid items-center gap-7 lg:grid-cols-[1.4fr_.8fr]">
+                <div className="relative">
+                  <span className="premium-eyebrow mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold sm:text-xs">
+                    <Icons.Sparkles className="h-3.5 w-3.5" /> مساحتك الدراسية في مكان واحد
+                  </span>
+                  <h2 className="max-w-2xl text-2xl font-black leading-[1.45] text-white sm:text-3xl lg:text-4xl">كل يوم دراسي يبدأ <span className="premium-highlight">بخطوة منظمة.</span></h2>
+                  <p className="mt-3 max-w-xl text-xs leading-7 text-slate-300 sm:text-sm">تابع محاضراتك، راجع موادك، واعرف جدولك بسهولة من بوابتك الجامعية.</p>
+                  <div className="mt-6 flex flex-wrap gap-2.5">
+                    <button onClick={() => setView('subjects')} className="premium-primary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-extrabold sm:text-sm">
+                      <Icons.BookOpen className="h-4 w-4" /> تصفح المحاضرات <Icons.ChevronRight className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setView('bot')} className="premium-secondary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold sm:text-sm">
+                      <Icons.Bot className="h-4 w-4" /> اسأل المساعد
+                    </button>
                   </div>
-                  <span className="relative text-base font-extrabold text-white">{label}</span>
-                  <span className="relative mt-1 text-[11px] text-slate-400">{desc}</span>
-                </button>
-              ))}
-            </section>
-
-            <section className="home-stagger mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {['جروب 1', 'جروب 2'].map((g, i) => (
-                <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }}
-                  className={`home-action soft-panel flex items-center justify-between rounded-2xl px-5 py-4 text-right transition hover:-translate-y-0.5 ${selectedGroup === g ? 'border-sky-300/35 bg-sky-400/10 shadow-[0_8px_28px_rgba(56,189,248,0.10)]' : 'border-sky-100/10 hover:border-sky-200/25'}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300"><Icons.Users className="h-6 w-6" /></span>
-                    <span><span className="block text-sm font-extrabold text-white">{g}</span><span className="mt-0.5 block text-[10px] text-slate-400">{selectedGroup === g ? 'الجروب المحدد حالياً' : 'عرض جدول المحاضرات'}</span></span>
+                </div>
+                <div className="premium-progress-card relative mx-auto w-full max-w-xs rounded-2xl p-5 lg:mx-0 lg:justify-self-end">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300">إنجازك الدراسي</span>
+                    <Icons.Trophy className="h-5 w-5 text-sky-300" />
                   </div>
-                  <Icons.ChevronRight className="h-5 w-5 text-cyan-300" />
-                </button>
-              ))}
-            </section>
-
-            <section className="mt-5 rounded-2xl border border-cyan-200/10 bg-[#0a1a24]/85 p-4 shadow-[0_8px_30px_rgba(6,182,212,0.06)]">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2"><Icons.Trophy className="h-5 w-5 text-cyan-300" /><span className="text-sm font-bold text-white">تقدمك الدراسي</span></div>
-                <span className="text-lg font-extrabold text-cyan-300">{overallProgress.percent}%</span>
+                  <div className="mt-4 flex items-center gap-4">
+                    <div className="relative h-24 w-24 shrink-0">
+                      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,.16)" strokeWidth="8" />
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" strokeWidth="8" strokeLinecap="round" strokeDasharray={263.9} strokeDashoffset={263.9*(1-overallProgress.percent/100)} />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-xl font-black text-white">{overallProgress.percent}%</div>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-extrabold text-white">{overallProgress.totalDone} محاضرة</p>
+                      <p className="mt-1 text-[11px] leading-5 text-slate-400">من أصل {overallProgress.totalReady} محاضرة متاحة</p>
+                      <p className="mt-2 text-[10px] font-bold text-sky-300">استمر، أنت بتتقدم!</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mb-2 h-2 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full bg-gradient-to-l from-sky-400 to-cyan-300 transition-all duration-700" style={{ width: `${overallProgress.percent}%` }} /></div>
-              <p className="text-[11px] text-slate-400">{overallProgress.totalDone} من {overallProgress.totalReady} محاضرة مكتملة</p>
             </section>
 
-            <section className="mt-4 rounded-2xl border border-cyan-200/10 bg-[#0a1a24]/85 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2"><Icons.Clock className="h-4 w-4 text-cyan-300" /><h3 className="text-sm font-bold text-white">محاضرات اليوم ({today})</h3></div>
-                {selectedGroup && <span className="rounded-full bg-cyan-400/10 px-2 py-1 text-[10px] text-cyan-200">{selectedGroup}</span>}
+            <section className="mt-7">
+              <div className="premium-section-heading mb-3 flex items-end justify-between">
+                <div><p className="premium-kicker">QUICK ACCESS</p><h3 className="mt-1 text-base font-black text-white sm:text-lg">ابدأ من هنا</h3></div>
+                <span className="text-[10px] text-slate-500">اختصاراتك الأساسية</span>
               </div>
-              {!selectedGroup ? (
-                <button onClick={() => setView('groups')} className="w-full rounded-xl border border-dashed border-cyan-300/20 py-4 text-xs text-cyan-200">اختار جروبك لعرض جدولك</button>
-              ) : todaySch && todaySch.slots.length ? (
-                <div className="space-y-2">{todaySch.slots.slice(0, 3).map((s, i) => <div key={i} className="rounded-xl border border-cyan-200/10 bg-[#102631]/70 p-3"><div className="mb-1 text-xs font-bold text-cyan-300" dir="ltr">{s.time}</div>{s.items.map((it, j) => <div key={j} className="text-xs text-slate-300">{it.subject} <span className="text-slate-500">• {it.hall}</span></div>)}</div>)}</div>
-              ) : <p className="py-3 text-center text-xs text-slate-400">لا توجد محاضرات اليوم 🎉</p>}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', desc: 'المواد والملخصات والشرح', v: 'subjects', number: '01' },
+                  { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', number: '02' },
+                  { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: selectedGroup ? 'schedule' : 'groups', number: '03' },
+                ].map(({ icon: I, label, desc, v, number }) => (
+                  <button key={v} onClick={() => setView(v)} className="premium-shortcut group flex items-center gap-3 rounded-2xl p-4 text-right">
+                    <span className="premium-shortcut-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"><I className="h-6 w-6" /></span>
+                    <span className="min-w-0 flex-1"><span className="block text-sm font-extrabold text-white">{label}</span><span className="mt-1 block text-[10px] text-slate-400">{desc}</span></span>
+                    <span className="self-start text-[10px] font-bold tracking-widest text-sky-300/60">{number}</span>
+                  </button>
+                ))}
+              </div>
             </section>
 
-            <section className="mt-4 rounded-2xl border border-cyan-200/10 bg-[#0a1a24]/85 p-4">
-              <div className="mb-3 flex items-center gap-2"><Icons.Star className="h-4 w-4 text-cyan-300" /><h3 className="text-sm font-bold text-white">المواد المفضلة</h3></div>
-              {favorites.length ? <div className="flex flex-wrap gap-2">{favorites.map(c => { const sub = subjectsData.find(s => s.code === c); return <button key={c} onClick={() => { setSelectedSubject(sub); setView('lectures'); }} className="rounded-full border border-cyan-200/15 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100 hover:bg-cyan-400/20">{sub?.arabicName || c}</button>; })}</div> : <p className="text-xs text-slate-400">أضف المواد المهمة إلى المفضلة لتصل إليها بسرعة</p>}
+            <section className="mt-7 grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+              <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <div><p className="premium-kicker">YOUR SCHEDULE</p><h3 className="mt-1 text-sm font-black text-white">محاضرات اليوم</h3></div>
+                  <span className="premium-date-chip rounded-lg px-3 py-1.5 text-[10px] font-bold">{today}</span>
+                </div>
+                {!selectedGroup ? (
+                  <button onClick={() => setView('groups')} className="premium-empty-state w-full rounded-xl px-4 py-5 text-xs">اختار جروبك عشان يظهر جدول محاضراتك <span className="mr-1">←</span></button>
+                ) : todaySch && todaySch.slots.length ? (
+                  <div className="space-y-2">{todaySch.slots.slice(0,3).map((slot,i) => (
+                    <div key={i} className="premium-lecture-row flex gap-3 rounded-xl p-3">
+                      <div className="premium-time-chip flex min-w-[76px] items-center justify-center rounded-lg px-2 py-2 text-[11px] font-extrabold" dir="ltr">{slot.time}</div>
+                      <div className="min-w-0 flex-1">{slot.items.map((it,j) => <div key={j} className={j?'mt-2 border-t border-white/5 pt-2':''}><p className="text-xs font-bold text-white">{it.subject}</p><p className="mt-1 text-[10px] text-slate-400">{it.doctor} <span className="mx-1 text-slate-600">•</span>{it.hall}</p></div>)}</div>
+                    </div>
+                  ))}</div>
+                ) : <p className="premium-empty-state rounded-xl px-4 py-6 text-center text-xs">مفيش محاضرات مسجلة لليوم ده 🎉</p>}
+                <button onClick={() => setView(selectedGroup ? 'schedule' : 'groups')} className="mt-4 text-[11px] font-bold text-sky-300">عرض الجدول بالكامل ←</button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between"><div><p className="premium-kicker">MY GROUP</p><h3 className="mt-1 text-sm font-black text-white">جروب المحاضرات</h3></div><Icons.Users className="h-5 w-5 text-sky-300" /></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['جروب 1','جروب 2'].map((g,i) => <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }} className={`premium-group-choice rounded-xl px-3 py-3 text-right ${selectedGroup===g?'is-selected':''}`}><span className="block text-xs font-extrabold text-white">{g}</span><span className="mt-1 block text-[9px] text-slate-400">{selectedGroup===g?'محدد حالياً':'عرض الجدول'}</span></button>)}
+                  </div>
+                </div>
+                <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between"><div><p className="premium-kicker">FAVORITES</p><h3 className="mt-1 text-sm font-black text-white">المواد المفضلة</h3></div><Icons.Star className="h-5 w-5 text-sky-300" /></div>
+                  {favorites.length ? <div className="flex flex-wrap gap-2">{favorites.map(code => { const sub=subjectsData.find(x=>x.code===code); return <button key={code} onClick={() => { if(sub){setSelectedSubject(sub);setView('lectures');} }} className="premium-favorite-chip rounded-full px-3 py-1.5 text-[10px] font-bold">{sub?.arabicName||code}</button>; })}</div> : <p className="text-[11px] leading-6 text-slate-400">المواد اللي بتضيفها للمفضلة هتظهر هنا علشان توصلها بسرعة.</p>}
+                </div>
+              </div>
             </section>
 
-            <section className="mt-4 grid grid-cols-3 gap-2">
-              {[
-                { icon: Icons.Timer, label: 'مؤقت دراسة', v: 'timer' },
-                { icon: Icons.Calculator, label: 'حاسبة GPA', v: 'gpa' },
-                { icon: Icons.Bell, label: 'الإعلانات', v: 'announcements' },
-              ].map(({ icon: I, label, v }) => <button key={v} onClick={() => setView(v)} className="flex flex-col items-center gap-2 rounded-xl border border-cyan-200/10 bg-[#0b1b25]/85 px-2 py-3 text-cyan-200 transition hover:border-cyan-300/30"><I className="h-5 w-5" /><span className="text-[10px] font-semibold text-slate-300">{label}</span></button>)}
+            <section className="mt-7">
+              <div className="premium-section-heading mb-3"><p className="premium-kicker">STUDY TOOLS</p><h3 className="mt-1 text-base font-black text-white">أدوات تساعدك تذاكر</h3></div>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {[
+                  { icon: Icons.Timer, label: 'مؤقت الدراسة', v: 'timer' },
+                  { icon: Icons.Calculator, label: 'حساب GPA', v: 'gpa' },
+                  { icon: Icons.Bell, label: 'الإعلانات', v: 'announcements' },
+                  { icon: Icons.Note, label: 'ملاحظاتي', v: 'notes' },
+                ].map(({icon:I,label,v}) => <button key={v} onClick={() => setView(v)} className="premium-tool-tile flex flex-col items-center justify-center gap-2 rounded-xl px-2 py-4"><I className="h-5 w-5 text-sky-300" /><span className="text-[10px] font-bold text-slate-300">{label}</span></button>)}
+              </div>
             </section>
-            <footer className="mt-8 text-center text-[10px] text-slate-600">جامعة بني سويف الأهلية • 2026</footer>
+            <p className="mt-8 text-center text-[10px] text-slate-600">جامعة بني سويف الأهلية • 2026</p>
           </div>
         </div>
       );
