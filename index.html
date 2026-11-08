@@ -2199,10 +2199,10 @@ Civil & Political + Economic & Social rights.` },
             <Icons.ChevronRight className="w-5 h-5" /> {title || 'رجوع'}
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={cyclePortalTheme} aria-label="لون الموقع الحالي: تغيير لوحة الألوان" title="غيّر لون الموقع بالكامل؛ الخلفيات والأيقونات والإضاءة تتغير معًا"
+            <button onClick={cyclePortalTheme} aria-label="تغيير المظهر" title="تغيير مظهر الموقع بالكامل: الألوان والخلفيات والأيقونات والإضاءة"
               className="flex h-9 items-center gap-2 rounded-lg border border-sky-300/25 bg-sky-950/50 px-2.5 text-[11px] font-bold text-sky-100 transition hover:border-sky-300/50">
               <span className="h-3 w-3 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'burgundy' ? '#9f3658' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
-              <span className="home-theme-label">لون الموقع</span>
+              <span className="home-theme-label">المظهر</span>
             </button>
             {right}
           </div>
@@ -2225,9 +2225,9 @@ Civil & Political + Economic & Social rights.` },
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button onClick={cyclePortalTheme} aria-label="لون الموقع الحالي: تغيير لوحة الألوان" title="غيّر لون الموقع بالكامل؛ الخلفيات والأيقونات والإضاءة تتغير معًا" className="premium-icon-button home-theme-toggle">
+                <button onClick={cyclePortalTheme} aria-label="تغيير المظهر" title="تغيير مظهر الموقع بالكامل: الألوان والخلفيات والأيقونات والإضاءة" className="premium-icon-button home-theme-toggle">
                   <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'burgundy' ? '#f09ab7' : portalTheme === 'violet' ? '#b49aff' : portalTheme === 'emerald' ? '#4adea8' : '#ffd166' }} />
-                  <span className="home-theme-label">لون الموقع</span>
+                  <span className="home-theme-label">المظهر</span>
                 </button>
                 <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
                 <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
