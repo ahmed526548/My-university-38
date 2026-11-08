@@ -1359,23 +1359,18 @@ Civil & Political + Economic & Social rights.` },
       const [studentAuthMode, setStudentAuthMode] = useState('signin');
       const [studentAuthMessage, setStudentAuthMessage] = useState('');
 
-      // Each student chooses an academic track once; the choice is stored per account.
+      // The academic track is selected for the current app visit only.
+      // It intentionally resets whenever the app is opened/reloaded.
       const [selectedProgram, setSelectedProgram] = useState('');
       useEffect(() => {
-        const userId = studentSession?.user?.id;
-        if (!userId) { setSelectedProgram(''); return; }
-        setSelectedProgram(localStorage.getItem('studentProgram:' + userId) || '');
+        setSelectedProgram('');
       }, [studentSession?.user?.id]);
       const chooseStudentProgram = (program) => {
-        const userId = studentSession?.user?.id;
-        if (!userId) return;
-        localStorage.setItem('studentProgram:' + userId, program);
+        if (!studentSession?.user?.id) return;
         setSelectedProgram(program);
         if (program === 'ai') setView('home');
       };
       const changeStudentProgram = () => {
-        const userId = studentSession?.user?.id;
-        if (userId) localStorage.removeItem('studentProgram:' + userId);
         setSelectedProgram('');
       };
 
