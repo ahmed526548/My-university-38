@@ -1,4 +1,4 @@
-const CACHE_NAME = "bsnu-portal-v19";
+const CACHE_NAME = "bsnu-portal-v20";
 const APP_SHELL = [
   "./",
   "./index.html",
