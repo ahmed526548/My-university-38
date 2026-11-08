@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>إدارة بوابتي | لوحة الأدمن</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js'"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js'"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.4/babel.min.js'"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -620,7 +620,7 @@
   <script>document.documentElement.classList.add('admin-standalone');</script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root"><div id="admin-boot-fallback" dir="rtl" style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#061321;color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center"><div style="max-width:420px"><h1 style="font-size:22px;font-weight:900">جاري تحميل لوحة الأدمن...</h1><p style="margin-top:10px;color:#94a3b8;font-size:14px">لو استمرت الشاشة دي، أعد تحميل الصفحة بعد لحظات.</p></div></div></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
