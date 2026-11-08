@@ -633,6 +633,7 @@
   <div id="root"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
@@ -1549,6 +1550,7 @@ Civil & Political + Economic & Social rights.` },
 
       const [voiceListening, setVoiceListening] = useState(false);
       const [voiceSpeaking, setVoiceSpeaking] = useState(false);
+      const [pdfBusy, setPdfBusy] = useState(false);
       const recognitionRef = useRef(null);
 
       const send = async (e, directText = null) => {
@@ -1586,6 +1588,29 @@ Civil & Political + Economic & Social rights.` },
           setTyping(false);
         }
       };
+
+      const analyzePdf = async (file) => {
+        if (!file || file.type !== 'application/pdf') return showToast('اختار ملف PDF صحيح', 'error');
+        if (!window.pdfjsLib) return showToast('مكتبة PDF غير متاحة. افتح الصفحة بالإنترنت أولاً.', 'error');
+        setPdfBusy(true);
+        try {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+          let extracted = '';
+          for (let pageNo = 1; pageNo <= Math.min(pdf.numPages, 12); pageNo++) {
+            const page = await pdf.getPage(pageNo);
+            const content = await page.getTextContent();
+            extracted += '\n' + content.items.map(item => item.str).join(' ');
+            if (extracted.length >= 18000) break;
+          }
+          extracted = extracted.trim().slice(0, 18000);
+          if (!extracted) throw new Error('الملف لا يحتوي على نص قابل للاستخراج. الملفات المصورة تحتاج OCR.');
+          send(null, 'حلّل ملف المحاضرة التالي: اكتب ملخصاً منظماً بالعربية، واشرح أهم المفاهيم ببساطة، واستخرج المصطلحات والتعريفات، ثم ضع 5 أسئلة مراجعة مع إجاباتها. اسم الملف: ' + file.name + '\n\n' + extracted);
+        } catch (error) {
+          showToast(error?.message || 'تعذر قراءة ملف PDF', 'error');
+        } finally { setPdfBusy(false); }
+      };
+
 
       const startVoiceInput = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2103,7 +2128,8 @@ Civil & Political + Economic & Social rights.` },
               ))}
             </div>
             <div className="flex items-center gap-2 pb-2">
-              <button type="button" onClick={startVoiceInput} disabled={typing || voiceListening} className={`flex-1 rounded-xl border px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-2 ${voiceListening ? 'bg-red-500/15 border-red-400/40 text-red-300' : 'bg-cyan-950/40 border-cyan-800/40 text-cyan-200'}`}>
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/10 px-3 py-2.5 text-xs font-bold text-violet-200">📄 {pdfBusy ? 'جاري قراءة الملف...' : 'ارفع PDF لشرحه وتلخيصه'}<input type="file" accept="application/pdf" className="hidden" disabled={pdfBusy || typing} onChange={e => { const file=e.target.files?.[0]; e.target.value=''; if(file) analyzePdf(file); }} /></label>
+              <button type="button" onClick={startVoiceInput> disabled={typing || voiceListening} className={`flex-1 rounded-xl border px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-2 ${voiceListening ? 'bg-red-500/15 border-red-400/40 text-red-300' : 'bg-cyan-950/40 border-cyan-800/40 text-cyan-200'}`}>
                 <span>{voiceListening ? '●' : '🎙️'}</span>{voiceListening ? 'جاري الاستماع...' : 'تحدث مع المساعد'}
               </button>
               <button type="button" onClick={speakLastAnswer} className="rounded-xl border border-cyan-800/40 bg-slate-900/70 text-cyan-200 px-3 py-2.5 text-xs font-bold">🔊 اقرأ آخر رد</button>
@@ -2385,6 +2411,10 @@ Civil & Political + Economic & Social rights.` },
                   { icon: Icons.Timer, label: 'مؤقت المذاكرة', view: 'timer' },
                   { icon: Icons.Calculator, label: 'حساب المعدل', view: 'gpa' },
                   { icon: Icons.Bell, label: 'الإعلانات', view: 'announcements' },
+                  { icon: Icons.Users, label: 'مجتمع الطلاب', view: 'community' },
+                  { icon: Icons.Calendar, label: 'التكليفات والامتحانات', view: 'tasks' },
+                  { icon: Icons.Bell, label: 'الإشعارات', view: 'notifications' },
+                  { icon: Icons.MapPin, label: 'خريطة الجامعة', view: 'campus-map' },
                 ].map(({ icon: I, label, view: target }) => (
                   <button key={target} onClick={() => setView(target)}
                     className="flex items-center gap-2 rounded-xl border border-cyan-200/10 bg-cyan-400/[0.06] px-3 py-3 text-right text-xs font-bold text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-400/10">
@@ -2426,6 +2456,202 @@ Civil & Political + Economic & Social rights.` },
         </div>
       );
 
+      const CommunityView = () => {
+        const [session, setSession] = useState(null);
+        const [profile, setProfile] = useState(null);
+        const [posts, setPosts] = useState([]);
+        const [comments, setComments] = useState({});
+        const [draft, setDraft] = useState('');
+        const [commentDrafts, setCommentDrafts] = useState({});
+        const [email, setEmail] = useState('');
+        const [password, setPassword] = useState('');
+        const [displayName, setDisplayName] = useState('');
+        const [authMode, setAuthMode] = useState('signin');
+        const [busy, setBusy] = useState(false);
+        const [loading, setLoading] = useState(true);
+        const [error, setError] = useState('');
+        const isMember = !!session?.user?.id && session.user.is_anonymous !== true;
+        const loadPosts = async () => {
+          if (!isMember) return;
+          const { data, error: postError } = await supabaseClient.from('community_posts').select('id,author_id,body,created_at').order('created_at', { ascending: false }).limit(50);
+          if (postError) { setError(postError.message); return; }
+          const ids = [...new Set((data || []).map(p => p.author_id))];
+          let profileRows = [];
+          if (ids.length) {
+            const { data: rows } = await supabaseClient.from('student_profiles').select('user_id,display_name,group_name').in('user_id', ids);
+            profileRows = rows || [];
+          }
+          const names = Object.fromEntries(profileRows.map(p => [p.user_id, p]));
+          setPosts((data || []).map(p => ({ ...p, profile: names[p.author_id] || null })));
+          if (data?.length) {
+            const { data: commentRows } = await supabaseClient.from('community_comments').select('id,post_id,author_id,body,created_at').in('post_id', data.map(p => p.id)).order('created_at');
+            const commentIds = [...new Set((commentRows || []).map(c => c.author_id))];
+            let commentProfiles = [];
+            if (commentIds.length) {
+              const { data: rows } = await supabaseClient.from('student_profiles').select('user_id,display_name').in('user_id', commentIds);
+              commentProfiles = rows || [];
+            }
+            const commentNames = Object.fromEntries(commentProfiles.map(p => [p.user_id, p.display_name]));
+            const grouped = {};
+            (commentRows || []).forEach(c => { (grouped[c.post_id] ||= []).push({ ...c, display_name: commentNames[c.author_id] || 'طالب' }); });
+            setComments(grouped);
+          } else setComments({});
+        };
+        useEffect(() => {
+          let alive = true;
+          (async () => {
+            const { data } = await supabaseClient.auth.getSession();
+            if (!alive) return;
+            const current = data?.session?.user?.is_anonymous ? null : (data?.session || null);
+            setSession(current);
+            if (current?.user?.id) {
+              const { data: row } = await supabaseClient.from('student_profiles').select('*').eq('user_id', current.user.id).maybeSingle();
+              if (alive) { setProfile(row || null); if (row) await loadPosts(); }
+            }
+            if (alive) setLoading(false);
+          })();
+          return () => { alive = false; };
+        }, []);
+        const authenticate = async (event) => {
+          event.preventDefault(); setBusy(true); setError('');
+          try {
+            let result;
+            if (authMode === 'signup') {
+              result = await supabaseClient.auth.signUp({ email: email.trim(), password });
+              if (result.error) throw result.error;
+              if (!result.data.session) {
+                const login = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password });
+                if (login.error) throw new Error('تم إنشاء الحساب. أكّد البريد إذا طُلب منك، ثم سجّل الدخول.');
+                result = login;
+              }
+            } else {
+              result = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password });
+              if (result.error) throw result.error;
+            }
+            const user = result.data.user || result.data.session?.user;
+            if (!user?.id) throw new Error('تعذر إنشاء جلسة دخول.');
+            setSession(result.data.session);
+            const { data: existing } = await supabaseClient.from('student_profiles').select('*').eq('user_id', user.id).maybeSingle();
+            if (existing) { setProfile(existing); await loadPosts(); }
+            else {
+              if (displayName.trim().length < 2) { setError('اكتب اسم عرض من حرفين على الأقل لإكمال ملفك.'); return; }
+              const { data: created, error: profileError } = await supabaseClient.from('student_profiles').insert({ user_id: user.id, display_name: displayName.trim(), group_name: selectedGroup }).select().single();
+              if (profileError) throw profileError;
+              setProfile(created); await loadPosts();
+            }
+          } catch (err) { setError(err?.message || 'تعذر تسجيل الدخول.'); }
+          finally { setBusy(false); }
+        };
+        const publishPost = async (event) => {
+          event.preventDefault();
+          if (!draft.trim() || !session?.user?.id) return;
+          setBusy(true);
+          const { error: postError } = await supabaseClient.from('community_posts').insert({ author_id: session.user.id, body: draft.trim() });
+          setBusy(false);
+          if (postError) { setError(postError.message); return; }
+          setDraft(''); await loadPosts();
+        };
+        const publishComment = async (postId) => {
+          const body = (commentDrafts[postId] || '').trim();
+          if (!body) return;
+          const { error: commentError } = await supabaseClient.from('community_comments').insert({ post_id: postId, author_id: session.user.id, body });
+          if (commentError) { setError(commentError.message); return; }
+          setCommentDrafts(current => ({ ...current, [postId]: '' })); await loadPosts();
+        };
+        const reportPost = async (postId) => {
+          const reason = window.prompt('اكتب سبب الإبلاغ باختصار:');
+          if (!reason?.trim()) return;
+          const { error: reportError } = await supabaseClient.from('community_reports').insert({ post_id: postId, reporter_id: session.user.id, reason: reason.trim() });
+          if (reportError) setError(reportError.message); else showToast('تم إرسال البلاغ للمراجعة');
+        };
+        return (
+          <div className="min-h-screen soft-page pb-28">
+            <NavBar title="مجتمع الطلاب" onBack={() => setView('home')} right={<button onClick={loadPosts} className="text-xs font-bold text-sky-300">تحديث</button>} />
+            <div className="mx-auto max-w-3xl space-y-4 px-4 pt-4">
+              <div className="soft-panel rounded-2xl p-4">
+                <div className="flex items-center gap-2 text-sky-200"><Icons.Users className="h-5 w-5" /><b>مجتمع بوابتي</b></div>
+                <p className="mt-2 text-xs leading-6 text-slate-300">اسأل زملاءك وشارك ملخصات ونصائح دراسية. استخدم اسم عرض فقط، ومتشاركش رقمك أو بريدك أو بياناتك الشخصية. يوجد زر للإبلاغ عن أي محتوى غير مناسب.</p>
+              </div>
+              {loading ? <p className="py-8 text-center text-sm text-slate-400">جاري التحميل...</p> : !isMember ? (
+                <form onSubmit={authenticate} className="soft-panel space-y-3 rounded-2xl p-4">
+                  <h3 className="font-extrabold text-white">{authMode === 'signup' ? 'إنشاء حساب طالب' : 'تسجيل دخول الطلاب'}</h3>
+                  {authMode === 'signup' && <input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="اسم العرض (بدون بيانات شخصية)" maxLength={32} className="soft-control w-full rounded-xl p-3 text-sm" required />}
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="البريد الإلكتروني" className="soft-control w-full rounded-xl p-3 text-sm" required dir="ltr" />
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="كلمة المرور" className="soft-control w-full rounded-xl p-3 text-sm" required minLength={6} dir="ltr" />
+                  {error && <p className="text-xs text-rose-300">{error}</p>}
+                  <button disabled={busy} className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950">{busy ? 'جاري التنفيذ...' : authMode === 'signup' ? 'إنشاء الحساب' : 'دخول المجتمع'}</button>
+                  <button type="button" onClick={() => { setAuthMode(authMode === 'signup' ? 'signin' : 'signup'); setError(''); }} className="w-full py-2 text-xs text-sky-300">{authMode === 'signup' ? 'عندي حساب بالفعل' : 'إنشاء حساب جديد'}</button>
+                </form>
+              ) : (
+                <>
+                  {!profile ? <div className="soft-panel rounded-2xl p-4"><p className="text-sm text-slate-200">أكمل اسم العرض الخاص بك من خلال إعادة تسجيل الدخول.</p></div> : (
+                    <form onSubmit={publishPost} className="soft-panel space-y-3 rounded-2xl p-4">
+                      <div className="flex items-center justify-between"><b className="text-sm text-white">أهلاً {profile.display_name}</b><button type="button" onClick={async()=>{await supabaseClient.auth.signOut();setSession(null);setProfile(null);}} className="text-[11px] text-slate-400">خروج</button></div>
+                      <textarea value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} rows={3} placeholder="اكتب سؤالاً أو شارك فائدة دراسية..." className="soft-control w-full rounded-xl p-3 text-sm" />
+                      <div className="flex items-center justify-between"><span className="text-[10px] text-slate-500">{draft.length}/2000</span><button disabled={busy || !draft.trim()} className="rounded-xl bg-sky-500 px-5 py-2.5 text-xs font-black text-slate-950">نشر المشاركة</button></div>
+                    </form>
+                  )}
+                  {error && <p className="rounded-xl bg-rose-500/10 p-3 text-xs text-rose-300">{error}</p>}
+                  {posts.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">لسه مفيش مشاركات. ابدأ أول نقاش دراسي!</p> : posts.map(post => (
+                    <article key={post.id} className="soft-panel rounded-2xl p-4">
+                      <div className="flex items-start justify-between gap-3"><div><b className="text-sm text-sky-200">{post.profile?.display_name || 'طالب'}</b><p className="mt-1 text-[10px] text-slate-500">{post.profile?.group_name || 'طالب بالجامعة'} • {new Date(post.created_at).toLocaleString('ar-EG')}</p></div><button onClick={()=>reportPost(post.id)} className="text-[10px] text-amber-300">إبلاغ</button></div>
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-100">{post.body}</p>
+                      <div className="mt-4 space-y-2 border-t border-white/10 pt-3">
+                        {(comments[post.id] || []).map(comment=><div key={comment.id} className="rounded-xl bg-slate-950/30 p-2.5"><b className="text-[11px] text-sky-200">{comment.display_name}</b><p className="mt-1 text-xs leading-6 text-slate-200">{comment.body}</p></div>)}
+                        <div className="flex gap-2"><input value={commentDrafts[post.id] || ''} onChange={e=>setCommentDrafts(current=>({...current,[post.id]:e.target.value}))} maxLength={1000} placeholder="اكتب تعليقاً..." className="soft-control min-w-0 flex-1 rounded-xl px-3 py-2 text-xs" /><button onClick={()=>publishComment(post.id)} className="rounded-xl bg-sky-500/15 px-3 text-xs font-bold text-sky-200">تعليق</button></div>
+                      </div>
+                    </article>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const TasksView = () => {
+        const [tasks, setTasks] = useState([]);
+        const [busy, setBusy] = useState(true);
+        useEffect(() => {
+          let alive = true;
+          supabaseClient.from('student_tasks').select('*').eq('published', true).order('due_at', { ascending: true })
+            .then(({ data, error }) => { if (!alive) return; if (!error) setTasks((data || []).filter(t => !t.group_name || !selectedGroup || t.group_name === selectedGroup)); setBusy(false); });
+          return () => { alive = false; };
+        }, [selectedGroup]);
+        return <div className="min-h-screen soft-page pb-28"><NavBar title="التكليفات والامتحانات" onBack={()=>setView('home')} /><div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
+          <p className="text-xs leading-6 text-slate-400">تابع مواعيد التسليم والاختبارات المنشورة من إدارة المنصة.</p>
+          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل المواعيد...</p> : tasks.length ? tasks.map(task=><article key={task.id} className="soft-panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><b className="text-sm text-white">{task.title}</b><p className="mt-1 text-[11px] text-sky-200">{task.subject_code || 'عام'} {task.group_name ? '• '+task.group_name : ''}</p></div><span className="rounded-lg bg-amber-400/10 px-2 py-1 text-[10px] text-amber-200">{task.due_at ? new Date(task.due_at).toLocaleString('ar-EG') : 'بدون موعد محدد'}</span></div>{task.description && <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-300">{task.description}</p>}</article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد تكليفات أو امتحانات منشورة حالياً.</p>}
+        </div></div>;
+      };
+
+      const NotificationsView = () => {
+        const [items, setItems] = useState([]);
+        const [busy, setBusy] = useState(true);
+        useEffect(() => {
+          let alive = true;
+          const load = async () => {
+            const { data, error } = await supabaseClient.from('portal_notifications').select('*').eq('published', true).order('created_at', { ascending: false }).limit(40);
+            if (!alive) return;
+            if (!error) setItems((data || []).filter(n => !n.target_group || !selectedGroup || n.target_group === selectedGroup));
+            setBusy(false);
+          };
+          load();
+          const channel = supabaseClient.channel('portal-notifications-live').on('postgres_changes', { event: '*', schema: 'public', table: 'portal_notifications' }, load).subscribe();
+          return () => { alive = false; supabaseClient.removeChannel(channel); };
+        }, [selectedGroup]);
+        return <div className="min-h-screen soft-page pb-28"><NavBar title="الإشعارات" onBack={()=>setView('home')} /><div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
+          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل الإشعارات...</p> : items.length ? items.map(item=><article key={item.id} className="soft-panel rounded-2xl p-4"><div className="flex items-center gap-2"><Icons.Bell className="h-4 w-4 text-sky-300"/><b className="text-sm text-white">{item.title}</b></div><p className="mt-2 whitespace-pre-wrap text-xs leading-6 text-slate-300">{item.body}</p><p className="mt-2 text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</p></article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد إشعارات جديدة.</p>}
+        </div></div>;
+      };
+
+      const CampusMapView = () => (
+        <div className="min-h-screen soft-page pb-28"><NavBar title="خريطة الحرم الجامعي" onBack={()=>setView('home')} /><div className="mx-auto max-w-4xl space-y-3 px-4 pt-4">
+          <div className="soft-panel rounded-2xl p-4"><div className="flex items-center gap-2 text-sky-200"><Icons.MapPin className="h-5 w-5"/><b>جامعة بني سويف الأهلية</b></div><p className="mt-2 text-xs leading-6 text-slate-300">مجمع 330 فدان، شرق النيل، مدينة بني سويف الجديدة، محافظة بني سويف.</p><a className="mt-3 inline-flex rounded-xl bg-sky-500 px-4 py-2 text-xs font-bold text-slate-950" href="https://www.google.com/maps/search/?api=1&query=جامعة+بني+سويف+الأهلية+شرق+النيل" target="_blank" rel="noopener noreferrer">فتح الاتجاهات في الخرائط</a></div>
+          <div className="overflow-hidden rounded-2xl border border-sky-300/20 bg-slate-900"><iframe title="خريطة جامعة بني سويف الأهلية" src="https://www.google.com/maps?q=جامعة+بني+سويف+الأهلية+شرق+النيل&output=embed" className="h-[55vh] min-h-[320px] w-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div>
+        </div></div>
+      );
+
+
       // Persistent glass navigation across the main portal views
       const BottomNav = () => (
         <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
@@ -2435,6 +2661,7 @@ Civil & Political + Economic & Social rights.` },
               { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
               { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
+              { icon: Icons.Users, label: 'المجتمع', v: 'community' },
             ].map(({ icon: I, label, v }) => {
               const active = view === v || (v === 'subjects' && view === 'lectures');
               return (
@@ -2481,6 +2708,10 @@ Civil & Political + Economic & Social rights.` },
           {view === 'timer' && <TimerView />}
           {view === 'gpa' && <GPAView />}
           {view === 'announcements' && <AnnouncementsView />}
+          {view === 'community' && <CommunityView />}
+          {view === 'tasks' && <TasksView />}
+          {view === 'notifications' && <NotificationsView />}
+          {view === 'campus-map' && <CampusMapView />}
           {view === 'admin' && (
             <div className="min-h-screen bg-[#061321] px-4 py-8">
               <div className="mx-auto max-w-md">
