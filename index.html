@@ -642,6 +642,8 @@
     const SUPABASE_URL = 'https://azlplcbphvaiexmyfdbp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
     const STUDENT_REDIRECT_URL = 'https://ahmed526548.github.io/My-university-38/';
+    const STUDENT_SESSION_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const studentSessionKey = (userId) => `bsnu_student_session_started:${userId}`;
     const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
     }) || null;
@@ -685,6 +687,7 @@
       Edit: (p) => <Icon {...p} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />,
       Filter: (p) => <Icon {...p} d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />,
       Share: (p) => <Icon {...p} d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />,
+      LogOut: (p) => <Icon {...p} d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
       Moon: (p) => <Icon {...p} d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
       Sun: (p) => <Icon {...p} d="M12 3v1M12 20v1M4.22 4.22l.71.71M18.36 18.36l.71.71M1 12h1M21 12h1M4.22 19.78l.71-.71M18.36 5.64l.71-.71M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
       Info: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" />,
@@ -1150,7 +1153,11 @@ Civil & Political + Economic & Social rights.` },
             setStudentAuthMode('update');
             setStudentAuthMessage('اكتب كلمة المرور الجديدة لحسابك.');
           }
-          if (event === 'INITIAL_SESSION' || (session?.user && !session.user.is_anonymous)) {
+          if (event === 'SIGNED_IN' && session?.user && !session.user.is_anonymous) {
+            const key = studentSessionKey(session.user.id);
+            if (!localStorage.getItem(key)) localStorage.setItem(key, String(Date.now()));
+          }
+          if (event === 'INITIAL_SESSION') {
             settled = true;
             clearTimeout(timeoutId);
             setStudentAuthLoading(false);
@@ -1164,7 +1171,22 @@ Civil & Political + Economic & Social rights.` },
             settled = true;
             clearTimeout(timeoutId);
             if (error) setStudentAuthError(error.message || 'تعذر استعادة جلسة الدخول');
-            setStudentSession(data?.session || null);
+            let restoredSession = data?.session || null;
+            const restoredUser = restoredSession?.user;
+            if (restoredUser?.id && !restoredUser.is_anonymous) {
+              const key = studentSessionKey(restoredUser.id);
+              const startedAt = Number(localStorage.getItem(key));
+              if (!startedAt) {
+                localStorage.setItem(key, String(Date.now()));
+              } else if (Date.now() - startedAt >= STUDENT_SESSION_WEEK_MS) {
+                localStorage.removeItem(key);
+                await supabaseClient.auth.signOut({ scope: 'local' });
+                restoredSession = null;
+                setStudentAuthMode('signin');
+                setStudentAuthMessage('انتهت مدة تسجيل الدخول الأسبوعية. سجّل دخولك مرة أخرى للمتابعة.');
+              }
+            }
+            setStudentSession(restoredSession);
             setStudentAuthLoading(false);
           } catch (error) {
             if (!active) return;
@@ -1219,6 +1241,28 @@ Civil & Political + Economic & Social rights.` },
         }
       };
 
+      const handleStudentLogout = async () => {
+        if (!supabaseClient || studentAuthBusy) return;
+        setStudentAuthBusy(true);
+        setStudentAuthError('');
+        try {
+          const userId = studentSession?.user?.id;
+          const { error } = await supabaseClient.auth.signOut({ scope: 'local' });
+          if (error) throw error;
+          if (userId) localStorage.removeItem(studentSessionKey(userId));
+          setStudentSession(null);
+          setStudentPassword('');
+          setStudentAuthMode('signin');
+          setStudentAuthMessage('تم تسجيل الخروج من هذا الجهاز.');
+          setView('home');
+        } catch (error) {
+          setStudentAuthError(error?.message || 'تعذر تسجيل الخروج. حاول مرة أخرى.');
+          showToast('تعذر تسجيل الخروج', 'error');
+        } finally {
+          setStudentAuthBusy(false);
+        }
+      };
+
       const handleStudentEmailAuth = async (event) => {
         event.preventDefault();
         if (!supabaseClient || studentAuthBusy) return;
@@ -1247,6 +1291,7 @@ Civil & Political + Economic & Social rights.` },
             });
             if (error) throw error;
             if (data?.session) {
+              localStorage.setItem(studentSessionKey(data.session.user.id), String(Date.now()));
               setStudentSession(data.session);
             } else {
               setStudentAuthMode('signin');
@@ -1256,6 +1301,7 @@ Civil & Political + Economic & Social rights.` },
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: studentPassword });
             if (error) throw error;
             if (!data?.session) throw new Error('لم يتم إنشاء جلسة دخول. حاول مرة أخرى.');
+            localStorage.setItem(studentSessionKey(data.session.user.id), String(Date.now()));
             setStudentSession(data.session);
           }
         } catch (error) {
@@ -2622,6 +2668,19 @@ Civil & Political + Economic & Social rights.` },
         <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="الإعدادات" onBack={() => setView('home')} />
           <div className="px-4 pt-3 space-y-3">
+            <div className="glass border border-sky-300/25 rounded-2xl p-4">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><Icons.User className="h-5 w-5" /></span>
+                <div className="min-w-0 flex-1 text-right">
+                  <h3 className="text-sm font-bold text-white">حسابك</h3>
+                  <p className="truncate text-xs text-slate-400" dir="ltr">{studentSession?.user?.email || 'حساب طالب'}</p>
+                </div>
+              </div>
+              <p className="mb-3 text-[11px] leading-5 text-slate-400">هتفضل مسجل دخولك على الجهاز ده، وهنطلب تسجيل الدخول من جديد بعد 7 أيام.</p>
+              <button type="button" onClick={handleStudentLogout} disabled={studentAuthBusy} className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-400/25 bg-rose-400/10 py-3 text-sm font-bold text-rose-200 transition hover:bg-rose-400/15 disabled:opacity-50">
+                <Icons.LogOut className="h-4 w-4" /> {studentAuthBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}
+              </button>
+            </div>
             <div className="glass border border-cyan-900/30 rounded-2xl p-4">
               <h3 className="font-bold text-white text-sm mb-3">البيانات المحفوظة</h3>
               <div className="space-y-2 text-xs text-gray-400">
