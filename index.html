@@ -1359,19 +1359,22 @@ Civil & Political + Economic & Social rights.` },
       const [studentAuthMode, setStudentAuthMode] = useState('signin');
       const [studentAuthMessage, setStudentAuthMessage] = useState('');
 
-      // The academic track is selected for the current app visit only.
-      // It intentionally resets whenever the app is opened/reloaded.
+      // Require an explicit program choice on every fresh app load.
       const [selectedProgram, setSelectedProgram] = useState('');
+      const [programSelectionConfirmed, setProgramSelectionConfirmed] = useState(false);
       useEffect(() => {
         setSelectedProgram('');
+        setProgramSelectionConfirmed(false);
       }, [studentSession?.user?.id]);
       const chooseStudentProgram = (program) => {
         if (!studentSession?.user?.id) return;
         setSelectedProgram(program);
+        setProgramSelectionConfirmed(true);
         if (program === 'ai') setView('home');
       };
       const changeStudentProgram = () => {
         setSelectedProgram('');
+        setProgramSelectionConfirmed(false);
       };
 
       // Restore the signed-in student with a bounded wait, so a stalled auth lock
@@ -3013,7 +3016,7 @@ Civil & Political + Economic & Social rights.` },
         );
       }
 
-      if (!selectedProgram) {
+      if (!programSelectionConfirmed || !selectedProgram) {
         const programs = [
           { id: 'ai', name: 'AI', subtitle: 'Artificial Intelligence', icon: '🤖', description: 'Artificial Intelligence & Data Science' },
           { id: 'cyber', name: 'Cyber', subtitle: 'Cybersecurity', icon: '🛡️', description: 'Cybersecurity Program' },
