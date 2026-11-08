@@ -294,6 +294,13 @@
       --portal-surface-2:rgba(8,27,46,.96); --portal-text:#f0f9ff; --portal-muted:#a9c2d5;
       --portal-input:rgba(3,18,34,.88); --portal-overlay:linear-gradient(180deg,#0b2438 0%,#061525 58%,#030b15 100%);
     }
+    :root[data-portal-theme="burgundy"] {
+      --portal-accent:#f09ab7; --portal-accent-soft:rgba(159,54,88,.22);
+      --portal-accent-border:rgba(240,154,183,.40); --portal-accent-glow:rgba(159,54,88,.20);
+      --portal-bg:#24101a; --portal-bg-deep:#10070c; --portal-surface:rgba(65,29,47,.95);
+      --portal-surface-2:rgba(39,17,29,.97); --portal-text:#fff1f5; --portal-muted:#e0b9c8;
+      --portal-input:rgba(29,12,20,.92); --portal-overlay:linear-gradient(180deg,#351827 0%,#1c0d16 58%,#0e070b 100%);
+    }
     :root[data-portal-theme="violet"] {
       --portal-accent:#b49aff; --portal-accent-soft:rgba(167,139,250,.20);
       --portal-accent-border:rgba(196,181,253,.38); --portal-accent-glow:rgba(139,92,246,.18);
@@ -1166,7 +1173,7 @@ Civil & Political + Economic & Social rights.` },
           { key: 'published', label: 'نشر الإعلان؟', type: 'boolean' }
         ]
       };
-      const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
+      const themeOptions = ['sky', 'burgundy', 'violet', 'emerald', 'amber'];
       const [portalTheme, setPortalTheme] = useState(() => {
         try {
           const saved = localStorage.getItem('portalTheme');
@@ -1692,7 +1699,7 @@ Civil & Political + Economic & Social rights.` },
           <div className="flex items-center gap-2">
             <button onClick={cyclePortalTheme} aria-label="تغيير المظهر والألوان" title="اضغط هنا لتغيير ألوان وشكل الموقع"
               className="flex h-9 items-center gap-2 rounded-lg border border-sky-300/25 bg-sky-950/50 px-2.5 text-[11px] font-bold text-sky-100 transition hover:border-sky-300/50">
-              <span className="h-3 w-3 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
+              <span className="h-3 w-3 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'burgundy' ? '#9f3658' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
               <span className="home-theme-label">تغيير المظهر</span>
             </button>
             {right}
