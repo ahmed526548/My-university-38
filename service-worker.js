@@ -1,4 +1,4 @@
-const CACHE_NAME = "bsnu-portal-v6";
+const CACHE_NAME = "bsnu-portal-v7";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,7 +16,8 @@ const CDN_HOSTS = new Set([
   "unpkg.com",
   "cdn.jsdelivr.net",
   "fonts.googleapis.com",
-  "fonts.gstatic.com"
+  "fonts.gstatic.com",
+  "cdnjs.cloudflare.com"
 ]);
 
 const CDN_PRECACHE = [
@@ -25,7 +26,9 @@ const CDN_PRECACHE = [
   "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js",
   "https://unpkg.com/@babel/standalone/babel.min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-  "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
+  "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap",
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
 ].map((url) => new Request(url, { mode: "no-cors" }));
 
 async function precachePublicLibraries(cache) {
@@ -50,6 +53,17 @@ self.addEventListener("install", (event) => {
       })
       .then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "CACHE_OFFLINE_SHELL") {
+    event.waitUntil((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(APP_SHELL);
+      await precachePublicLibraries(cache);
+      event.source?.postMessage({ type: "OFFLINE_SHELL_READY" });
+    })());
+  }
 });
 
 self.addEventListener("activate", (event) => {
