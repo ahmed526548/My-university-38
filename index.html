@@ -2431,7 +2431,7 @@ Civil & Political + Economic & Social rights.` },
           {view === 'home' && <Home />}
           {view === 'subjects' && <Subjects />}
           {view === 'lectures' && <Lectures />}
-          {view === 'bot' && <BotView />}
+          {view === 'bot' && BotView()}
           {view === 'groups' && <Groups />}
           {view === 'schedule' && <Schedule />}
           {view === 'notes' && <NotesView />}
@@ -2592,7 +2592,7 @@ Civil & Political + Economic & Social rights.` },
               <p className="mt-2 text-[10px] font-bold text-sky-300/75">إصدار 2026 • للاستخدام التعليمي</p>
             </div>
           </footer>
-          <SearchOverlay />
+          {SearchOverlay()}
           <BottomNav />
 
           {/* Toast */}
