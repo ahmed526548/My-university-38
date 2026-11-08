@@ -1,5 +1,5 @@
-const CACHE_NAME = "bsnu-portal-v2";
-const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
+const CACHE_NAME = "bsnu-portal-v3";
+const APP_SHELL = ["./", "./index.html", "./admin.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -32,12 +32,12 @@ self.addEventListener("fetch", (event) => {
           if (response.ok) {
             const copy = response.clone();
             event.waitUntil(
-              caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy))
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
             );
           }
           return response;
         })
-        .catch(() => caches.match("./index.html"))
+        .catch(() => caches.match(request) || caches.match("./index.html"))
     );
     return;
   }
