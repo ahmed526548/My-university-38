@@ -1206,6 +1206,7 @@ Civil & Political + Economic & Social rights.` },
           { key: 'body', label: 'محتوى المنشور', type: 'textarea', required: true }
         ],
         student_profiles: [
+          { key: 'user_id', label: 'معرّف حساب الطالب', required: true },
           { key: 'display_name', label: 'اسم العرض', required: true },
           { key: 'group_name', label: 'الجروب' }
         ]
@@ -1427,7 +1428,7 @@ Civil & Political + Economic & Social rights.` },
         let result;
         if (adminEditingId !== null) {
           const { id, created_at, ...editableFields } = payload;
-          result = await supabaseClient.from(adminSelectedTable).update(editableFields).eq('id', adminEditingId);
+          result = await supabaseClient.from(adminSelectedTable).update(editableFields).eq(adminSelectedTable === 'student_profiles' ? 'user_id' : 'id', adminEditingId);
         } else {
           result = await supabaseClient.from(adminSelectedTable).insert(payload);
         }
@@ -1440,10 +1441,11 @@ Civil & Political + Economic & Social rights.` },
       };
 
       const editAdminRecord = (record) => {
-        if (record?.id === undefined || record?.id === null) {
-          showToast('هذا السجل لا يحتوي على حقل id', 'error'); return;
+        const recordKey = record?.id ?? record?.user_id;
+        if (recordKey === undefined || recordKey === null) {
+          showToast('هذا السجل لا يحتوي على معرّف', 'error'); return;
         }
-        setAdminEditingId(record.id);
+        setAdminEditingId(recordKey);
         const values = {};
         adminFieldConfig[adminSelectedTable].forEach(field => {
           const value = record[field.key];
@@ -1457,6 +1459,7 @@ Civil & Political + Economic & Social rights.` },
         if (!adminAllowed || !adminSession || record?.id === undefined || record?.id === null) {
           showToast('لا يمكن حذف السجل لعدم وجود معرّف id', 'error'); return;
         }
+        if (adminSelectedTable === 'student_profiles') { showToast('تعديل بيانات الطالب متاح، حذف الحساب يتم من إدارة المستخدمين في Supabase.', 'error'); return; }
         if (!window.confirm('متأكد إنك عايز تحذف السجل ده نهائيًا؟')) return;
         setAdminDataBusy(true);
         const { error } = await supabaseClient.from(adminSelectedTable).delete().eq('id', record.id);
