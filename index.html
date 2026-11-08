@@ -2653,7 +2653,7 @@ Civil & Political + Economic & Social rights.` },
                 </form>
               ) : (
                 <>
-                  {!profile ? <div className="soft-panel rounded-2xl p-4"><p className="text-sm text-slate-200">أكمل اسم العرض الخاص بك من خلال إعادة تسجيل الدخول.</p></div> : (
+                  {!profile ? <form onSubmit={async e=>{e.preventDefault();if(displayName.trim().length<2)return;setBusy(true);const {data,error:profileError}=await supabaseClient.from('student_profiles').insert({user_id:session.user.id,display_name:displayName.trim(),group_name:selectedGroup}).select().single();setBusy(false);if(profileError){setError(profileError.message);return;}setProfile(data);await loadPosts(true);}} className="soft-panel space-y-3 rounded-2xl p-4"><p className="text-sm font-bold text-white">كمّل ملفك باسم عرض</p><input value={displayName} onChange={e=>setDisplayName(e.target.value)} maxLength={32} minLength={2} required placeholder="اسم العرض" className="soft-control w-full rounded-xl p-3 text-sm"/>{error&&<p className="text-xs text-rose-300">{error}</p>}<button disabled={busy} className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950">{busy?'جاري الحفظ...':'حفظ الملف'}</button></form> : (
                     <form onSubmit={publishPost} className="soft-panel space-y-3 rounded-2xl p-4">
                       <div className="flex items-center justify-between"><b className="text-sm text-white">أهلاً {profile.display_name}</b><button type="button" onClick={async()=>{await supabaseClient.auth.signOut();setSession(null);setProfile(null);}} className="text-[11px] text-slate-400">خروج</button></div>
                       <textarea value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} rows={3} placeholder="اكتب سؤالاً أو شارك فائدة دراسية..." className="soft-control w-full rounded-xl p-3 text-sm" />
@@ -2684,7 +2684,7 @@ Civil & Political + Economic & Social rights.` },
         useEffect(() => {
           let alive = true;
           supabaseClient.from('student_tasks').select('*').eq('published', true).order('due_at', { ascending: true })
-            .then(({ data, error }) => { if (!alive) return; if (!error) setTasks((data || []).filter(t => !t.group_name || !selectedGroup || t.group_name === selectedGroup)); setBusy(false); });
+            .then(({ data, error }) => { if (!alive) return; if (!error) setTasks((data || []).filter(t => !t.group_name || t.group_name === selectedGroup)); setBusy(false); });
           return () => { alive = false; };
         }, [selectedGroup]);
         return <div className="min-h-screen soft-page pb-28"><NavBar title="التكليفات والامتحانات" onBack={()=>setView('home')} /><div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
@@ -2701,7 +2701,7 @@ Civil & Political + Economic & Social rights.` },
           const load = async () => {
             const { data, error } = await supabaseClient.from('portal_notifications').select('*').eq('published', true).order('created_at', { ascending: false }).limit(40);
             if (!alive) return;
-            if (!error) setItems((data || []).filter(n => !n.target_group || !selectedGroup || n.target_group === selectedGroup));
+            if (!error) setItems((data || []).filter(n => !n.target_group || n.target_group === selectedGroup));
             setBusy(false);
           };
           load();
