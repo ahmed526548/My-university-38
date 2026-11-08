@@ -1,12 +1,26 @@
-const CACHE_NAME = "bsnu-portal-v3";
-const APP_SHELL = ["./", "./index.html", "./admin.html", "./manifest.webmanifest", "./icon.svg"];
+const CACHE_NAME = "bsnu-portal-v4";
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./admin.html",
+  "./manifest.webmanifest",
+  "./icon.svg",
+  "./service-worker.js"
+];
+
+// Cache only public front-end libraries. Never cache Supabase/auth/API requests.
+const CDN_HOSTS = new Set([
+  "cdn.tailwindcss.com",
+  "unpkg.com",
+  "cdn.jsdelivr.net",
+  "fonts.googleapis.com",
+  "fonts.gstatic.com"
+]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(
-        APP_SHELL.map((url) => new Request(url, { cache: "reload" }))
-      ))
+      .then((cache) => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting())
   );
 });
@@ -15,42 +29,71 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.filter((key) => key.startsWith("bsnu-portal-") && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );
 });
 
+async function saveResponse(cache, request, response) {
+  if (response && (response.ok || response.type === "opaque")) {
+    try { await cache.put(request, response.clone()); } catch (_) {}
+  }
+  return response;
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
+  if (request.method !== "GET") return;
 
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(new Request(request, { cache: "no-cache" }))
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            event.waitUntil(
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
-            );
-          }
-          return response;
-        })
-        .catch(() => caches.match(request) || caches.match("./index.html"))
-    );
+  const url = new URL(request.url);
+  const sameOrigin = url.origin === self.location.origin;
+
+  // App pages: network first, then the saved app shell when offline.
+  if (sameOrigin && request.mode === "navigate") {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const response = await fetch(request);
+        if (response.ok) await saveResponse(cache, request, response);
+        return response;
+      } catch (_) {
+        return (await cache.match(request)) ||
+          (url.pathname.endsWith("/admin.html") && await cache.match("./admin.html")) ||
+          (await cache.match("./index.html")) ||
+          Response.error();
+      }
+    })());
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-      if (response.ok) {
-        const copy = response.clone();
-        event.waitUntil(
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
-        );
+  // Same-origin static assets: cache first, then network and save.
+  if (sameOrigin) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      try {
+        return await saveResponse(cache, request, await fetch(request));
+      } catch (_) {
+        return Response.error();
       }
-      return response;
-    }))
-  );
+    })());
+    return;
+  }
+
+  // Cache public CDN scripts/styles/fonts after first successful online visit.
+  if (CDN_HOSTS.has(url.hostname) &&
+      ["script", "style", "font"].includes(request.destination)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const response = await fetch(request);
+        return await saveResponse(cache, request, response);
+      } catch (_) {
+        return (await cache.match(request)) || Response.error();
+      }
+    })());
+  }
 });
