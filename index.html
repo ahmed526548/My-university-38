@@ -2936,7 +2936,7 @@ Civil & Political + Economic & Social rights.` },
       if (studentAuthLoading) {
         return <div dir="rtl" className="min-h-screen flex items-center justify-center bg-[#07151d] text-white"><div className="text-center"><div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-sky-400/20 border-t-sky-300"></div><p className="text-sm font-bold text-sky-100">جاري التحقق من حساب الطالب...</p></div></div>;
       }
-      if (!studentSession?.user || studentSession.user.is_anonymous) {
+      if (studentAuthMode === 'update' || !studentSession?.user || studentSession.user.is_anonymous) {
         const isPasswordMode = ['signin', 'signup', 'update'].includes(studentAuthMode);
         const heading = studentAuthMode === 'signup' ? 'إنشاء حساب طالب' : studentAuthMode === 'forgot' ? 'استعادة كلمة المرور' : studentAuthMode === 'update' ? 'تعيين كلمة مرور جديدة' : 'تسجيل الدخول';
         return (
