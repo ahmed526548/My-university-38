@@ -1117,6 +1117,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminBusy, setAdminBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
       const [adminRecords, setAdminRecords] = useState([]);
+      const [adminOverview, setAdminOverview] = useState({ students: 0, posts: 0, reports: 0, tasks: 0, activity: [] });
       const [adminDataBusy, setAdminDataBusy] = useState(false);
       const [adminFormData, setAdminFormData] = useState({});
       const [adminEditingId, setAdminEditingId] = useState(null);
@@ -1126,7 +1127,12 @@ Civil & Political + Economic & Social rights.` },
         { value: 'schedule_days', label: 'أيام الجدول' },
         { value: 'schedule_slots', label: 'مواعيد الجدول' },
         { value: 'schedule_items', label: 'محاضرات الجدول' },
-        { value: 'announcements', label: 'الإعلانات' }
+        { value: 'announcements', label: 'الإعلانات' },
+        { value: 'student_tasks', label: 'التكليفات والامتحانات' },
+        { value: 'portal_notifications', label: 'الإشعارات العامة' },
+        { value: 'community_reports', label: 'بلاغات المجتمع' },
+        { value: 'community_posts', label: 'منشورات المجتمع' },
+        { value: 'student_profiles', label: 'ملفات الطلاب' }
       ];
       const adminFieldConfig = {
         subjects: [
@@ -1162,6 +1168,36 @@ Civil & Political + Economic & Social rights.` },
           { key: 'body', label: 'محتوى الإعلان', type: 'textarea', required: true },
           { key: 'type', label: 'نوع الإعلان', required: true },
           { key: 'published', label: 'نشر الإعلان؟', type: 'boolean' }
+        ],
+        student_tasks: [
+          { key: 'title', label: 'عنوان التكليف أو الامتحان', required: true },
+          { key: 'description', label: 'التفاصيل والتعليمات', type: 'textarea' },
+          { key: 'subject_code', label: 'كود المادة' },
+          { key: 'due_at', label: 'آخر موعد', type: 'datetime-local' },
+          { key: 'group_name', label: 'الجروب (اختياري)' },
+          { key: 'published', label: 'إظهار للطلاب؟', type: 'boolean' }
+        ],
+        portal_notifications: [
+          { key: 'title', label: 'عنوان الإشعار', required: true },
+          { key: 'body', label: 'نص الإشعار', type: 'textarea', required: true },
+          { key: 'kind', label: 'النوع (info / warning / exam / schedule / success)', required: true },
+          { key: 'target_group', label: 'الجروب المستهدف (اختياري)' },
+          { key: 'published', label: 'نشر الإشعار؟', type: 'boolean' }
+        ],
+        community_reports: [
+          { key: 'post_id', label: 'معرّف المنشور' },
+          { key: 'comment_id', label: 'معرّف التعليق' },
+          { key: 'reporter_id', label: 'معرّف المبلّغ' },
+          { key: 'reason', label: 'سبب البلاغ', type: 'textarea' },
+          { key: 'status', label: 'الحالة (open / reviewed / dismissed)', required: true }
+        ],
+        community_posts: [
+          { key: 'author_id', label: 'معرّف صاحب المنشور', required: true },
+          { key: 'body', label: 'محتوى المنشور', type: 'textarea', required: true }
+        ],
+        student_profiles: [
+          { key: 'display_name', label: 'اسم العرض', required: true },
+          { key: 'group_name', label: 'الجروب' }
         ]
       };
       const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
@@ -1375,9 +1411,10 @@ Civil & Political + Economic & Social rights.` },
         for (const field of adminFieldConfig[adminSelectedTable]) {
           const value = adminFormData[field.key];
           if (value === undefined || value === null || value === '') continue;
-          payload[field.key] = field.type === 'number' ? Number(value) : field.type === 'boolean' ? value === 'true' : value;
+          payload[field.key] = field.type === 'number' ? Number(value) : field.type === 'boolean' ? value === 'true' : field.type === 'datetime-local' ? new Date(value).toISOString() : value;
         }
         if (adminSelectedTable === 'lectures' && payload.file_url) payload.has_content = true;
+        if (['student_tasks','portal_notifications'].includes(adminSelectedTable) && adminEditingId === null) payload.created_by = adminSession.user.id;
         const missingField = adminFieldConfig[adminSelectedTable].find(field => field.required && (payload[field.key] === undefined || payload[field.key] === ''));
         if (missingField) { showToast('من فضلك اكتب: ' + missingField.label, 'error'); return; }
         setAdminDataBusy(true);
@@ -1390,6 +1427,7 @@ Civil & Political + Economic & Social rights.` },
         }
         setAdminDataBusy(false);
         if (result.error) { showToast('لم يتم الحفظ: ' + result.error.message, 'error'); return; }
+        try { await supabaseClient.from('portal_activity_log').insert({ actor_id: adminSession.user.id, action: adminEditingId !== null ? 'update' : 'create', entity: adminSelectedTable, details: { section: adminSelectedTable } }); } catch (_) {}
         setAdminFormData({}); setAdminEditingId(null);
         showToast(adminEditingId !== null ? 'تم تحديث السجل' : 'تمت إضافة السجل');
         await loadAdminRecords(adminSelectedTable);
@@ -1403,7 +1441,7 @@ Civil & Political + Economic & Social rights.` },
         const values = {};
         adminFieldConfig[adminSelectedTable].forEach(field => {
           const value = record[field.key];
-          values[field.key] = field.type === 'boolean' ? String(Boolean(value)) : value === null || value === undefined ? '' : String(value);
+          values[field.key] = field.type === 'boolean' ? String(Boolean(value)) : field.type === 'datetime-local' && value ? new Date(value).toISOString().slice(0,16) : value === null || value === undefined ? '' : String(value);
         });
         setAdminFormData(values);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1418,12 +1456,28 @@ Civil & Political + Economic & Social rights.` },
         const { error } = await supabaseClient.from(adminSelectedTable).delete().eq('id', record.id);
         setAdminDataBusy(false);
         if (error) { showToast('تعذر الحذف: ' + error.message, 'error'); return; }
+        try { await supabaseClient.from('portal_activity_log').insert({ actor_id: adminSession.user.id, action: 'delete', entity: adminSelectedTable, entity_id: String(record.id), details: { section: adminSelectedTable } }); } catch (_) {}
         showToast('تم حذف السجل');
         await loadAdminRecords(adminSelectedTable);
       };
 
+      const loadAdminOverview = async () => {
+        if (!adminAllowed || !adminSession) return;
+        const countRows = async (table, filters = []) => {
+          let query = supabaseClient.from(table).select('*', { count: 'exact', head: true });
+          filters.forEach(([key, value]) => { query = query.eq(key, value); });
+          const result = await query;
+          return result.count || 0;
+        };
+        const [students, posts, reports, tasks, activityResult] = await Promise.all([
+          countRows('student_profiles'), countRows('community_posts'), countRows('community_reports', [['status','open']]),
+          countRows('student_tasks'), supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8)
+        ]);
+        setAdminOverview({ students, posts, reports, tasks, activity: activityResult.data || [] });
+      };
+
       useEffect(() => {
-        if (view === 'admin' && adminAllowed && adminSession) loadAdminRecords(adminSelectedTable);
+        if (view === 'admin' && adminAllowed && adminSession) { loadAdminRecords(adminSelectedTable); loadAdminOverview(); }
       }, [view, adminAllowed, adminSession, adminSelectedTable]);
 
       // Skip the decorative splash so the portal is usable immediately.
@@ -2467,6 +2521,15 @@ Civil & Political + Economic & Social rights.` },
                         <p className="font-bold text-emerald-300">تم التحقق من صلاحيات الأدمن</p>
                         <p className="mt-1 break-all text-xs text-slate-300">{adminSession.user?.email}</p>
                       </div>
+                      <section className="mb-4 space-y-3">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {[['الطلاب',adminOverview.students],['منشورات المجتمع',adminOverview.posts],['بلاغات مفتوحة',adminOverview.reports],['التكليفات',adminOverview.tasks]].map(([label,value])=><div key={label} className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3"><div className="text-[10px] text-slate-400">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div></div>)}
+                        </div>
+                        <div className="rounded-xl border border-sky-300/15 bg-slate-950/30 p-3">
+                          <div className="mb-2 flex items-center justify-between"><b className="text-xs text-white">سجل النشاط الإداري</b><button type="button" onClick={loadAdminOverview} className="text-[10px] text-sky-300">تحديث</button></div>
+                          {adminOverview.activity.length ? adminOverview.activity.map(item=><div key={item.id} className="flex items-center justify-between gap-2 border-t border-white/5 py-2 text-[10px]"><span className="text-slate-300">{item.action === 'create' ? 'إضافة' : item.action === 'update' ? 'تعديل' : 'حذف'} • {item.entity}</span><span className="text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</span></div>) : <p className="text-[10px] text-slate-500">لا توجد عمليات مسجلة بعد.</p>}
+                        </div>
+                      </section>
                       <div className="space-y-4 text-right">
                         <div>
                           <label className="mb-2 block text-xs font-bold text-slate-300">اختار القسم اللي عايز تديره</label>
@@ -2505,7 +2568,7 @@ Civil & Political + Economic & Social rights.` },
                                     <option value="false">لا</option>
                                   </select>
                                 ) : (
-                                  <input type={field.type === 'number' ? 'number' : field.type === 'url' ? 'url' : 'text'} value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} placeholder={field.type === 'url' ? 'https://...' : ''} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" dir={field.key.includes('url') || field.key.includes('code') ? 'ltr' : 'auto'} />
+                                  <input type={field.type === 'number' ? 'number' : field.type === 'url' ? 'url' : field.type === 'datetime-local' ? 'datetime-local' : 'text'} value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} placeholder={field.type === 'url' ? 'https://...' : ''} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" dir={field.key.includes('url') || field.key.includes('code') ? 'ltr' : 'auto'} />
                                 )}
                               </label>
                             ))}
