@@ -2129,7 +2129,7 @@ Civil & Political + Economic & Social rights.` },
             </div>
             <div className="flex items-center gap-2 pb-2">
               <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-violet-400/30 bg-violet-500/10 px-3 py-2.5 text-xs font-bold text-violet-200">📄 {pdfBusy ? 'جاري قراءة الملف...' : 'ارفع PDF لشرحه وتلخيصه'}<input type="file" accept="application/pdf" className="hidden" disabled={pdfBusy || typing} onChange={e => { const file=e.target.files?.[0]; e.target.value=''; if(file) analyzePdf(file); }} /></label>
-              <button type="button" onClick={startVoiceInput> disabled={typing || voiceListening} className={`flex-1 rounded-xl border px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-2 ${voiceListening ? 'bg-red-500/15 border-red-400/40 text-red-300' : 'bg-cyan-950/40 border-cyan-800/40 text-cyan-200'}`}>
+              <button type="button" onClick={startVoiceInput} disabled={typing || voiceListening} className={`flex-1 rounded-xl border px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-2 ${voiceListening ? 'bg-red-500/15 border-red-400/40 text-red-300' : 'bg-cyan-950/40 border-cyan-800/40 text-cyan-200'}`}>
                 <span>{voiceListening ? '●' : '🎙️'}</span>{voiceListening ? 'جاري الاستماع...' : 'تحدث مع المساعد'}
               </button>
               <button type="button" onClick={speakLastAnswer} className="rounded-xl border border-cyan-800/40 bg-slate-900/70 text-cyan-200 px-3 py-2.5 text-xs font-bold">🔊 اقرأ آخر رد</button>
@@ -2471,8 +2471,8 @@ Civil & Political + Economic & Social rights.` },
         const [loading, setLoading] = useState(true);
         const [error, setError] = useState('');
         const isMember = !!session?.user?.id && session.user.is_anonymous !== true;
-        const loadPosts = async () => {
-          if (!isMember) return;
+        const loadPosts = async (force = false) => {
+          if (!isMember && !force) return;
           const { data, error: postError } = await supabaseClient.from('community_posts').select('id,author_id,body,created_at').order('created_at', { ascending: false }).limit(50);
           if (postError) { setError(postError.message); return; }
           const ids = [...new Set((data || []).map(p => p.author_id))];
@@ -2506,7 +2506,7 @@ Civil & Political + Economic & Social rights.` },
             setSession(current);
             if (current?.user?.id) {
               const { data: row } = await supabaseClient.from('student_profiles').select('*').eq('user_id', current.user.id).maybeSingle();
-              if (alive) { setProfile(row || null); if (row) await loadPosts(); }
+              if (alive) { setProfile(row || null); if (row) await loadPosts(true); }
             }
             if (alive) setLoading(false);
           })();
@@ -2532,12 +2532,12 @@ Civil & Political + Economic & Social rights.` },
             if (!user?.id) throw new Error('تعذر إنشاء جلسة دخول.');
             setSession(result.data.session);
             const { data: existing } = await supabaseClient.from('student_profiles').select('*').eq('user_id', user.id).maybeSingle();
-            if (existing) { setProfile(existing); await loadPosts(); }
+            if (existing) { setProfile(existing); await loadPosts(true); }
             else {
               if (displayName.trim().length < 2) { setError('اكتب اسم عرض من حرفين على الأقل لإكمال ملفك.'); return; }
               const { data: created, error: profileError } = await supabaseClient.from('student_profiles').insert({ user_id: user.id, display_name: displayName.trim(), group_name: selectedGroup }).select().single();
               if (profileError) throw profileError;
-              setProfile(created); await loadPosts();
+              setProfile(created); await loadPosts(true);
             }
           } catch (err) { setError(err?.message || 'تعذر تسجيل الدخول.'); }
           finally { setBusy(false); }
