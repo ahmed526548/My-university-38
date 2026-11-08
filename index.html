@@ -1106,7 +1106,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminEmail, setAdminEmail] = useState('');
       const [adminPassword, setAdminPassword] = useState('');
       const [adminBusy, setAdminBusy] = useState(false);
-      const [adminSelectedTable, setAdminSelectedTable] = useState('subjects');
+      const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
       const [adminRecords, setAdminRecords] = useState([]);
       const [adminDataBusy, setAdminDataBusy] = useState(false);
       const [adminFormData, setAdminFormData] = useState({});
@@ -2431,7 +2431,7 @@ Civil & Political + Economic & Social rights.` },
                           <button disabled={adminDataBusy} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
                         </form>
                         <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-extrabold text-white">السجلات الحالية ({adminRecords.length})</h3>
+                          <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
                           <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
                         </div>
                         {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs text-slate-400">مفيش سجلات في القسم ده حاليًا.</p> : (
