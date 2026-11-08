@@ -1,4 +1,4 @@
-const CACHE_NAME = "bsnu-portal-v4";
+const CACHE_NAME = "bsnu-portal-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -17,10 +17,35 @@ const CDN_HOSTS = new Set([
   "fonts.gstatic.com"
 ]);
 
+const CDN_PRECACHE = [
+  "https://cdn.tailwindcss.com",
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js",
+  "https://unpkg.com/@babel/standalone/babel.min.js",
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+  "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
+].map((url) => new Request(url, { mode: "no-cors" }));
+
+async function precachePublicLibraries(cache) {
+  await Promise.all(CDN_PRECACHE.map(async (request) => {
+    try {
+      const response = await fetch(request);
+      if (response.ok || response.type === "opaque") {
+        await cache.put(request, response);
+      }
+    } catch (_) {
+      // A failed optional CDN request must not prevent the app shell from installing.
+    }
+  }));
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then(async (cache) => {
+        await cache.addAll(APP_SHELL);
+        await precachePublicLibraries(cache);
+      })
       .then(() => self.skipWaiting())
   );
 });
