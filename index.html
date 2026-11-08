@@ -932,14 +932,14 @@
 
     // ==================== DATA ====================
     const subjectsData = [
-      { id: 1, name: 'Communication Presentation', code: 'HU101', arabicName: 'العرض والتواصل', color: 'from-sky-600 to-cyan-700', icon: 'Message' },
-      { id: 2, name: 'Scientific Thinking', code: 'HU102', arabicName: 'التفكير العلمي', color: 'from-violet-600 to-purple-700', icon: 'Sparkles' },
-      { id: 3, name: 'Math 1', code: 'MA101', arabicName: 'رياضيات 1', color: 'from-blue-600 to-indigo-700', icon: 'Calculator' },
-      { id: 4, name: 'Math 0', code: 'MA100', arabicName: 'رياضيات 0', color: 'from-cyan-600 to-teal-700', icon: 'Calculator' },
-      { id: 5, name: 'English', code: 'EN101', arabicName: 'اللغة الإنجليزية', color: 'from-emerald-600 to-green-700', icon: 'BookOpen' },
-      { id: 6, name: 'Electronics', code: 'EL101', arabicName: 'الإلكترونيات', color: 'from-amber-600 to-orange-700', icon: 'Zap' },
-      { id: 7, name: 'Fundamentals of CS', code: 'CS101', arabicName: 'أساسيات علوم الحاسب', color: 'from-cyan-600 to-sky-700', icon: 'Layers' },
-      { id: 8, name: 'Human Rights', code: 'HU103', arabicName: 'حقوق الإنسان', color: 'from-cyan-600 to-sky-700', icon: 'Users' },
+      { id: 1, name: 'Communication Presentation', code: 'HU101', arabicName: 'Communication Presentation', color: 'from-sky-600 to-cyan-700', icon: 'Message' },
+      { id: 2, name: 'Scientific Thinking', code: 'HU102', arabicName: 'Scientific Thinking', color: 'from-violet-600 to-purple-700', icon: 'Sparkles' },
+      { id: 3, name: 'Math 1', code: 'MA101', arabicName: 'Math 1', color: 'from-blue-600 to-indigo-700', icon: 'Calculator' },
+      { id: 4, name: 'Math 0', code: 'MA100', arabicName: 'Math 0', color: 'from-cyan-600 to-teal-700', icon: 'Calculator' },
+      { id: 5, name: 'English', code: 'EN101', arabicName: 'English', color: 'from-emerald-600 to-green-700', icon: 'BookOpen' },
+      { id: 6, name: 'Electronics', code: 'EL101', arabicName: 'Electronics', color: 'from-amber-600 to-orange-700', icon: 'Zap' },
+      { id: 7, name: 'Fundamentals of CS', code: 'CS101', arabicName: 'Fundamentals of CS', color: 'from-cyan-600 to-sky-700', icon: 'Layers' },
+      { id: 8, name: 'Human Rights', code: 'HU103', arabicName: 'Human Rights', color: 'from-cyan-600 to-sky-700', icon: 'Users' },
     ];
 
     // Instructor choices belong to each subject; the subject itself remains a single card.
@@ -1358,6 +1358,26 @@ Civil & Political + Economic & Social rights.` },
       const [studentPassword, setStudentPassword] = useState('');
       const [studentAuthMode, setStudentAuthMode] = useState('signin');
       const [studentAuthMessage, setStudentAuthMessage] = useState('');
+
+      // Each student chooses an academic track once; the choice is stored per account.
+      const [selectedProgram, setSelectedProgram] = useState('');
+      useEffect(() => {
+        const userId = studentSession?.user?.id;
+        if (!userId) { setSelectedProgram(''); return; }
+        setSelectedProgram(localStorage.getItem('studentProgram:' + userId) || '');
+      }, [studentSession?.user?.id]);
+      const chooseStudentProgram = (program) => {
+        const userId = studentSession?.user?.id;
+        if (!userId) return;
+        localStorage.setItem('studentProgram:' + userId, program);
+        setSelectedProgram(program);
+        if (program === 'ai') setView('home');
+      };
+      const changeStudentProgram = () => {
+        const userId = studentSession?.user?.id;
+        if (userId) localStorage.removeItem('studentProgram:' + userId);
+        setSelectedProgram('');
+      };
 
       // Restore the signed-in student with a bounded wait, so a stalled auth lock
       // never leaves the portal permanently on the verification screen.
@@ -2196,6 +2216,7 @@ Civil & Political + Economic & Social rights.` },
                   <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'burgundy' ? '#f09ab7' : portalTheme === 'violet' ? '#b49aff' : portalTheme === 'emerald' ? '#4adea8' : '#ffd166' }} />
                   <span className="home-theme-label">المظهر</span>
                 </button>
+                <button onClick={changeStudentProgram} aria-label="تغيير البرنامج الدراسي" title="تغيير البرنامج الدراسي" className="premium-icon-button home-header-action"><Icons.Layers className="h-[18px] w-[18px]" /></button>
                 <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
                 <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
               </div>
@@ -2971,6 +2992,52 @@ Civil & Political + Economic & Social rights.` },
               {studentAuthMessage && <p role="status" className="mt-4 rounded-xl border border-sky-300/20 bg-sky-400/10 px-3 py-2 text-xs leading-6 text-sky-100">{studentAuthMessage}</p>}
               {studentAuthError && <p role="alert" className="mt-4 rounded-xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs leading-6 text-red-200">{studentAuthError}</p>}
               <p className="mt-5 text-[10px] font-bold text-slate-500">بوابة جامعة بني سويف الأهلية • تسجيل دخول آمن</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (!selectedProgram) {
+        const programs = [
+          { id: 'ai', name: 'AI', subtitle: 'Artificial Intelligence', icon: '🤖', description: 'Artificial Intelligence & Data Science' },
+          { id: 'cyber', name: 'Cyber', subtitle: 'Cybersecurity', icon: '🛡️', description: 'Cybersecurity Program' },
+          { id: 'medical', name: 'Medical', subtitle: 'Medical Informatics', icon: '🩺', description: 'Medical Program' }
+        ];
+        return (
+          <div dir="rtl" className="min-h-screen overflow-hidden bg-[#061321] px-4 py-10 text-white">
+            <div className="mx-auto flex min-h-[80vh] max-w-4xl flex-col justify-center">
+              <div className="mb-10 text-center">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl border border-sky-300/25 bg-sky-400/10 text-3xl">🎓</div>
+                <p className="text-xs font-black tracking-[.24em] text-sky-300">BSNU • STUDENT PORTAL</p>
+                <h1 className="mt-3 text-2xl font-black sm:text-3xl">اختار برنامجك الدراسي</h1>
+                <p className="mt-3 text-sm text-slate-400">اختار البرنامج علشان تدخل على المحتوى الخاص بيه.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {programs.map(program => (
+                  <button key={program.id} type="button" onClick={() => chooseStudentProgram(program.id)}
+                    className="group rounded-3xl border border-sky-300/20 bg-gradient-to-br from-slate-800/95 to-slate-950/95 p-7 text-center shadow-xl transition duration-300 hover:-translate-y-1 hover:border-sky-300/60 hover:shadow-sky-950/40">
+                    <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-sky-300/20 bg-sky-400/10 text-4xl transition group-hover:scale-105">{program.icon}</span>
+                    <span dir="ltr" className="mt-5 block text-2xl font-black tracking-wide text-white">{program.name}</span>
+                    <span dir="ltr" className="mt-1 block text-xs font-bold text-sky-200">{program.subtitle}</span>
+                    <span className="mt-3 block text-[11px] text-slate-400">{program.description}</span>
+                    <span className="mt-6 block rounded-xl bg-sky-400/10 py-3 text-xs font-black text-sky-200">دخول البرنامج</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      if (selectedProgram !== 'ai') {
+        const programName = selectedProgram === 'cyber' ? 'Cyber' : 'Medical';
+        return (
+          <div dir="rtl" className="min-h-screen bg-[#061321] px-5 py-10 text-white">
+            <div className="mx-auto flex min-h-[80vh] max-w-xl flex-col items-center justify-center text-center">
+              <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-sky-300/25 bg-sky-400/10 text-5xl">{selectedProgram === 'cyber' ? '🛡️' : '🩺'}</div>
+              <p dir="ltr" className="text-3xl font-black text-sky-200">{programName}</p>
+              <h1 className="mt-4 text-xl font-black">البرنامج قيد التجهيز</h1>
+              <p className="mt-3 text-sm leading-7 text-slate-400">المحتوى الخاص بالبرنامج ده لسه مضافش. هنضيف المواد والمحاضرات قريبًا.</p>
+              <button type="button" onClick={changeStudentProgram} className="mt-8 rounded-xl bg-sky-400 px-7 py-3 text-sm font-black text-slate-950">الرجوع لاختيار البرامج</button>
             </div>
           </div>
         );
