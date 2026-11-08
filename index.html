@@ -2464,7 +2464,7 @@ Civil & Political + Economic & Social rights.` },
                       <div className="space-y-4 text-right">
                         <div>
                           <label className="mb-2 block text-xs font-bold text-slate-300">اختار القسم اللي عايز تديره</label>
-                          <select value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminJsonDraft(''); setAdminEditingId(null); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white">
+                          <select value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminEditingId(null); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white">
                             {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </div>
