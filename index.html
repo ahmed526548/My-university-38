@@ -721,7 +721,7 @@
       border-color:var(--portal-accent-border) !important;
       accent-color:var(--portal-accent) !important;
     }
-    :root[data-portal-theme] .portal-root svg { transition:color .28s ease,filter .28s ease; }
+    :root[data-portal-theme] .portal-root svg { color:var(--portal-accent) !important; transition:color .28s ease,filter .28s ease; }
     :root[data-portal-theme] .portal-root .premium-ambient { background:var(--portal-accent) !important; opacity:.13 !important; }
     :root[data-portal-theme] .portal-root .soft-nav-item[aria-current="page"] {
       color:var(--portal-accent) !important;
@@ -2121,7 +2121,7 @@ Civil & Political + Economic & Social rights.` },
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="اضغط لتغيير ألوان وشكل الموقع بالكامل" className="premium-icon-button home-theme-toggle">
-                  <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
+                  <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'burgundy' ? '#f09ab7' : portalTheme === 'violet' ? '#b49aff' : portalTheme === 'emerald' ? '#4adea8' : '#ffd166' }} />
                   <span className="home-theme-label">تغيير المظهر</span>
                 </button>
                 <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
