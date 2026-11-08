@@ -1690,6 +1690,13 @@ Civil & Political + Economic & Social rights.` },
 
         const handleBrowserBack = (event) => {
           const stack = viewHistoryRef.current;
+          // Nested lecture navigation: Android/browser Back returns from a doctor's
+          // lecture list to the instructor names before leaving the lectures screen.
+          if (viewRef.current === 'lectures' && event.state?.universityPortal && event.state.view === 'lectures') {
+            setSelectedInstructor(null);
+            return;
+          }
+
           if (stack.length > 1) {
             stack.pop();
             const previousView = (event.state && event.state.universityPortal && event.state.view)
@@ -2383,7 +2390,7 @@ Civil & Political + Economic & Social rights.` },
         return (
           <div className="min-h-screen soft-page pb-28">
             <NavBar title="المحاضرات" onBack={() => {
-              if (selectedInstructor) setSelectedInstructor(null);
+              if (selectedInstructor) window.history.back();
               else setView('subjects');
             }}
               right={<button onClick={() => toggleFav(selectedSubject?.code)} className="p-2">
@@ -2396,7 +2403,14 @@ Civil & Political + Economic & Social rights.` },
                   <p className="text-gray-400 text-sm mb-4">اختار الدكتور لعرض محاضراته</p>
                   <div className="space-y-3">
                     {instructors.map(instructor => (
-                      <button key={instructor.name} type="button" onClick={() => setSelectedInstructor(instructor.name)}
+                      <button key={instructor.name} type="button" onClick={() => {
+                        setSelectedInstructor(instructor.name);
+                        window.history.pushState(
+                          { universityPortal: true, view: 'lectures', lectureLevel: 'instructor' },
+                          '',
+                          window.location.pathname + window.location.search + '#app'
+                        );
+                      }}
                         className="glass soft-panel card-hover w-full rounded-2xl p-4 text-right flex items-center justify-between gap-3">
                         <span className="flex items-center gap-3">
                           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><Icons.User className="h-5 w-5" /></span>
