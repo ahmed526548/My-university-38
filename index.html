@@ -1146,6 +1146,7 @@ Civil & Political + Economic & Social rights.` },
           if (!active) return;
           setStudentSession(session || null);
           if (event === 'PASSWORD_RECOVERY') {
+            setStudentEmail(session?.user?.email || '');
             setStudentAuthMode('update');
             setStudentAuthMessage('اكتب كلمة المرور الجديدة لحسابك.');
           }
