@@ -1489,6 +1489,18 @@ Civil & Political + Economic & Social rights.` },
         return () => { active = false; };
       }, [studentSession?.user?.id]);
 
+      // Record one visit whenever a real student opens the portal with an authenticated account.
+      useEffect(() => {
+        const user = studentSession?.user;
+        if (!user?.id || user.is_anonymous || !supabaseClient) return;
+        let active = true;
+        (async () => {
+          const { error } = await supabaseClient.rpc('record_student_visit');
+          if (error && active) console.warn('تعذر تسجيل زيارة الطالب:', error.message);
+        })();
+        return () => { active = false; };
+      }, [studentSession?.user?.id]);
+
       const handleGoogleStudentLogin = async () => {
         if (!supabaseClient || studentAuthBusy) return;
         setStudentAuthBusy(true);
