@@ -2694,14 +2694,15 @@ Civil & Political + Economic & Social rights.` },
       };
       const TimerView = () => {
         const readMinutes = (key, fallback) => { try { const n=Number.parseInt(localStorage.getItem(key)||'',10); return Number.isFinite(n)&&n>=1&&n<=180?String(n):String(fallback); } catch { return String(fallback); } };
-        const [focusMinutes,setFocusMinutes] = useState(() => readMinutes('studyFocusMinutes',25));
-        const [breakMinutes,setBreakMinutes] = useState(() => readMinutes('studyBreakMinutes',5));
-        const [timerSeconds,setTimerSeconds] = useState(() => Number(readMinutes('studyFocusMinutes',25))*60);
+        const timerPrefsKey = studentSession?.user?.id || 'device';
+        const [focusMinutes,setFocusMinutes] = useState(() => readMinutes('studyFocusMinutes:' + timerPrefsKey,25));
+        const [breakMinutes,setBreakMinutes] = useState(() => readMinutes('studyBreakMinutes:' + timerPrefsKey,5));
+        const [timerSeconds,setTimerSeconds] = useState(() => Number(readMinutes('studyFocusMinutes:' + timerPrefsKey,25))*60);
         const [timerRunning,setTimerRunning] = useState(false);
         const [timerMode,setTimerMode] = useState('focus');
         const [timerNotice,setTimerNotice] = useState('');
         const focusSeconds=Math.max(1,Number.parseInt(focusMinutes,10)||25)*60, breakSeconds=Math.max(1,Number.parseInt(breakMinutes,10)||5)*60, currentTotal=timerMode==='focus'?focusSeconds:breakSeconds;
-        useEffect(() => { try { if(+focusMinutes>=1&&+focusMinutes<=180)localStorage.setItem('studyFocusMinutes',String(focusMinutes)); if(+breakMinutes>=1&&+breakMinutes<=180)localStorage.setItem('studyBreakMinutes',String(breakMinutes)); } catch {} },[focusMinutes,breakMinutes]);
+        useEffect(() => { try { if(+focusMinutes>=1&&+focusMinutes<=180)localStorage.setItem('studyFocusMinutes:' + timerPrefsKey,String(focusMinutes)); if(+breakMinutes>=1&&+breakMinutes<=180)localStorage.setItem('studyBreakMinutes:' + timerPrefsKey,String(breakMinutes)); } catch {} },[focusMinutes,breakMinutes,timerPrefsKey]);
         useEffect(() => { if(!timerRunning)return; const id=setInterval(()=>setTimerSeconds(v=>v>0?v-1:0),1000); return ()=>clearInterval(id); },[timerRunning]);
         useEffect(() => { if(timerSeconds!==0)return; setTimerRunning(false); setTimerNotice(timerMode==='focus'?'انتهى وقت التركيز! خذ استراحة ☕':'انتهت الاستراحة، عد للتركيز 💪'); const next=timerMode==='focus'?'break':'focus'; setTimerMode(next); setTimerSeconds(next==='break'?breakSeconds:focusSeconds); },[timerSeconds,timerMode,focusSeconds,breakSeconds]);
         const updateDuration=(mode,value)=>{ (mode==='focus'?setFocusMinutes:setBreakMinutes)(value); const n=Number.parseInt(value,10); if(!timerRunning&&Number.isFinite(n)&&n>=1&&n<=180&&timerMode===mode)setTimerSeconds(n*60); setTimerNotice(''); };
