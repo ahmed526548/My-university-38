@@ -627,6 +627,121 @@
       .portal-root button, .portal-root a { transition: none !important; }
     }
 
+
+    /* Theme v3: synchronize every portal surface, icon and first-screen component */
+    :root[data-portal-theme] { color-scheme: dark; }
+    :root[data-portal-theme] body,
+    :root[data-portal-theme] #root,
+    :root[data-portal-theme] .portal-root {
+      background:
+        radial-gradient(ellipse at 12% 2%,var(--portal-accent-glow),transparent 36%),
+        radial-gradient(ellipse at 88% 28%,var(--portal-accent-soft),transparent 34%),
+        var(--portal-overlay) !important;
+      color:var(--portal-text) !important;
+      transition:background .35s ease,color .35s ease;
+    }
+    :root[data-portal-theme] .portal-root .premium-home,
+    :root[data-portal-theme] .portal-root .soft-page,
+    :root[data-portal-theme] .portal-root > .min-h-screen,
+    :root[data-portal-theme] .portal-root .premium-home > .premium-container {
+      background:transparent !important;
+      color:var(--portal-text) !important;
+    }
+    :root[data-portal-theme] .portal-root .premium-header,
+    :root[data-portal-theme] .portal-root .premium-welcome,
+    :root[data-portal-theme] .portal-root .premium-shortcut,
+    :root[data-portal-theme] .portal-root .premium-panel,
+    :root[data-portal-theme] .portal-root .premium-progress-card,
+    :root[data-portal-theme] .portal-root .premium-lecture-row,
+    :root[data-portal-theme] .portal-root .premium-empty-state,
+    :root[data-portal-theme] .portal-root .premium-group-choice,
+    :root[data-portal-theme] .portal-root .premium-tool-tile,
+    :root[data-portal-theme] .portal-root .premium-secondary-cta,
+    :root[data-portal-theme] .portal-root .developer-footer > div {
+      background:linear-gradient(145deg,var(--portal-surface),var(--portal-surface-2)) !important;
+      color:var(--portal-text) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:0 14px 36px rgba(0,0,0,.24),0 0 22px var(--portal-accent-glow),inset 0 1px 0 rgba(255,255,255,.055) !important;
+      transition:background .32s ease,border-color .32s ease,box-shadow .32s ease,color .32s ease;
+    }
+    :root[data-portal-theme] .portal-root .premium-brand-mark,
+    :root[data-portal-theme] .portal-root .premium-shortcut-icon,
+    :root[data-portal-theme] .portal-root .premium-eyebrow,
+    :root[data-portal-theme] .portal-root .premium-date-chip,
+    :root[data-portal-theme] .portal-root .premium-time-chip,
+    :root[data-portal-theme] .portal-root .premium-favorite-chip,
+    :root[data-portal-theme] .portal-root .premium-group-choice.is-selected {
+      color:var(--portal-accent) !important;
+      background:var(--portal-accent-soft) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:0 0 20px var(--portal-accent-glow) !important;
+    }
+    :root[data-portal-theme] .portal-root .premium-highlight,
+    :root[data-portal-theme] .portal-root .premium-kicker,
+    :root[data-portal-theme] .portal-root .premium-header .home-university-name,
+    :root[data-portal-theme] .portal-root .premium-icon-button,
+    :root[data-portal-theme] .portal-root [class*="text-sky-"],
+    :root[data-portal-theme] .portal-root [class*="text-cyan-"],
+    :root[data-portal-theme] .portal-root [class*="text-blue-"] {
+      color:var(--portal-accent) !important;
+    }
+    :root[data-portal-theme] .portal-root .premium-header h1,
+    :root[data-portal-theme] .portal-root .premium-welcome h1,
+    :root[data-portal-theme] .portal-root .premium-welcome h2,
+    :root[data-portal-theme] .portal-root .premium-welcome h3 {
+      color:var(--portal-text) !important;
+    }
+    :root[data-portal-theme] .portal-root .premium-primary-cta {
+      color:var(--portal-bg-deep) !important;
+      background:linear-gradient(135deg,var(--portal-accent),var(--portal-accent-border)) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:0 10px 28px var(--portal-accent-glow) !important;
+    }
+    :root[data-portal-theme] .portal-root .premium-icon-button,
+    :root[data-portal-theme] .portal-root .home-theme-toggle {
+      background:var(--portal-accent-soft) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:0 0 18px var(--portal-accent-glow) !important;
+    }
+    :root[data-portal-theme] .portal-root [class*="bg-slate-"],
+    :root[data-portal-theme] .portal-root [class*="bg-gray-"],
+    :root[data-portal-theme] .portal-root [class*="bg-[#"] {
+      background-color:var(--portal-surface-2) !important;
+    }
+    :root[data-portal-theme] .portal-root [class*="border-slate-"],
+    :root[data-portal-theme] .portal-root [class*="border-gray-"] {
+      border-color:var(--portal-accent-border) !important;
+    }
+    :root[data-portal-theme] .portal-root .soft-control,
+    :root[data-portal-theme] .portal-root input,
+    :root[data-portal-theme] .portal-root textarea,
+    :root[data-portal-theme] .portal-root select {
+      background:var(--portal-input) !important;
+      color:var(--portal-text) !important;
+      border-color:var(--portal-accent-border) !important;
+      accent-color:var(--portal-accent) !important;
+    }
+    :root[data-portal-theme] .portal-root svg { transition:color .28s ease,filter .28s ease; }
+    :root[data-portal-theme] .portal-root .premium-ambient { background:var(--portal-accent) !important; opacity:.13 !important; }
+    :root[data-portal-theme] .portal-root .soft-nav-item[aria-current="page"] {
+      color:var(--portal-accent) !important;
+      background:var(--portal-accent-soft) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:inset 0 0 0 1px var(--portal-accent-border),0 0 20px var(--portal-accent-glow) !important;
+    }
+    :root[data-portal-theme] .portal-root .home-theme-label { display:inline !important; }
+    @media (max-width:640px) {
+      :root[data-portal-theme] .portal-root .premium-icon-button.home-theme-toggle {
+        width:auto !important; min-width:35px !important; padding:0 8px !important; gap:5px !important;
+      }
+      :root[data-portal-theme] .portal-root .home-theme-label { display:inline !important; font-size:9px !important; }
+    }
+    @media (max-width:420px) {
+      :root[data-portal-theme] .portal-root .home-theme-toggle {
+        width:auto !important; min-width:34px !important; padding:0 7px !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2005,9 +2120,9 @@ Civil & Political + Economic & Social rights.` },
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع" className="premium-icon-button home-theme-toggle">
+                <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="اضغط لتغيير ألوان وشكل الموقع بالكامل" className="premium-icon-button home-theme-toggle">
                   <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
-                  <span className="home-theme-label">المظهر</span>
+                  <span className="home-theme-label">تغيير المظهر</span>
                 </button>
                 <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
                 <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
