@@ -1253,16 +1253,12 @@ Civil & Political + Economic & Social rights.` },
       const [input, setInput] = useState('');
       const [typing, setTyping] = useState(false);
       const [gpaCourses, setGpaCourses] = useState([{ name: '', grade: '', hours: '' }]);
-      const [timerSeconds, setTimerSeconds] = useState(25 * 60);
-      const [timerRunning, setTimerRunning] = useState(false);
-      const [timerMode, setTimerMode] = useState('focus'); // focus | break
       const [noteText, setNoteText] = useState('');
       const [noteTitle, setNoteTitle] = useState('');
       const [editingNote, setEditingNote] = useState(null);
       const [globalSearch, setGlobalSearch] = useState('');
       const [showSearch, setShowSearch] = useState(false);
       const endRef = useRef(null);
-      const timerRef = useRef(null);
 
       // Restore the Supabase session and independently verify admin membership.
       useEffect(() => {
@@ -1412,18 +1408,7 @@ Civil & Political + Economic & Social rights.` },
       useEffect(() => { if (selectedGroup) localStorage.setItem('group', selectedGroup); }, [selectedGroup]);
       useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chat, typing]);
 
-      // Timer
-      useEffect(() => {
-        if (timerRunning && timerSeconds > 0) {
-          timerRef.current = setInterval(() => setTimerSeconds(s => s - 1), 1000);
-        } else if (timerSeconds === 0) {
-          setTimerRunning(false);
-          setToast(timerMode === 'focus' ? 'انتهى وقت التركيز! خذ استراحة ☕' : 'انتهت الاستراحة، عد للتركيز 💪');
-          if (timerMode === 'focus') { setTimerMode('break'); setTimerSeconds(5 * 60); }
-          else { setTimerMode('focus'); setTimerSeconds(25 * 60); }
-        }
-        return () => clearInterval(timerRef.current);
-      }, [timerRunning, timerSeconds, timerMode]);
+      // Timer state is isolated inside TimerView so its one-second updates never rerender the whole portal.
 
       const showToast = (msg, type = 'success') => setToast({ msg, type });
 
@@ -2217,7 +2202,24 @@ Civil & Political + Economic & Social rights.` },
         </div>
       );
 
-      const TimerView = () => (
+      const TimerView = () => {
+        const [timerSeconds, setTimerSeconds] = useState(25 * 60);
+        const [timerRunning, setTimerRunning] = useState(false);
+        const [timerMode, setTimerMode] = useState('focus');
+        const [timerNotice, setTimerNotice] = useState('');
+        useEffect(() => {
+          if (!timerRunning) return;
+          const intervalId = setInterval(() => setTimerSeconds(seconds => seconds > 0 ? seconds - 1 : 0), 1000);
+          return () => clearInterval(intervalId);
+        }, [timerRunning]);
+        useEffect(() => {
+          if (timerSeconds !== 0) return;
+          setTimerRunning(false);
+          setTimerNotice(timerMode === 'focus' ? 'انتهى وقت التركيز! خذ استراحة ☕' : 'انتهت الاستراحة، عد للتركيز 💪');
+          setTimerMode(mode => mode === 'focus' ? 'break' : 'focus');
+          setTimerSeconds(timerMode === 'focus' ? 5 * 60 : 25 * 60);
+        }, [timerSeconds, timerMode]);
+        return (
         <div className="min-h-screen bg-[#030c13] flex flex-col items-center justify-center p-6">
           <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-cyan-400 font-semibold text-sm">
             <Icons.ChevronRight className="w-5 h-5" /> العودة
@@ -2255,8 +2257,10 @@ Civil & Political + Economic & Social rights.` },
             <button onClick={() => { setTimerMode('break'); setTimerSeconds(5 * 60); setTimerRunning(false); }}
               className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'break' ? 'bg-green-600 text-white' : 'bg-cyan-950/40 text-gray-400'}`}>استراحة 5</button>
           </div>
+          {timerNotice && <p className="mt-5 text-sm text-cyan-300 text-center">{timerNotice}</p>}
         </div>
-      );
+        );
+      };
 
       const GPAView = () => (
         <div className="min-h-screen bg-[#030c13] pb-8">
