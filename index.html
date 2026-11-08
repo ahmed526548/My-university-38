@@ -1578,7 +1578,7 @@ Civil & Political + Economic & Social rights.` },
           setChat(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: data.answer, time: formatTime() }]);
         } catch (err) {
           const message = err?.message || 'تعذر الاتصال بالمساعد حالياً.';
-          setChat(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: message + '\\n\\nلو دي أول مرة تستخدم المساعد، قد نحتاج تفعيل Anonymous Sign-ins في Supabase وإضافة مفتاح Gemini في Secrets.', time: formatTime() }]);
+          setChat(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: message, time: formatTime() }]);
         } finally {
           setTyping(false);
         }
