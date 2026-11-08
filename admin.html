@@ -1133,7 +1133,7 @@ Civil & Political + Economic & Social rights.` },
         { value: 'community_reports', label: 'بلاغات المجتمع' },
         { value: 'community_posts', label: 'منشورات المجتمع' },
         { value: 'community_comments', label: 'تعليقات المجتمع' },
-        { value: 'student_profiles', label: 'ملفات الطلاب' }
+        { value: 'student_profiles', label: 'ملفات الطلاب المسجلين' }
       ];
       const adminFieldConfig = {
         subjects: [
@@ -1406,7 +1406,11 @@ Civil & Political + Economic & Social rights.` },
       const loadAdminRecords = async (table = adminSelectedTable) => {
         if (!supabaseClient || !adminAllowed || !adminSession) return;
         setAdminDataBusy(true);
-        const { data, error } = await supabaseClient.from(table).select('*').limit(150);
+        let query = supabaseClient.from(table).select('*').limit(150);
+        if (table === 'student_profiles') {
+          query = query.not('last_seen_at', 'is', null).order('last_seen_at', { ascending: false });
+        }
+        const { data, error } = await query;
         setAdminDataBusy(false);
         if (error) { showToast('تعذر تحميل البيانات: ' + error.message, 'error'); return; }
         setAdminRecords(data || []);
@@ -1475,12 +1479,12 @@ Civil & Political + Economic & Social rights.` },
         if (!adminAllowed || !adminSession) return;
         const countRows = async (table, filters = []) => {
           let query = supabaseClient.from(table).select('*', { count: 'exact', head: true });
-          filters.forEach(([key, value]) => { query = query.eq(key, value); });
+          filters.forEach(([key, value]) => { query = value === 'not-null' ? query.not(key, 'is', null) : query.eq(key, value); });
           const result = await query;
           return result.count || 0;
         };
         const [students, posts, reports, tasks, activityResult, viewsResult] = await Promise.all([
-          countRows('student_profiles'), countRows('community_posts'), countRows('community_reports', [['status','open']]),
+          countRows('student_profiles', [['last_seen_at','not-null']]), countRows('community_posts'), countRows('community_reports', [['status','open']]),
           countRows('student_tasks'), supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8),
           supabaseClient.from('lecture_views').select('lecture_id,lectures(title,subject_code)').limit(2000)
         ]);
@@ -2537,7 +2541,7 @@ Civil & Political + Economic & Social rights.` },
                       </div>
                       <section className="mb-4 space-y-3">
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          {[['ملفات الطلاب المسجلين',adminOverview.students],['منشورات المجتمع',adminOverview.posts],['بلاغات مفتوحة',adminOverview.reports],['التكليفات',adminOverview.tasks]].map(([label,value])=><div key={label} className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3"><div className="text-[10px] text-slate-400">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div></div>)}
+                          {[['ملفات الطلاب المسجلين',adminOverview.students],['منشورات المجتمع',adminOverview.posts],['بلاغات مفتوحة',adminOverview.reports],['التكليفات',adminOverview.tasks]].map(([label,value])=>label === 'ملفات الطلاب المسجلين' ? <button type="button" key={label} onClick={() => { setAdminSelectedTable('student_profiles'); setAdminEditingId(null); }} className="rounded-xl border border-sky-300/25 bg-sky-400/10 p-3 text-right transition hover:bg-sky-400/15"><div className="text-[10px] text-slate-300">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div><div className="mt-1 text-[9px] text-sky-300">اضغط لعرض الطلاب الذين زاروا الموقع</div></button> : <div key={label} className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3"><div className="text-[10px] text-slate-400">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div></div>)}
                         </div>
                         <div className="rounded-xl border border-sky-300/15 bg-slate-950/30 p-3">
                           <div className="mb-2 flex items-center justify-between"><b className="text-xs text-white">سجل النشاط الإداري</b><button type="button" onClick={loadAdminOverview} className="text-[10px] text-sky-300">تحديث</button></div>
@@ -2552,7 +2556,7 @@ Civil & Political + Economic & Social rights.` },
                             {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </div>
-                        <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
+                        {adminSelectedTable !== 'student_profiles' && <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
                           <div className="flex items-center justify-between gap-2">
                             <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل البيانات' : 'إضافة سجل جديد'}</h3>
                             {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminFormData({}); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
@@ -2594,14 +2598,30 @@ Civil & Political + Economic & Social rights.` },
                             ))}
                           </div>
                           <button disabled={adminDataBusy || (adminEditingId === null && ['community_reports','community_comments','student_profiles'].includes(adminSelectedTable))} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
-                        </form>
+                        </form>}
                         <div className="flex items-center justify-between">
-                          <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
+                          <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : adminSelectedTable === 'student_profiles' ? 'سجل زيارات الطلاب' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
                           <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
                         </div>
                         {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs text-slate-400">مفيش سجلات في القسم ده حاليًا.</p> : (
                           <div className="max-h-[460px] space-y-2 overflow-y-auto">
-                            {adminSelectedTable === 'lectures' ? (
+                            {adminSelectedTable === 'student_profiles' ? (
+                              adminRecords.map((record, index) => (
+                                <div key={record.user_id || index} className="rounded-xl border border-sky-300/20 bg-slate-900/80 p-4">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <p className="truncate text-sm font-black text-white">{record.display_name || 'طالب بدون اسم'}</p>
+                                      <p className="mt-1 text-xs text-slate-400">{record.group_name || 'لم يحدد الجروب'}</p>
+                                    </div>
+                                    <span className="shrink-0 rounded-lg bg-sky-400/10 px-2 py-1 text-[10px] font-bold text-sky-200">{record.visit_count || 0} زيارة</span>
+                                  </div>
+                                  <div className="mt-3 grid grid-cols-1 gap-2 border-t border-white/5 pt-3 text-[10px] text-slate-400 sm:grid-cols-2">
+                                    <p>أول زيارة: <span className="text-slate-200">{record.first_seen_at ? new Date(record.first_seen_at).toLocaleString('ar-EG') : 'غير متاحة'}</span></p>
+                                    <p>آخر زيارة: <span className="text-slate-200">{record.last_seen_at ? new Date(record.last_seen_at).toLocaleString('ar-EG') : 'غير متاحة'}</span></p>
+                                  </div>
+                                </div>
+                              ))
+                            ) : adminSelectedTable === 'lectures' ? (
                               Object.entries(adminRecords.reduce((groups, record) => {
                                 const code = record.subject_code || 'بدون مادة';
                                 (groups[code] ||= []).push(record);
