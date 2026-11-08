@@ -1945,7 +1945,7 @@ Civil & Political + Economic & Social rights.` },
 
       const isCompleted = (code, lecId) => !!completed[`${code}-${lecId}`];
 
-      const getProgress = (code) =>      const getProgress = (code) => {
+      const getProgress = (code) => {
         const lec = allLecturesData[code] || allLecturesData.default;
         const ready = lec.filter(l => l.hasContent).length;
         const done = lec.filter(l => isCompleted(code, l.id)).length;
@@ -2721,7 +2721,7 @@ Civil & Political + Economic & Social rights.` },
           </div>
         );
       };
-      const GPAView = () => (      const GPAView = () => (
+      const GPAView = () => (
         <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="حاسبة المعدل" onBack={() => setView('home')} />
           <div className="px-4 pt-3">
@@ -2870,7 +2870,7 @@ Civil & Political + Economic & Social rights.` },
           </div>
         );
       };
-      const TasksView = () => {      const TasksView = () => {
+      const TasksView = () => {
         const [tasks, setTasks] = useState([]);
         const [busy, setBusy] = useState(true);
         useEffect(() => {
