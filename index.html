@@ -1083,7 +1083,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminSelectedTable, setAdminSelectedTable] = useState('subjects');
       const [adminRecords, setAdminRecords] = useState([]);
       const [adminDataBusy, setAdminDataBusy] = useState(false);
-      const [adminJsonDraft, setAdminJsonDraft] = useState('');
+      const [adminFormData, setAdminFormData] = useState({});
       const [adminEditingId, setAdminEditingId] = useState(null);
       const adminTableOptions = [
         { value: 'subjects', label: 'المواد الدراسية' },
@@ -1093,6 +1093,47 @@ Civil & Political + Economic & Social rights.` },
         { value: 'schedule_items', label: 'محاضرات الجدول' },
         { value: 'announcements', label: 'الإعلانات' }
       ];
+      const adminFieldConfig = {
+        subjects: [
+          { key: 'code', label: 'كود المادة', required: true },
+          { key: 'name', label: 'اسم المادة بالإنجليزية', required: true },
+          { key: 'arabic_name', label: 'اسم المادة بالعربية' },
+          { key: 'sort_order', label: 'ترتيب الظهور', type: 'number' }
+        ],
+        lectures: [
+          { key: 'subject_code', label: 'كود المادة', required: true },
+          { key: 'title', label: 'عنوان المحاضرة', required: true },
+          { key: 'doctor', label: 'اسم الدكتور' },
+          { key: 'duration', label: 'مدة المحاضرة' },
+          { key: 'summary_ar', label: 'ملخص المحاضرة بالعربية', type: 'textarea' },
+          { key: 'summary_en', label: 'ملخص المحاضرة بالإنجليزية', type: 'textarea' },
+          { key: 'file_url', label: 'رابط ملف المحاضرة' },
+          { key: 'has_content', label: 'يوجد محتوى للمحاضرة؟', type: 'boolean' },
+          { key: 'sort_order', label: 'ترتيب الظهور', type: 'number' }
+        ],
+        schedule_days: [
+          { key: 'day_name', label: 'اسم اليوم', required: true },
+          { key: 'sort_order', label: 'ترتيب اليوم', type: 'number' }
+        ],
+        schedule_slots: [
+          { key: 'day_id', label: 'رقم اليوم (day_id)', type: 'number', required: true },
+          { key: 'time_label', label: 'موعد المحاضرة', required: true },
+          { key: 'sort_order', label: 'ترتيب الموعد', type: 'number' }
+        ],
+        schedule_items: [
+          { key: 'slot_id', label: 'رقم الموعد (slot_id)', type: 'number', required: true },
+          { key: 'subject', label: 'اسم المادة', required: true },
+          { key: 'doctor', label: 'اسم الدكتور' },
+          { key: 'hall', label: 'المدرج / القاعة' },
+          { key: 'group_name', label: 'الجروب' }
+        ],
+        announcements: [
+          { key: 'title', label: 'عنوان الإعلان', required: true },
+          { key: 'body', label: 'محتوى الإعلان', type: 'textarea', required: true },
+          { key: 'type', label: 'نوع الإعلان', required: true },
+          { key: 'published', label: 'نشر الإعلان؟', type: 'boolean' }
+        ]
+      };
       const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
       const [portalTheme, setPortalTheme] = useState(() => {
         try {
@@ -1298,12 +1339,14 @@ Civil & Political + Economic & Social rights.` },
       const saveAdminRecord = async (event) => {
         event.preventDefault();
         if (!adminAllowed || !adminSession) return;
-        let payload;
-        try { payload = JSON.parse(adminJsonDraft); }
-        catch { showToast('صيغة JSON غير صحيحة', 'error'); return; }
-        if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
-          showToast('اكتب سجلًا واحدًا بصيغة JSON', 'error'); return;
+        const payload = {};
+        for (const field of adminFieldConfig[adminSelectedTable]) {
+          const value = adminFormData[field.key];
+          if (value === undefined || value === null || value === '') continue;
+          payload[field.key] = field.type === 'number' ? Number(value) : field.type === 'boolean' ? value === 'true' : value;
         }
+        const missingField = adminFieldConfig[adminSelectedTable].find(field => field.required && (payload[field.key] === undefined || payload[field.key] === ''));
+        if (missingField) { showToast('من فضلك اكتب: ' + missingField.label, 'error'); return; }
         setAdminDataBusy(true);
         let result;
         if (adminEditingId !== null) {
@@ -1314,7 +1357,7 @@ Civil & Political + Economic & Social rights.` },
         }
         setAdminDataBusy(false);
         if (result.error) { showToast('لم يتم الحفظ: ' + result.error.message, 'error'); return; }
-        setAdminJsonDraft(''); setAdminEditingId(null);
+        setAdminFormData({}); setAdminEditingId(null);
         showToast(adminEditingId !== null ? 'تم تحديث السجل' : 'تمت إضافة السجل');
         await loadAdminRecords(adminSelectedTable);
       };
@@ -1324,7 +1367,12 @@ Civil & Political + Economic & Social rights.` },
           showToast('هذا السجل لا يحتوي على حقل id', 'error'); return;
         }
         setAdminEditingId(record.id);
-        setAdminJsonDraft(JSON.stringify(record, null, 2));
+        const values = {};
+        adminFieldConfig[adminSelectedTable].forEach(field => {
+          const value = record[field.key];
+          values[field.key] = field.type === 'boolean' ? String(Boolean(value)) : value === null || value === undefined ? '' : String(value);
+        });
+        setAdminFormData(values);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
@@ -2256,14 +2304,31 @@ Civil & Political + Economic & Social rights.` },
                             {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </div>
-                        <form onSubmit={saveAdminRecord} className="space-y-2 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
+                        <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
                           <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل سجل موجود' : 'إضافة سجل جديد'}</h3>
-                            {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminJsonDraft(''); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
+                            <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل البيانات' : 'إضافة سجل جديد'}</h3>
+                            {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminFormData({}); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
                           </div>
-                          <p className="text-[11px] leading-5 text-slate-400">اكتب بيانات السجل بصيغة JSON حسب أعمدة الجدول. عند تعديل سجل، سيظهر هنا محتواه الحالي.</p>
-                          <textarea value={adminJsonDraft} onChange={e => setAdminJsonDraft(e.target.value)} rows={7} dir="ltr" placeholder={'{\n  "name": "اسم المادة",\n  "code": "CS101"\n}'} className="w-full rounded-xl border border-slate-600 bg-slate-950 p-3 font-mono text-xs text-sky-100 outline-none focus:border-sky-400" />
-                          <button disabled={adminDataBusy || !adminJsonDraft.trim()} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري التنفيذ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
+                          <p className="text-[11px] leading-5 text-slate-400">املأ الخانات التالية، وسيتم حفظ البيانات مباشرة في قاعدة البيانات.</p>
+                          <div className="grid grid-cols-1 gap-3">
+                            {adminFieldConfig[adminSelectedTable].map(field => (
+                              <label key={field.key} className="block text-xs font-bold text-slate-300">
+                                <span className="mb-1.5 block">{field.label}{field.required ? ' *' : ''}</span>
+                                {field.type === 'textarea' ? (
+                                  <textarea value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} rows={3} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-2.5 text-sm text-white" />
+                                ) : field.type === 'boolean' ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    <option value="">اختار الحالة</option>
+                                    <option value="true">نعم</option>
+                                    <option value="false">لا</option>
+                                  </select>
+                                ) : (
+                                  <input type={field.type === 'number' ? 'number' : 'text'} value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" dir={field.key.includes('url') || field.key.includes('code') ? 'ltr' : 'auto'} />
+                                )}
+                              </label>
+                            ))}
+                          </div>
+                          <button disabled={adminDataBusy} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
                         </form>
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-extrabold text-white">السجلات الحالية ({adminRecords.length})</h3>
