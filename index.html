@@ -2448,6 +2448,18 @@ Civil & Political + Economic & Social rights.` },
                 <div className="flex justify-between"><span>الجروب</span><span className="text-cyan-400">{selectedGroup || '—'}</span></div>
               </div>
             </div>
+            <button onClick={async () => {
+              try {
+                const registration = await navigator.serviceWorker.ready;
+                const worker = registration.active || registration.waiting;
+                if (!worker) throw new Error('خدمة العمل دون إنترنت لم تجهز بعد.');
+                worker.postMessage({ type: 'CACHE_OFFLINE_SHELL' });
+                showToast('بدأ تجهيز نسخة التطبيق للعمل دون إنترنت. افتح المنصة مرة بالإنترنت حتى تكتمل الملفات.');
+              } catch (error) { showToast(error.message || 'تعذر تجهيز وضع عدم الاتصال', 'error'); }
+            }} className="w-full glass border border-sky-300/30 text-sky-200 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+              <Icons.Download className="w-4 h-4" /> تجهيز التطبيق للعمل دون إنترنت
+            </button>
+            <p className="px-1 text-[10px] leading-5 text-slate-500">سيتم حفظ واجهة التطبيق والمكتبات الأساسية. المساعد الذكي والمجتمع والإشعارات والبيانات المباشرة تحتاج اتصالاً بالإنترنت.</p>
             <button onClick={() => {
               if (confirm('هل أنت متأكد من مسح كل البيانات المحلية؟')) {
                 localStorage.clear();
