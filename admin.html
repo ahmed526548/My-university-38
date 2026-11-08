@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#07151d" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./admin-manifest.webmanifest" />
+  <link rel="icon" href="./admin-icon.svg" type="image/svg+xml" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="بوابتي" />
+  <meta name="application-name" content="إدارة بوابتي" />
+  <meta name="apple-mobile-web-app-title" content="إدارة بوابتي" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     // Register the offline app worker. It caches the app shell and public UI libraries.
@@ -19,7 +20,7 @@
     }
   </script>
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>لوحة إدارة بوابة الجامعة | Admin</title>
+  <title>إدارة بوابتي | لوحة الأدمن</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
@@ -593,6 +594,19 @@
       .premium-ambient { display:none; }
       .premium-shortcut:hover { transform:none; }
     }
+
+  
+    /* Admin-only identity: burgundy, emerald and warm gold accents */
+    :root { --admin-burgundy:#a33b5d; --admin-green:#2aa879; --admin-gold:#d8ad58; --admin-sky:#69c8ee; }
+    body { background:
+      radial-gradient(ellipse at 8% 5%, rgba(163,59,93,.13), transparent 32%),
+      radial-gradient(ellipse at 92% 18%, rgba(42,168,121,.10), transparent 30%),
+      radial-gradient(ellipse at 50% 100%, rgba(216,173,88,.07), transparent 38%),
+      #07101f; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline:2px solid var(--admin-gold); outline-offset:3px;
+    }
+    .admin-brand-accent { color:var(--admin-gold); }
 
   </style>
   <style>
