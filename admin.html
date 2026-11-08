@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#07151d" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="بوابتي" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    // One-time cleanup of stale installed service workers and cached app files.
+    // This prevents older app-shell versions from masking newly deployed HTML.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        const resetKey = "bsnu-portal-cache-reset-v1";
+        if (sessionStorage.getItem(resetKey) === "done") return;
+        sessionStorage.setItem(resetKey, "done");
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+          if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+          }
+          const freshUrl = new URL(window.location.href);
+          freshUrl.searchParams.set("fresh", "1");
+          window.location.replace(freshUrl.href);
+        } catch (error) {
+          console.warn("تعذر تنظيف النسخة القديمة:", error);
+        }
+      });
+    }
+  </script>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>بوابة جامعة بني سويف الأهلية | BSNU Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+          colors: {
+            uni: {
+              50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9',
+              400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490',
+              800: '#155e75', 900: '#164e63', 950: '#083344'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.35s ease-out',
+            'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            pulseSoft: { '0%, 100%': { opacity: '0.4' }, '50%': { opacity: '0.8' } },
+            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Cairo', sans-serif; background: #07101f; margin: 0; overflow-x: hidden; color: #e5edf7; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #07151d; }
+    ::-webkit-scrollbar-thumb { background: #155e75; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0e7490; }
+    .glass { background: linear-gradient(145deg, rgba(22, 39, 62, .76), rgba(10, 23, 42, .68)); border: 1px solid rgba(186, 220, 255, .10); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .glass-strong { background: rgba(8, 18, 34, .88); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+    .soft-panel { background: linear-gradient(145deg, rgba(24, 43, 68, .78), rgba(10, 23, 42, .72)); border: 1px solid rgba(186, 220, 255, .12); box-shadow: 0 14px 38px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255,255,255,.035); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .soft-surface { background: rgba(15, 31, 52, .68); border: 1px solid rgba(170, 211, 245, .09); }
+    .soft-control { background: rgba(7, 19, 36, .72); border: 1px solid rgba(125, 190, 225, .18); transition: border-color .22s ease, background .22s ease, box-shadow .22s ease; }
+    .soft-control:focus { outline: none; border-color: rgba(125, 211, 252, .58); box-shadow: 0 0 0 3px rgba(56, 189, 248, .08); }
+    .soft-nav-shell { background: rgba(7, 17, 32, .84); border: 1px solid rgba(186, 220, 255, .12); box-shadow: 0 12px 40px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+    .soft-nav-item { min-width: 58px; transition: color .22s ease, background .22s ease, transform .22s ease; }
+    .soft-nav-item[aria-current="page"] { color: #bae6fd; background: rgba(56,189,248,.11); box-shadow: inset 0 0 0 1px rgba(125,211,252,.13); }
+    .soft-nav-item:active { transform: scale(.95); }
+    .soft-chat-user { background: linear-gradient(135deg, rgba(14,116,144,.88), rgba(8,82,111,.84)); border: 1px solid rgba(125,211,252,.18); }
+    .soft-chat-assistant { background: rgba(19, 35, 57, .78); border: 1px solid rgba(186,220,255,.11); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+    .soft-page { background: radial-gradient(ellipse at 50% -15%, rgba(56,189,248,.10), transparent 48%), linear-gradient(180deg,#091629 0%,#07101f 58%,#050c18 100%); }
+    @keyframes softPageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .portal-root > .min-h-screen { padding-bottom: max(7rem, calc(6rem + env(safe-area-inset-bottom))); animation: softPageEnter .32s ease-out both; }
+    @media (prefers-reduced-motion: reduce) { .portal-root > .min-h-screen { animation: none; } }
+    .glow-cyan { box-shadow: 0 0 40px rgba(6, 182, 212, 0.15); }
+    .glow-text { text-shadow: 0 0 30px rgba(34, 211, 238, 0.4); }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-4px); border-color: rgba(34, 211, 238, 0.5); box-shadow: 0 12px 40px rgba(6, 182, 212, 0.12); }
+    .message-enter { animation: slideUp 0.3s ease-out; }
+
+    /* University welcome splash screen */
+    @keyframes splashFadeOut {
+      0%, 78% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; pointer-events: none; }
+    }
+    @keyframes splashMarkIn {
+      0% { opacity: 0; transform: translateY(14px) scale(.82); }
+      55% { opacity: 1; transform: translateY(-3px) scale(1.04); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes splashRing {
+      0% { transform: scale(.82); opacity: .65; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+    @keyframes splashProgress {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    .splash-screen {
+      animation: splashFadeOut 2.35s ease-in-out forwards;
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(8,145,178,.22), transparent 42%),
+        linear-gradient(160deg, #071923 0%, #030c13 58%, #02070b 100%);
+    }
+    .splash-mark { animation: splashMarkIn .85s .12s cubic-bezier(.2,.7,.2,1) both; }
+    .splash-ring { animation: splashRing 1.8s .35s ease-out infinite; }
+    .splash-progress { transform-origin: right; animation: splashProgress 1.85s .25s ease-out both; }
+    @media (prefers-reduced-motion: reduce) {
+      .splash-screen { animation-duration: .8s; }
+      .splash-mark { animation-duration: .01ms; }
+      .splash-ring { animation: none; }
+      .splash-progress { animation-duration: .5s; }
+    }
+
+    /* Smooth cyan motion system */
+    @keyframes riseIn {
+      from { opacity: 0; transform: translate3d(0, 18px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes softGlow {
+      0%, 100% { box-shadow: 0 8px 28px rgba(6,182,212,0.08); }
+      50% { box-shadow: 0 12px 38px rgba(6,182,212,0.18); }
+    }
+    .home-enter { animation: riseIn .65s cubic-bezier(.2,.7,.2,1) both; }
+    .home-hero { animation: riseIn .75s .08s cubic-bezier(.2,.7,.2,1) both; }
+    .home-stagger > * { animation: riseIn .55s cubic-bezier(.2,.7,.2,1) both; }
+    .home-stagger > *:nth-child(1) { animation-delay: .08s; }
+    .home-stagger > *:nth-child(2) { animation-delay: .16s; }
+    .home-stagger > *:nth-child(3) { animation-delay: .24s; }
+    .home-stagger > *:nth-child(4) { animation-delay: .32s; }
+    .home-stagger > *:nth-child(5) { animation-delay: .40s; }
+    .home-stagger > *:nth-child(6) { animation-delay: .48s; }
+    .home-stagger > *:nth-child(7) { animation-delay: .56s; }
+    .home-action {
+      transition: transform .28s cubic-bezier(.2,.7,.2,1), border-color .28s ease,
+        box-shadow .28s ease, background-color .28s ease;
+      will-change: transform;
+    }
+    .home-action:active { transform: scale(.975); }
+    .home-action:focus-visible, button:focus-visible {
+      outline: 2px solid rgba(34,211,238,.8);
+      outline-offset: 3px;
+    }
+    .nav-action { transition: color .2s ease, transform .2s ease, background-color .2s ease; }
+    .nav-action:active { transform: scale(.92); }
+    .glow-cyan { box-shadow: 0 10px 32px rgba(56,189,248,.10); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+    @keyframes bounce-dot {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-5px); }
+    }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    input, textarea, button { font-family: inherit; }
+    .progress-ring { transition: stroke-dashoffset 0.6s ease; }
+  
+    /* Site-wide Premium Soft Glass refresh */
+    :root { color-scheme: dark; --portal-sky: #7dd3fc; --portal-cyan: #67e8f9; }
+    html, body, #root { min-height: 100%; background: #061321 !important; }
+    body {
+      color: #e7f4ff !important;
+      background:
+        radial-gradient(ellipse at 12% 4%, rgba(56,189,248,.16), transparent 34%),
+        radial-gradient(ellipse at 88% 24%, rgba(34,211,238,.10), transparent 30%),
+        linear-gradient(155deg, #071827 0%, #081321 52%, #030b14 100%) !important;
+      background-attachment: fixed !important;
+    }
+    .glass, .glass-strong, .soft-panel, .soft-surface, .soft-nav-shell {
+      background: linear-gradient(145deg, rgba(20,43,67,.82), rgba(7,22,39,.78)) !important;
+      border: 1px solid rgba(125,211,252,.18) !important;
+      box-shadow: 0 14px 38px rgba(0,0,0,.24), inset 0 1px 0 rgba(226,245,255,.06) !important;
+      -webkit-backdrop-filter: blur(20px) saturate(135%) !important;
+      backdrop-filter: blur(20px) saturate(135%) !important;
+    }
+    .soft-nav-shell { background: rgba(5,18,33,.90) !important; border-color: rgba(125,211,252,.22) !important; }
+    .soft-nav-item[aria-current="page"] { color: #e0f2fe !important; background: rgba(56,189,248,.18) !important; }
+    .home-action, .card-hover { transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease !important; }
+    .home-action:hover, .card-hover:hover { border-color: rgba(125,211,252,.34) !important; box-shadow: 0 16px 42px rgba(2,132,199,.13) !important; }
+    input, textarea, select, button { accent-color: #38bdf8; }
+    input:focus, textarea:focus, select:focus { outline-color: rgba(56,189,248,.65) !important; }
+    ::selection { background: rgba(56,189,248,.32); color: #f0f9ff; }
+    @media (prefers-reduced-motion: no-preference) {
+      .home-hero { animation: portalHeroIn .55s ease both; }
+      @keyframes portalHeroIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    }
+
+
+    /* Clearly visible v2 visual refresh: brighter sky-glass surfaces */
+    .portal-root {
+      --ui-sky: #38bdf8;
+      --ui-cyan: #22d3ee;
+      background: #061526 !important;
+    }
+    .portal-root .soft-page,
+    .portal-root > .relative {
+      background:
+        radial-gradient(ellipse at 14% 0%, rgba(14,165,233,.23), transparent 38%),
+        radial-gradient(ellipse at 88% 38%, rgba(34,211,238,.14), transparent 34%),
+        linear-gradient(155deg,#0b2035 0%,#071729 52%,#040d19 100%) !important;
+    }
+    .portal-root .soft-panel,
+    .portal-root .glass,
+    .portal-root .glass-strong,
+    .portal-root .soft-surface,
+    .portal-root .soft-nav-shell {
+      background: linear-gradient(135deg,rgba(19,54,82,.94),rgba(7,26,47,.92)) !important;
+      border: 1px solid rgba(125,211,252,.32) !important;
+      box-shadow: 0 16px 42px rgba(0,8,22,.34), 0 0 24px rgba(14,165,233,.09), inset 0 1px 0 rgba(224,242,254,.12) !important;
+      -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
+      backdrop-filter: blur(22px) saturate(155%) !important;
+    }
+    .portal-root .home-hero {
+      border-color: rgba(103,232,249,.48) !important;
+      background:
+        radial-gradient(ellipse at 50% 0%,rgba(56,189,248,.22),transparent 58%),
+        linear-gradient(135deg,rgba(17,61,91,.96),rgba(7,25,45,.96)) !important;
+      box-shadow: 0 22px 60px rgba(2,132,199,.18), inset 0 1px 0 rgba(224,242,254,.16) !important;
+    }
+    .portal-root [class*="bg-[#0a1a24]"],
+    .portal-root [class*="bg-[#0b1b25]"],
+    .portal-root [class*="bg-[#102631]"] {
+      background: linear-gradient(135deg,rgba(18,54,82,.92),rgba(8,29,50,.94)) !important;
+      border-color: rgba(125,211,252,.24) !important;
+    }
+    .portal-root .soft-control {
+      background: rgba(3,18,34,.88) !important;
+      border: 1px solid rgba(125,211,252,.34) !important;
+      border-radius: 14px !important;
+    }
+    .portal-root .soft-control:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 4px rgba(56,189,248,.16), 0 0 24px rgba(34,211,238,.12) !important;
+    }
+    .portal-root .soft-nav-shell {
+      background: rgba(4,19,35,.96) !important;
+      border-color: rgba(103,232,249,.42) !important;
+      box-shadow: 0 12px 36px rgba(0,0,0,.46), 0 0 26px rgba(14,165,233,.13) !important;
+    }
+    .portal-root .soft-nav-item[aria-current="page"] {
+      color: #e0f7ff !important;
+      background: linear-gradient(145deg,rgba(14,165,233,.34),rgba(34,211,238,.16)) !important;
+      box-shadow: inset 0 0 0 1px rgba(125,211,252,.42), 0 0 18px rgba(56,189,248,.14) !important;
+    }
+    .portal-root button:not(.soft-nav-item) {
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease, transform .2s ease !important;
+    }
+    .portal-root button:hover {
+      border-color: rgba(125,211,252,.48);
+    }
+    .portal-root .card-hover:hover {
+      transform: translateY(-3px) !important;
+      box-shadow: 0 18px 42px rgba(2,132,199,.2) !important;
+    }
+    .portal-root h1, .portal-root h2, .portal-root h3 {
+      text-shadow: 0 1px 18px rgba(56,189,248,.10);
+    }
+    .portal-root .glow-cyan {
+      box-shadow: 0 0 34px rgba(56,189,248,.24) !important;
+    }
+    ::selection { background: rgba(56,189,248,.42); color: #f0faff; }
+
+
+    /* Developer credit and tidy social links */
+    .developer-footer { clear: both; }
+    .developer-social-link {
+      display:flex; width:42px; height:42px; align-items:center; justify-content:center;
+      border:1px solid var(--portal-accent-border,rgba(125,211,252,.3));
+      border-radius:14px; color:var(--portal-accent,#7dd3fc);
+      background:var(--portal-accent-soft,rgba(56,189,248,.10));
+      transition:transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .developer-social-link:hover { transform:translateY(-2px); background:var(--portal-accent-soft); border-color:var(--portal-accent); }
+    .developer-social-link:focus-visible { outline:2px solid var(--portal-accent); outline-offset:3px; }
+    @media (max-width:420px) {
+      .developer-footer { padding-left:12px; padding-right:12px; }
+      .developer-social-link { width:40px; height:40px; }
+    }
+
+    /* Full-site color themes: each palette changes the entire portal, not only accents */
+    :root {
+      --portal-accent:#38bdf8; --portal-accent-soft:rgba(56,189,248,.18);
+      --portal-accent-border:rgba(125,211,252,.34); --portal-accent-glow:rgba(14,165,233,.16);
+      --portal-bg:#071827; --portal-bg-deep:#030b15; --portal-surface:rgba(13,38,60,.94);
+      --portal-surface-2:rgba(8,27,46,.96); --portal-text:#f0f9ff; --portal-muted:#a9c2d5;
+      --portal-input:rgba(3,18,34,.88); --portal-overlay:linear-gradient(180deg,#0b2438 0%,#061525 58%,#030b15 100%);
+    }
+    :root[data-portal-theme="violet"] {
+      --portal-accent:#b49aff; --portal-accent-soft:rgba(167,139,250,.20);
+      --portal-accent-border:rgba(196,181,253,.38); --portal-accent-glow:rgba(139,92,246,.18);
+      --portal-bg:#17122b; --portal-bg-deep:#0b0818; --portal-surface:rgba(39,31,68,.95);
+      --portal-surface-2:rgba(25,19,48,.97); --portal-text:#f5f0ff; --portal-muted:#c2b5df;
+      --portal-input:rgba(18,13,37,.9); --portal-overlay:linear-gradient(180deg,#21183c 0%,#120d25 58%,#090615 100%);
+    }
+    :root[data-portal-theme="emerald"] {
+      --portal-accent:#4adea8; --portal-accent-soft:rgba(52,211,153,.19);
+      --portal-accent-border:rgba(110,231,183,.36); --portal-accent-glow:rgba(16,185,129,.17);
+      --portal-bg:#08231e; --portal-bg-deep:#03120f; --portal-surface:rgba(15,57,47,.95);
+      --portal-surface-2:rgba(7,37,30,.97); --portal-text:#ecfdf5; --portal-muted:#a9d3c3;
+      --portal-input:rgba(4,27,22,.9); --portal-overlay:linear-gradient(180deg,#10392f 0%,#08231d 58%,#03120f 100%);
+    }
+    :root[data-portal-theme="amber"] {
+      --portal-accent:#ffd166; --portal-accent-soft:rgba(251,191,36,.18);
+      --portal-accent-border:rgba(252,211,77,.38); --portal-accent-glow:rgba(245,158,11,.17);
+      --portal-bg:#261b0b; --portal-bg-deep:#120c04; --portal-surface:rgba(67,47,20,.95);
+      --portal-surface-2:rgba(39,27,10,.97); --portal-text:#fff8e8; --portal-muted:#dfc99f;
+      --portal-input:rgba(30,20,7,.92); --portal-overlay:linear-gradient(180deg,#3a2912 0%,#211707 58%,#100a03 100%);
+    }
+    :root[data-portal-theme] body,
+    :root[data-portal-theme] .portal-root {
+      background:var(--portal-bg) !important; color:var(--portal-text) !important;
+      transition:background .28s ease,color .28s ease;
+    }
+    :root[data-portal-theme] .portal-root .soft-page,
+    :root[data-portal-theme] .portal-root > .min-h-screen {
+      background:var(--portal-overlay) !important; color:var(--portal-text) !important;
+    }
+    :root[data-portal-theme] .portal-root .min-h-screen > .absolute.inset-0 {
+      background:var(--portal-overlay) !important;
+    }
+    :root[data-portal-theme] .portal-root .soft-panel,
+    :root[data-portal-theme] .portal-root .glass,
+    :root[data-portal-theme] .portal-root .glass-strong,
+    :root[data-portal-theme] .portal-root .soft-surface,
+    :root[data-portal-theme] .portal-root .soft-nav-shell,
+    :root[data-portal-theme] .portal-root .soft-chat-assistant {
+      background:linear-gradient(145deg,var(--portal-surface),var(--portal-surface-2)) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:0 12px 30px rgba(0,0,0,.22),0 0 20px var(--portal-accent-glow),inset 0 1px 0 rgba(255,255,255,.05) !important;
+    }
+    :root[data-portal-theme] .portal-root .soft-control,
+    :root[data-portal-theme] .portal-root input,
+    :root[data-portal-theme] .portal-root textarea,
+    :root[data-portal-theme] .portal-root select {
+      background-color:var(--portal-input) !important; color:var(--portal-text) !important;
+      border-color:var(--portal-accent-border) !important; accent-color:var(--portal-accent) !important;
+    }
+    :root[data-portal-theme] .portal-root input::placeholder,
+    :root[data-portal-theme] .portal-root textarea::placeholder { color:var(--portal-muted) !important; }
+    :root[data-portal-theme] .portal-root .soft-nav-item[aria-current="page"],
+    :root[data-portal-theme] .portal-root .home-hero {
+      color:var(--portal-text) !important; background-color:var(--portal-accent-soft) !important;
+      border-color:var(--portal-accent-border) !important;
+      box-shadow:0 16px 42px var(--portal-accent-glow),inset 0 0 0 1px var(--portal-accent-border) !important;
+    }
+    :root[data-portal-theme] .portal-root [class*="text-cyan-"],
+    :root[data-portal-theme] .portal-root [class*="text-sky-"] { color:var(--portal-accent) !important; }
+    :root[data-portal-theme] .portal-root [class*="border-cyan-"],
+    :root[data-portal-theme] .portal-root [class*="border-sky-"] { border-color:var(--portal-accent-border) !important; }
+    :root[data-portal-theme] .portal-root [class*="bg-cyan-"],
+    :root[data-portal-theme] .portal-root [class*="bg-sky-"] { background-color:var(--portal-accent-soft) !important; }
+    :root[data-portal-theme] .portal-root .text-slate-400,
+    :root[data-portal-theme] .portal-root .text-slate-500,
+    :root[data-portal-theme] .portal-root .text-gray-400 { color:var(--portal-muted) !important; }
+    :root[data-portal-theme] .portal-root button:focus-visible,
+    :root[data-portal-theme] .portal-root a:focus-visible {
+      outline:2px solid var(--portal-accent) !important; outline-offset:3px;
+    }
+    /* Lighter effects on phones to reduce GPU work while scrolling */
+    @media (max-width: 768px) {
+      body { background-attachment: scroll !important; }
+      .portal-root .soft-panel,
+      .portal-root .glass,
+      .portal-root .glass-strong,
+      .portal-root .soft-surface,
+      .portal-root .soft-nav-shell {
+        -webkit-backdrop-filter: blur(10px) !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 8px 22px rgba(0,0,0,.22) !important;
+      }
+      .portal-root .home-hero,
+      .portal-root .home-enter,
+      .portal-root .home-stagger > *,
+      .portal-root .portal-root > .min-h-screen {
+        animation-duration: .18s !important;
+      }
+      .portal-root .card-hover:hover { transform: none !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+  
+    /* Compact, evenly spaced mobile navigation */
+    .portal-root .soft-nav-shell { gap: 4px !important; }
+    .portal-root .soft-nav-item { flex: 1 1 0 !important; min-width: 0 !important; padding-inline: 3px !important; }
+    .portal-root .soft-nav-item svg { width: 18px !important; height: 18px !important; flex: 0 0 auto !important; }
+    .portal-root .soft-nav-item span { font-size: 9px !important; line-height: 1.1 !important; letter-spacing: 0 !important; }
+    @media (max-width: 360px) {
+      .portal-root .soft-nav-shell { padding-inline: 5px !important; }
+      .portal-root .soft-nav-item { padding-inline: 1px !important; }
+      .portal-root .soft-nav-item svg { width: 17px !important; height: 17px !important; }
+      .portal-root .soft-nav-item span { font-size: 8px !important; }
+    }
+
+    /* Mobile header fit: keep the university name readable beside compact actions */
+    @media (max-width: 420px) {
+      .portal-root .home-enter { gap: 8px !important; padding: 9px 10px !important; }
+      .portal-root .home-enter > div:first-child { gap: 8px !important; flex: 1 1 auto !important; min-width: 0 !important; }
+      .portal-root .home-university-name { display:block !important; white-space:normal !important; overflow:visible !important; font-size:9px !important; line-height:1.25 !important; }
+      .portal-root .home-theme-toggle,
+      .portal-root .home-header-action { width:34px !important; height:34px !important; min-width:34px !important; padding:0 !important; justify-content:center !important; }
+      .portal-root .home-theme-label { display:none !important; }
+      .portal-root .home-theme-toggle > span:first-child { width:13px !important; height:13px !important; }
+      .portal-root .home-header-action svg { width:17px !important; height:17px !important; }
+      .portal-root .home-enter > div:last-child { gap:5px !important; }
+    }
+    /* Performance mode for phones: remove costly blur filters and decorative motion */
+    @media (max-width: 768px) {
+      .portal-root [class*="blur-3xl"],
+      .portal-root [class*="blur-2xl"],
+      .portal-root .splash-screen { filter:none !important; display:none !important; animation:none !important; }
+      .portal-root .soft-panel,
+      .portal-root .glass,
+      .portal-root .glass-strong,
+      .portal-root .soft-surface,
+      .portal-root .soft-nav-shell {
+        -webkit-backdrop-filter:none !important;
+        backdrop-filter:none !important;
+        box-shadow:0 5px 14px rgba(0,0,0,.16) !important;
+      }
+      .portal-root .card-hover { transition:none !important; }
+    }
+
+    /* PREMIUM NAVY REDESIGN — unified visual language across every portal view */
+    :root {
+      --premium-bg:#071321;
+      --premium-deep:#040c17;
+      --premium-surface:rgba(13,29,49,.92);
+      --premium-surface-2:rgba(10,23,40,.96);
+      --premium-line:rgba(125,181,220,.15);
+      --premium-line-strong:rgba(91,190,245,.30);
+      --premium-text:#edf6ff;
+      --premium-muted:#91a8bf;
+      --premium-accent:#66c8f5;
+      --premium-accent-soft:rgba(56,189,248,.12);
+    }
+    html,body,#root { background:var(--premium-bg) !important; }
+    body {
+      color:var(--premium-text) !important;
+      background:
+        radial-gradient(ellipse at 12% 0%,rgba(31,111,166,.16),transparent 38%),
+        radial-gradient(ellipse at 88% 28%,rgba(28,89,137,.11),transparent 34%),
+        linear-gradient(160deg,#08182a 0%,#071321 52%,#040b15 100%) !important;
+      background-attachment:fixed !important;
+    }
+    .portal-root { color:var(--premium-text) !important; background:transparent !important; }
+    .portal-root .soft-page,
+    .portal-root > .min-h-screen {
+      background:linear-gradient(180deg,rgba(9,26,45,.98),rgba(5,14,26,.99)) !important;
+    }
+    .portal-root .glass,
+    .portal-root .glass-strong,
+    .portal-root .soft-panel,
+    .portal-root .soft-surface,
+    .portal-root .soft-nav-shell,
+    .portal-root .soft-chat-assistant {
+      background:linear-gradient(145deg,rgba(17,39,63,.94),rgba(8,21,38,.96)) !important;
+      border:1px solid var(--premium-line) !important;
+      box-shadow:0 12px 30px rgba(0,0,0,.20),inset 0 1px 0 rgba(230,244,255,.045) !important;
+      -webkit-backdrop-filter:blur(12px) saturate(120%) !important;
+      backdrop-filter:blur(12px) saturate(120%) !important;
+    }
+    .portal-root .soft-control,
+    .portal-root input,
+    .portal-root textarea,
+    .portal-root select {
+      background:rgba(4,14,27,.86) !important;
+      color:var(--premium-text) !important;
+      border:1px solid var(--premium-line-strong) !important;
+      border-radius:12px;
+    }
+    .portal-root input::placeholder,.portal-root textarea::placeholder { color:#71879d !important; }
+    .portal-root button:focus-visible,.portal-root a:focus-visible {
+      outline:2px solid var(--premium-accent) !important; outline-offset:3px;
+    }
+    .portal-root [class*="text-cyan-"],.portal-root [class*="text-sky-"] { color:var(--premium-accent) !important; }
+    .portal-root [class*="border-cyan-"],.portal-root [class*="border-sky-"] { border-color:var(--premium-line-strong) !important; }
+    .portal-root .soft-nav-shell {
+      max-width:440px !important;
+      border-radius:20px !important;
+      padding:8px 10px !important;
+      background:rgba(5,16,30,.96) !important;
+      border-color:rgba(104,190,237,.24) !important;
+      box-shadow:0 14px 40px rgba(0,0,0,.42) !important;
+    }
+    .portal-root .soft-nav-item { min-height:52px; border-radius:14px !important; gap:5px !important; }
+    .portal-root .soft-nav-item[aria-current="page"] {
+      color:#e5f6ff !important;
+      background:linear-gradient(145deg,rgba(35,133,190,.24),rgba(56,189,248,.09)) !important;
+      box-shadow:inset 0 0 0 1px rgba(103,200,245,.20) !important;
+    }
+    .portal-root .soft-nav-item svg { width:19px !important;height:19px !important; }
+    .portal-root .soft-nav-item span { font-size:10px !important; }
+    .portal-root .developer-footer > div { background:rgba(5,16,30,.78) !important; border-color:var(--premium-line) !important; }
+
+    /* Home dashboard */
+    .premium-home { isolation:isolate; background:transparent !important; }
+    .premium-container { max-width:1160px !important; }
+    .premium-ambient { position:absolute; pointer-events:none; border-radius:9999px; filter:blur(70px); opacity:.20; z-index:0; }
+    .premium-ambient-one { width:280px;height:280px;top:90px;left:-120px;background:#168ac4; }
+    .premium-ambient-two { width:250px;height:250px;top:430px;right:-130px;background:#155a91; }
+    .premium-header {
+      background:rgba(8,23,40,.82) !important;
+      border:1px solid rgba(128,190,225,.18) !important;
+      box-shadow:0 12px 32px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.04) !important;
+      backdrop-filter:blur(14px);
+    }
+    .premium-brand-mark {
+      color:#9bdfff;
+      background:linear-gradient(145deg,rgba(56,189,248,.20),rgba(15,75,116,.18));
+      border:1px solid rgba(112,201,244,.25);
+      box-shadow:0 8px 24px rgba(14,116,174,.12);
+    }
+    .premium-header .home-university-name { color:#8ccce9 !important; }
+    .premium-header h1 { color:#f2f8ff !important; }
+    .premium-icon-button {
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      min-width:40px;height:40px;padding:0 11px;border-radius:12px;
+      color:#b7d9ed;background:rgba(23,65,96,.30);
+      border:1px solid rgba(114,181,220,.20);
+      transition:background .18s ease,border-color .18s ease,transform .18s ease;
+    }
+    .premium-icon-button:hover { background:rgba(39,111,157,.24);border-color:rgba(117,204,244,.42); }
+    .premium-icon-button:active { transform:scale(.96); }
+    .premium-welcome {
+      position:relative;
+      background:
+        radial-gradient(ellipse at 82% 0%,rgba(49,154,208,.20),transparent 44%),
+        linear-gradient(125deg,rgba(17,48,76,.98),rgba(8,24,43,.98)) !important;
+      border:1px solid rgba(112,193,235,.22) !important;
+      box-shadow:0 22px 54px rgba(0,0,0,.25),inset 0 1px 0 rgba(236,248,255,.06) !important;
+    }
+    .premium-eyebrow { color:#a9e4ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.18); }
+    .premium-highlight { color:#8bd8ff; }
+    .premium-primary-cta { color:#052039;background:linear-gradient(135deg,#8bdcff,#42b8ed);box-shadow:0 8px 22px rgba(56,189,248,.18); }
+    .premium-primary-cta:hover { filter:brightness(1.06); }
+    .premium-secondary-cta { color:#d5ecfa;background:rgba(9,28,48,.58);border:1px solid rgba(137,197,229,.24); }
+    .premium-progress-card { background:rgba(4,17,32,.50);border:1px solid rgba(140,202,235,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+    .premium-kicker { color:#6eaed0;font-size:9px;font-weight:800;letter-spacing:.16em; }
+    .premium-shortcut {
+      min-height:94px;
+      background:linear-gradient(145deg,rgba(17,43,68,.94),rgba(8,23,41,.96));
+      border:1px solid rgba(119,177,211,.16);
+      box-shadow:0 10px 26px rgba(0,0,0,.14);
+      transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    }
+    .premium-shortcut:hover { transform:translateY(-2px);border-color:rgba(112,199,241,.38);background:linear-gradient(145deg,rgba(20,54,82,.96),rgba(8,25,45,.98)); }
+    .premium-shortcut-icon { color:#8bd8ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.16); }
+    .premium-panel {
+      background:linear-gradient(145deg,rgba(15,35,57,.94),rgba(8,21,38,.97));
+      border:1px solid rgba(119,177,211,.15);
+      box-shadow:0 12px 30px rgba(0,0,0,.16);
+    }
+    .premium-date-chip,.premium-time-chip { color:#a9e4ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.15); }
+    .premium-lecture-row { background:rgba(3,15,28,.38);border:1px solid rgba(126,182,214,.10); }
+    .premium-empty-state { color:#9bb2c7;background:rgba(4,16,29,.46);border:1px dashed rgba(113,174,210,.24); }
+    .premium-group-choice { background:rgba(4,17,31,.52);border:1px solid rgba(126,182,214,.14); }
+    .premium-group-choice.is-selected { background:rgba(33,115,164,.18);border-color:rgba(112,199,241,.40); }
+    .premium-favorite-chip { color:#b9e8ff;background:rgba(56,189,248,.10);border:1px solid rgba(125,211,252,.18); }
+    .premium-tool-tile { min-height:78px;background:rgba(13,32,52,.86);border:1px solid rgba(119,177,211,.14);transition:border-color .18s ease,background .18s ease; }
+    .premium-tool-tile:hover { background:rgba(20,53,80,.90);border-color:rgba(112,199,241,.34); }
+    @media (max-width:640px) {
+      .premium-container { padding-left:14px !important;padding-right:14px !important; }
+      .premium-header { padding:9px 10px !important;gap:7px !important; }
+      .premium-brand-mark { width:38px !important;height:38px !important; }
+      .premium-icon-button { min-width:35px !important;width:35px !important;height:35px !important;padding:0 !important;border-radius:11px !important; }
+      .premium-icon-button .home-theme-label { display:none !important; }
+      .premium-welcome { border-radius:24px !important; }
+      .premium-progress-card { max-width:none !important; }
+      .premium-shortcut { min-height:78px !important;padding:12px !important; }
+      .premium-shortcut-icon { width:42px !important;height:42px !important; }
+      .premium-ambient { filter:blur(45px);opacity:.12; }
+    }
+    @media (max-width:360px) {
+      .premium-container { padding-left:10px !important;padding-right:10px !important; }
+      .premium-header .home-university-name { font-size:8px !important; }
+      .premium-header h1 { font-size:14px !important; }
+    }
+    @media (max-width:768px) {
+      .portal-root .glass,.portal-root .glass-strong,.portal-root .soft-panel,.portal-root .soft-surface,.portal-root .soft-nav-shell,.portal-root .soft-chat-assistant {
+        -webkit-backdrop-filter:none !important;backdrop-filter:none !important;
+      }
+      .premium-ambient { display:none; }
+      .premium-shortcut:hover { transform:none; }
+    }
+
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    // Supabase public client configuration. Keep secret/service-role keys out of the browser.
+    const SUPABASE_URL = 'https://azlplcbphvaiexmyfdbp.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
+    const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
+
+    // ==================== ICONS (Expanded & Improved) ====================
+    const Icon = ({ d, className = "w-5 h-5", strokeWidth = 1.8 }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <path d={d} />
+      </svg>
+    );
+
+    const Icons = {
+      BookOpen: (p) => <Icon {...p} d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />,
+      Bot: (p) => <Icon {...p} d="M12 8V4H8M2 14h2M20 14h2M15 13v2M9 13v2M12 18v4M8 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z" />,
+      Calendar: (p) => <Icon {...p} d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />,
+      Search: (p) => <Icon {...p} d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3" />,
+      ChevronRight: (p) => <Icon {...p} d="M9 18l6-6-6-6" />,
+      ChevronLeft: (p) => <Icon {...p} d="M15 18l-6-6 6-6" />,
+      Send: (p) => <Icon {...p} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
+      User: (p) => <Icon {...p} d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />,
+      Clock: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2" />,
+      MapPin: (p) => <Icon {...p} d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
+      Eye: (p) => <Icon {...p} d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      Download: (p) => <Icon {...p} d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+      Star: (p) => <Icon {...p} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />,
+      X: (p) => <Icon {...p} d="M18 6L6 18M6 6l12 12" />,
+      Check: (p) => <Icon {...p} d="M20 6L9 17l-5-5" />,
+      CheckCircle: (p) => <Icon {...p} d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3" />,
+      Home: (p) => <Icon {...p} d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10" />,
+      Settings: (p) => <Icon {...p} d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      Note: (p) => <Icon {...p} d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" />,
+      Calculator: (p) => <Icon {...p} d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />,
+      Timer: (p) => <Icon {...p} d="M10 2h4M12 14v-4M4.93 4.93l1.41 1.41M2 12h2M19.07 4.93l-1.41 1.41M22 12h-2M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" />,
+      Bell: (p) => <Icon {...p} d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />,
+      Trophy: (p) => <Icon {...p} d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" />,
+      Flame: (p) => <Icon {...p} d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />,
+      Zap: (p) => <Icon {...p} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />,
+      Plus: (p) => <Icon {...p} d="M12 5v14M5 12h14" />,
+      Trash: (p) => <Icon {...p} d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />,
+      Edit: (p) => <Icon {...p} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />,
+      Filter: (p) => <Icon {...p} d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />,
+      Share: (p) => <Icon {...p} d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />,
+      Moon: (p) => <Icon {...p} d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />,
+      Sun: (p) => <Icon {...p} d="M12 3v1M12 20v1M4.22 4.22l.71.71M18.36 18.36l.71.71M1 12h1M21 12h1M4.22 19.78l.71-.71M18.36 5.64l.71-.71M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />,
+      Info: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01" />,
+      Graduation: (p) => <Icon {...p} d="M22 10v6M2 10l10-5 10 5-10 5zM6 12v5c3 3 9 3 12 0v-5" />,
+      Layers: (p) => <Icon {...p} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
+      Target: (p) => <Icon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />,
+      Message: (p) => <Icon {...p} d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+      Sparkles: (p) => <Icon {...p} d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM19 14l.75 2.25L22 17l-2.25.75L19 20l-.75-2.25L16 17l2.25-.75L19 14zM5 6l.5 1.5L7 8l-1.5.5L5 10l-.5-1.5L3 8l1.5-.5L5 6z" />,
+      Refresh: (p) => <Icon {...p} d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />,
+      Copy: (p) => <Icon {...p} d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />,
+      External: (p) => <Icon {...p} d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />,
+      Facebook: (p) => <Icon {...p} d="M14 8h3V4h-3a5 5 0 0 0-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9a1 1 0 0 1 1-1z" />,
+      Instagram: (p) => <Icon {...p} d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM17.5 6.5h.01" />,
+      WhatsApp: (p) => <Icon {...p} d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5zM9 8.5c.3-.6.6-.6.9-.6h.5c.2 0 .4.1.5.4l.7 1.6c.1.2.1.4-.1.6l-.5.6c-.2.2-.2.4 0 .6.5.9 1.3 1.6 2.2 2.1.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.4.5 0 .4-.2 1.2-.7 1.6-.5.4-1.1.6-1.8.5-1-.1-2.3-.7-3.7-1.9-1.2-1.1-2-2.4-2.2-3.3-.2-.8 0-1.5.4-2.1z" />,
+    };
+
+    // ==================== DATA ====================
+    const subjectsData = [
+      { id: 1, name: 'Communication Presentation', code: 'HU101', arabicName: 'العرض والتواصل', color: 'from-sky-600 to-cyan-700', icon: 'Message' },
+      { id: 2, name: 'Scientific Thinking', code: 'HU102', arabicName: 'التفكير العلمي', color: 'from-violet-600 to-purple-700', icon: 'Sparkles' },
+      { id: 3, name: 'Math 1', code: 'MA101', arabicName: 'رياضيات 1', color: 'from-blue-600 to-indigo-700', icon: 'Calculator' },
+      { id: 4, name: 'Math 0', code: 'MA100', arabicName: 'رياضيات 0', color: 'from-cyan-600 to-teal-700', icon: 'Calculator' },
+      { id: 5, name: 'English', code: 'EN101', arabicName: 'اللغة الإنجليزية', color: 'from-emerald-600 to-green-700', icon: 'BookOpen' },
+      { id: 6, name: 'Electronics', code: 'EL101', arabicName: 'الإلكترونيات', color: 'from-amber-600 to-orange-700', icon: 'Zap' },
+      { id: 7, name: 'Fundamentals of CS', code: 'CS101', arabicName: 'أساسيات علوم الحاسب', color: 'from-cyan-600 to-sky-700', icon: 'Layers' },
+      { id: 8, name: 'Human Rights', code: 'HU103', arabicName: 'حقوق الإنسان', color: 'from-cyan-600 to-sky-700', icon: 'Users' },
+    ];
+
+    // Instructor choices belong to each subject; the subject itself remains a single card.
+    const instructorsBySubject = {
+      MA101: [
+        { name: 'دكتورة دعاء', note: 'Group 1' },
+        { name: 'دكتور محمد حسين', note: 'Group 2' },
+        { name: 'دكتور عبدالمنعم', note: '' }
+      ],
+      MA100: [{ name: 'دكتور عبدالمنعم', note: '' }],
+      EN101: [{ name: 'دكتورة شيماء', note: '' }],
+      HU102: [{ name: 'دكتور حمادة محمود', note: '' }],
+      HU101: [{ name: 'دكتور طه', note: '' }],
+      EL101: [
+        { name: 'دكتور شريف', note: '' },
+        { name: 'دكتورة سلمى', note: 'سكشن' }
+      ],
+      CS101: [{ name: 'دكتور محمد قايد', note: '' }],
+      HU103: [{ name: 'دكتور عادل أبو هشيمة', note: '' }]
+    };
+    const normalizeDoctorName = (value = '') => String(value)
+      .replace(/^(دكتور|دكتورة|د\.|م\.)\s*/i, '')
+      .replace(/[\s.ـ]/g, '')
+      .replace(/[أإآ]/g, 'ا')
+      .replace(/ة/g, 'ه')
+      .replace(/عادلي/g, 'عادل')
+      .toLowerCase();
+
+    const allLecturesData = {
+      'CS101': [
+        {
+          id: 1, title: 'المحاضرة الأولى: Introduction (مقدمة)', doctor: 'د. محمد قايد', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `أهلاً بك في عالم علوم الحاسب! 🚀
+
+الحاسب آلة ذكية تعمل وفق نموذج أساسي:
+Input → Processing → Output → Storage
+
+لماذا نعتمد على الحاسوب؟
+⚡ سريع جداً في التنفيذ
+🎯 دقيق ولا يخطئ في الحسابات
+📚 قدرة تخزين ضخمة
+🔄 يعمل 24/7 بدون تعب
+
+الحاسوب = Hardware (المكونات المادية) + Software (البرمجيات)
+
+في هذه المحاضرة نتعرف على المفاهيم الأساسية التي ستبنى عليها كل المواد اللاحقة.`,
+          summaryEn: `Welcome to Computer Science! 🚀
+
+A computer is a smart machine following:
+Input → Processing → Output → Storage
+
+Why computers?
+⚡ Extremely fast
+🎯 Highly accurate
+📚 Massive storage
+🔄 Works continuously
+
+Computer = Hardware + Software
+
+This lecture covers the foundational concepts for the entire course.`
+        },
+        {
+          id: 2, title: 'المحاضرة الثانية: Number System (أنظمة الأعداد)', doctor: 'د. محمد قايد', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `أنظمة الأعداد 🔢 — أساس كل شيء في الحاسوب
+
+1. النظام العشري (Decimal): 0-9 — النظام الذي نستخدمه يومياً
+2. النظام الثنائي (Binary): 0 و 1 فقط — لغة الحاسوب الحقيقية
+3. النظام الثماني (Octal): 0-7
+4. النظام السادس عشر (Hexadecimal): 0-9 + A-F
+
+التحويل بين الأنظمة مهم جداً:
+- من عشري إلى ثنائي: القسمة المتكررة على 2
+- من ثنائي إلى عشري: ضرب كل رقم في 2^موضعه
+
+مثال: 13 بالعشري = 1101 بالثنائي`,
+          summaryEn: `Number Systems 🔢
+
+1. Decimal (0-9) — everyday system
+2. Binary (0,1) — computer language
+3. Octal (0-7)
+4. Hexadecimal (0-9 + A-F)
+
+Conversion is essential:
+- Decimal → Binary: repeated division by 2
+- Binary → Decimal: multiply by powers of 2
+
+Example: 13 decimal = 1101 binary`
+        },
+        {
+          id: 3, title: 'المحاضرة الثالثة: Hardware (المكونات المادية)', doctor: 'د. محمد قايد', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `Hardware 🖥️ — المكونات المادية
+
+1. وحدات الإدخال (Input): لوحة المفاتيح، الماوس، الميكروفون، الكاميرا
+2. وحدة المعالجة المركزية (CPU): "المخ" — تنفذ التعليمات
+3. وحدات الإخراج (Output): الشاشة، السماعات، الطابعة
+4. الذاكرة:
+   • RAM: سريعة ومؤقتة (تُفقد عند إطفاء الجهاز)
+   • التخزين الدائم: Hard Disk / SSD
+
+المكونات الرئيسية داخل الصندوق:
+Motherboard, CPU, RAM, GPU, Power Supply, Storage`,
+          summaryEn: `Hardware 🖥️
+
+1. Input Devices: Keyboard, Mouse, Mic, Camera
+2. CPU: The brain — executes instructions
+3. Output Devices: Monitor, Speakers, Printer
+4. Memory:
+   • RAM: Fast & volatile
+   • Storage: HDD / SSD (permanent)
+
+Key internal components:
+Motherboard, CPU, RAM, GPU, PSU, Storage`
+        },
+        {
+          id: 4, title: 'المحاضرة الرابعة: Software (البرمجيات)', doctor: 'د. محمد قايد', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `Software 💻 — البرمجيات
+
+أنواع البرمجيات:
+• برمجيات النظام (System Software): نظام التشغيل (Windows, Linux, macOS) + برامج التشغيل
+• برمجيات التطبيقات (Application Software): Word, Chrome, Photoshop, الألعاب
+• لغات البرمجة: Python, Java, C++, JavaScript
+
+نظام التشغيل يدير الموارد ويوفر واجهة بين المستخدم والعتاد.
+اللغات عالية المستوى أسهل للبشر، وتُترجم إلى لغة الآلة.`,
+          summaryEn: `Software 💻
+
+• System Software: OS (Windows, Linux...) + Drivers
+• Application Software: Word, Chrome, Games...
+• Programming Languages: Python, Java, C++, JS
+
+The OS manages resources and acts as the interface between user and hardware.
+High-level languages are human-friendly and get translated to machine code.`
+        },
+        {
+          id: 5, title: 'المحاضرة الخامسة: Networks (الشبكات)', doctor: 'د. محمد قايد', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `الشبكات 🌐
+
+أنواع الشبكات حسب المدى:
+• LAN (Local Area Network): شبكة محلية (منزل، مكتب)
+• MAN (Metropolitan): على مستوى مدينة
+• WAN (Wide Area Network): عالمية (الإنترنت)
+
+أجهزة مهمة:
+Router, Switch, Modem, Access Point
+
+بروتوكولات أساسية:
+TCP/IP, HTTP/HTTPS, DNS, IP Address
+
+كل جهاز على الشبكة له عنوان IP فريد.`,
+          summaryEn: `Networks 🌐
+
+• LAN — Local (home/office)
+• MAN — City level
+• WAN — Global (Internet)
+
+Key devices: Router, Switch, Modem, AP
+
+Core protocols: TCP/IP, HTTP/HTTPS, DNS, IP
+
+Every device needs a unique IP address.`
+        },
+        {
+          id: 6, title: 'المحاضرة السادسة: Security (أمن المعلومات)', doctor: 'د. محمد قايد', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `أمن المعلومات 🔒
+
+مثلث CIA:
+• Confidentiality (السرية)
+• Integrity (سلامة البيانات)
+• Availability (التوافر)
+
+نصائح عملية:
+✅ كلمات مرور قوية وطويلة
+✅ تفعيل المصادقة الثنائية (2FA)
+✅ تحديث النظام والبرامج باستمرار
+✅ عدم فتح روابط مشبوهة
+✅ النسخ الاحتياطي المنتظم
+
+التهديدات الشائعة: Phishing, Malware, Ransomware`,
+          summaryEn: `Security 🔒
+
+CIA Triad:
+• Confidentiality
+• Integrity
+• Availability
+
+Practical tips:
+✅ Strong long passwords
+✅ Enable 2FA
+✅ Keep software updated
+✅ Avoid suspicious links
+✅ Regular backups
+
+Common threats: Phishing, Malware, Ransomware`
+        },
+      ],
+      'MA101': [
+        { id: 1, title: 'المحاضرة الأولى: المقدمات والتفاضل', doctor: 'د. دعاء', hasContent: true, duration: '60 دقيقة',
+          summaryAr: `التفاضل 📐
+
+المشتقة تقيس معدل التغير اللحظي.
+
+قاعدة القوة: مشتقة xⁿ = n·xⁿ⁻¹
+
+أمثلة:
+• مشتقة x² = 2x
+• مشتقة x³ = 3x²
+• مشتقة √x = 1/(2√x)
+
+تطبيقات: السرعة، التسارع، القيم العظمى والصغرى، تحسين الدوال.`,
+          summaryEn: `Differentiation 📐
+
+Derivative measures instantaneous rate of change.
+
+Power rule: d/dx (xⁿ) = n·xⁿ⁻¹
+
+Examples:
+• d/dx (x²) = 2x
+• d/dx (x³) = 3x²
+
+Applications: velocity, acceleration, maxima/minima.` },
+        { id: 2, title: 'المحاضرة الثانية: قواعد التفاضل المتقدمة', doctor: 'د. دعاء', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `قواعد مهمة:
+• قاعدة الجمع: (f+g)' = f' + g'
+• قاعدة الضرب: (f·g)' = f'g + fg'
+• قاعدة القسمة: (f/g)' = (f'g - fg') / g²
+• قاعدة السلسلة: (f(g(x)))' = f'(g(x)) · g'(x)
+
+مشتقات الدوال المثلثية والأسية واللوغاريتمية.`,
+          summaryEn: `Key rules:
+• Sum rule
+• Product rule
+• Quotient rule
+• Chain rule
+
+Derivatives of trig, exponential and log functions.` },
+        { id: 3, title: 'المحاضرة الثالثة: التكامل', doctor: 'د. دعاء', hasContent: false, duration: '60 دقيقة', summaryAr: '', summaryEn: '' },
+      ],
+      'EL101': [
+        {
+          id: 4,
+          title: 'Electronics – Section 4: Ohm’s Law & Kirchhoff’s Laws',
+          doctor: 'TA: Salma Saeed',
+          hasContent: true,
+          duration: 'ملخص + نص المحاضرة',
+          summaryAr: `ملخص Section 4 – الإلكترونيات ⚡
+
+الموضوعات:
+• المقاومة والمقاومية النوعية
+• قانون أوم واتفاقية الإشارة
+• المقاومات الثابتة والمتغيرة
+• التوصيلية الكهربائية
+• العقد والفروع والحلقات
+• التوصيل على التوالي والتوازي
+• قانون كيرشوف للتيار KCL
+• قانون كيرشوف للجهد KVL
+
+القوانين الأساسية:
+R = ρℓ/A
+V = IR
+G = 1/R
+Req(series) = R1 + R2 + ...
+1/Req(parallel) = 1/R1 + 1/R2 + ...
+ΣI(in) = ΣI(out)
+ΣV = 0
+
+افتح روابط الملفات بالأسفل لمراجعة الملخص الكامل والنص المستخرج من شرائح المحاضرة.`,
+          summaryEn: `Electronics Section 4: Resistance, Ohm’s Law, passive sign convention, conductance, nodes/branches/loops, series and parallel circuits, KCL and KVL.
+
+Key formulas:
+R = ρℓ/A
+V = IR
+G = 1/R
+ΣI(in) = ΣI(out)
+ΣV = 0
+
+Use the links below to open the full summary and extracted slide text.`,
+          externalLinks: [
+            { label: 'عرض الملخص داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Summary.md', content: "# Electronics – Section 4\n## ملخص وشرح المحاضرة\n\n### 1) المقاومة الكهربائية (Resistance)\nالمقاومة خاصية المادة التي تعارض مرور التيار الكهربائي، ورمزها R ووحدتها الأوم (Ω).\n\nمقاومة مادة منتظمة المقطع:\n`R = ρℓ/A`\n\n- ρ: المقاومية النوعية (Ω·m)\n- ℓ: الطول (m)\n- A: مساحة المقطع (m²)\n\nزيادة طول المادة تزيد مقاومتها، وزيادة مساحة المقطع تقلل مقاومتها.\n\n### 2) قانون أوم (Ohm’s Law)\n`V = IR`\nومنها: `I = V/R` و `R = V/I`.\n\nمثال: مقاومة 4 Ω موصلة بجهد 12 V:\n`I = 12/4 = 3 A`.\n\n### 3) اتفاقية الإشارة (Passive Sign Convention)\nإذا دخل التيار إلى الطرف الموجب للمقاومة وخرج من الطرف السالب: `V = IR`.\nإذا كانت مراجع اتجاه التيار وقطبية الجهد متعاكسة وفق تعريف المسألة: `V = -IR`.\nحدد الاتجاه والقطبية أولًا والتزم بهما.\n\n### 4) أنواع المقاومات\n- Fixed Resistor: مقاومة ثابتة.\n- Variable Resistor: مقاومة يمكن تغيير قيمتها.\n\n### 5) التوصيلية (Conductance)\nمقلوب المقاومة، ورمزها G:\n`G = 1/R`\nوحدتها السيمنز (S)، ويُستخدم أيضًا mho.\n\nمثال: إذا كانت R = 5 Ω فإن G = 0.2 S.\n\n### 6) العقد والفروع والحلقات\n- Node: نقطة اتصال فرعين أو أكثر.\n- Branch: جزء يحتوي عنصرًا واحدًا مثل مقاومة أو مصدر جهد.\n- Loop: مسار مغلق يبدأ وينتهي عند النقطة نفسها.\n\n### 7) التوالي والتوازي\n**التوالي (Series):** التيار نفسه يمر في العناصر:\n`Req = R1 + R2 + ...`\n\n**التوازي (Parallel):** الجهد نفسه على العناصر:\n`1/Req = 1/R1 + 1/R2 + ...`\nولمقاومتين:\n`Req = (R1 × R2)/(R1 + R2)`\n\nمثال: 2 Ω و3 Ω:\n- توالي: 5 Ω\n- توازي: 1.2 Ω\n\n### 8) قانون كيرشوف للتيار (KCL)\nمجموع التيارات الداخلة إلى أي عقدة يساوي مجموع التيارات الخارجة:\n`ΣI(in) = ΣI(out)`.\n\n### 9) قانون كيرشوف للجهد (KVL)\nالمجموع الجبري لفروق الجهد حول أي مسار مغلق يساوي صفرًا:\n`ΣV = 0`.\n\n### خطوات حل مسائل الدوائر\n1. اقرأ الرسم وحدد العناصر والقيم واتجاهات التيار وقطبية الجهد.\n2. استخدم قانون أوم عند الحاجة.\n3. استخدم KCL لحساب التيارات عند العقد.\n4. استخدم KVL لحساب الجهود حول الحلقات.\n5. التزم باتفاقية الإشارات.\n6. راجع الوحدات: V للجهد، A للتيار، Ω للمقاومة، وS للتوصيلية.\n\n### ورقة القوانين السريعة\n- `V = IR`\n- `I = V/R`\n- `R = V/I`\n- `R = ρℓ/A`\n- `G = 1/R`\n- `Req(series) = R1 + R2 + ...`\n- `Req(parallel) = (R1R2)/(R1+R2)` لمقاومتين\n- `ΣI(in) = ΣI(out)`\n- `ΣV = 0`\n\n> ملاحظة: هذا ملف نصي مستخرج ومنسق من ملف الشرح المرفوع، وليس نسخة DOCX الأصلية.\n" },
+            { label: 'عرض نص الشرائح داخل الموقع', url: 'https://raw.githubusercontent.com/ahmed526548/My-university-38/main/lectures/Electronics/Electronics-Section-4-Slides-Text-Extract.md', content: "# Electronics – Section 4 (Lecture Slides: extracted text)\n**TA: SALMA SAEED**\n\n## Topics covered\n- Ohm’s Law\n- Resistance and resistivity\n- Passive sign convention\n- Fixed and variable resistors\n- Conductance\n- Nodes, branches, and loops\n- Series and parallel connections\n- Kirchhoff’s Current Law (KCL)\n- Kirchhoff’s Voltage Law (KVL)\n- Worked examples\n- Assignment 2 and Assignment 3\n\n## Extracted lecture text\n\n### Ohm’s Law\nMaterials resist the flow of electric charge. This property is called resistance and is represented by R. The resistance of a uniform material depends on its cross-sectional area A, length ℓ, and resistivity ρ. Copper and aluminum have low resistivity; mica and paper have high resistivity.\n\nThe circuit element used to model resistance is the resistor.\n\n### Passive sign convention\nThe current direction and voltage polarity must follow the passive sign convention:\n- If current flows from higher potential to lower potential: v = iR.\n- If current flows from lower potential to higher potential: v = −iR.\n\n### Resistors\nA resistor may be fixed or variable. Most resistors are fixed, meaning their resistance remains constant.\n\n### Conductance\nConductance G is the reciprocal of resistance and measures how well an element conducts electric current. Units include mho (℧) and siemens (S).\n\n### Nodes, branches, and loops\n- A branch represents a single element such as a voltage source or resistor.\n- A node is the connection point between two or more branches.\n- A loop is any closed path in a circuit.\n- Series elements share a single node and carry the same current.\n- Parallel elements connect to the same two nodes and have the same voltage.\n\n### Kirchhoff’s laws\nThe slides include sections on Kirchhoff’s Current Law and Kirchhoff’s Voltage Law, followed by worked examples.\n\n### Assignments\nThe presentation includes Assignment 2 (Problems 1–4) and Assignment 3 (Problems 5–6).\n\nAssignment form: https://forms.gle/V3FFcc421KS3ZTtk8\n\n> Important: This is the text extract of the PowerPoint. Diagrams, circuit images, and some numerical details from slide images are not represented here. The original PPTX binary could not be transferred from the available file workspace.\n" }
+          ]
+        }
+      ],
+      'HU102': [
+        { id: 1, title: 'المحاضرة الأولى: ما هو التفكير العلمي؟', doctor: 'د. حمادة محمود', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `التفكير العلمي 🧠
+
+الخطوات الأساسية:
+1. الملاحظة
+2. طرح السؤال / المشكلة
+3. وضع الفرضية
+4. التجربة والاختبار
+5. تحليل النتائج
+6. الاستنتاج
+
+خصائص التفكير العلمي:
+موضوعي • قابل للاختبار • مبني على الدليل • قابل للتكرار • منفتح على التصحيح`,
+          summaryEn: `Scientific Thinking 🧠
+
+Steps: Observe → Question → Hypothesize → Test → Analyze → Conclude
+
+Traits: Objective, testable, evidence-based, reproducible, open to correction.` },
+        { id: 2, title: 'المحاضرة الثانية: أنواع الاستدلال', doctor: 'د. حمادة محمود', hasContent: true, duration: '40 دقيقة',
+          summaryAr: `الاستدلال الاستقرائي vs الاستنباطي
+الفرق بين العلم واللاعلم
+مغالطات شائعة يجب تجنبها.`,
+          summaryEn: `Inductive vs Deductive reasoning
+Science vs Pseudoscience
+Common fallacies.` },
+      ],
+      'HU101': [
+        { id: 1, title: 'المحاضرة الأولى: مهارات العرض', doctor: 'د. طه', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `مهارات العرض الفعّال 🎤
+
+• التخطيط الجيد للمحتوى
+• لغة الجسد ونبرة الصوت
+• استخدام الشرائح بذكاء
+• التفاعل مع الجمهور
+• التعامل مع الأسئلة`,
+          summaryEn: `Effective Presentation Skills 🎤
+Planning, body language, slides, audience engagement, Q&A.` },
+      ],
+      'EN101': [
+        { id: 1, title: 'Lecture 1: Academic Writing Basics', doctor: 'د. شيماء', hasContent: true, duration: '50 دقيقة',
+          summaryAr: `أساسيات الكتابة الأكاديمية
+البنية: Introduction → Body → Conclusion
+الجمل الموضوعية والداعمة.`,
+          summaryEn: `Academic Writing Basics
+Structure: Introduction → Body → Conclusion
+Topic sentences and supporting details.` },
+      ],
+      'HU103': [
+        { id: 1, title: 'المحاضرة الأولى: مفهوم حقوق الإنسان', doctor: 'د. عادلي أبو هشيمة', hasContent: true, duration: '45 دقيقة',
+          summaryAr: `حقوق الإنسان أساسية ومتأصلة في الكرامة الإنسانية.
+الإعلان العالمي لحقوق الإنسان 1948.
+حقوق مدنية وسياسية + حقوق اقتصادية واجتماعية.`,
+          summaryEn: `Human Rights are inherent to human dignity.
+UDHR 1948.
+Civil & Political + Economic & Social rights.` },
+      ],
+      'MA100': [
+        { id: 1, title: 'المحاضرة الأولى: مراجعة الجبر', doctor: 'د. عبد المنعم', hasContent: true, duration: '55 دقيقة',
+          summaryAr: `مراجعة أساسية:
+المعادلات الخطية، المتباينات، الأسس والجذور، اللوغاريتمات.`,
+          summaryEn: `Algebra Review: Linear equations, inequalities, exponents, roots, logarithms.` },
+      ],
+      'default': [{ id: 1, title: 'جاري إضافة محاضرات هذه المادة...', doctor: 'غير محدد', hasContent: false, duration: '-', summaryAr: '', summaryEn: '' }]
+    };
+
+    const scheduleGroup1 = [
+      { day: 'الأحد', slots: [
+        { time: '09:30 AM', items: [{ subject: 'Comm Presentation', doctor: 'د. طه', hall: 'مدرج 3' }] },
+        { time: '11:30 AM', items: [{ subject: 'Section Math 0', doctor: 'م. محمد جاد', hall: 'مبنى G 211' }] },
+      ]},
+      { day: 'الإثنين', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Scientific Thinking', doctor: 'د. حمادة محمود', hall: 'مدرج 4' }] },
+        { time: '11:00 AM', items: [{ subject: 'Human Rights', doctor: 'د. عادلي أبو هشيمة', hall: 'مدرج 1' }] },
+        { time: '01:00 PM', items: [{ subject: 'Fundamentals of CS', doctor: 'د. محمد قايد', hall: 'مدرج 2' }] }
+      ]},
+      { day: 'الثلاثاء', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Sec Math 1', doctor: 'م. أسماء', hall: 'D 301' }, { subject: 'Sec Math 1', doctor: 'م. رضا', hall: 'B 314' }] },
+        { time: '11:00 AM', items: [{ subject: 'Sec Electronics', doctor: 'م. سلمى', hall: 'H 203' }, { subject: 'Sec Fundamentals', doctor: 'م. هيام', hall: 'E 312' }] },
+      ]},
+      { day: 'الأربعاء', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Math 1', doctor: 'د. دعاء', hall: 'مدرج 2' }] },
+        { time: '11:00 AM', items: [{ subject: 'English', doctor: 'د. شيماء', hall: 'مدرج 4' }] },
+        { time: '01:00 PM', items: [{ subject: 'Electronics', doctor: 'د. شريف', hall: 'مدرج 4' }] },
+        { time: '03:00 PM', items: [{ subject: 'Math 0', doctor: 'د. عبد المنعم', hall: 'مدرج 2' }] }
+      ]},
+      { day: 'الخميس', slots: [] },
+    ];
+
+    const scheduleGroup2 = [
+      { day: 'الأحد', slots: [
+        { time: '09:30 AM', items: [{ subject: 'Comm Presentation', doctor: 'د. طه', hall: 'مدرج 3' }] },
+        { time: '11:30 AM', items: [{ subject: 'Section Math 0', doctor: 'م. محمد جاد', hall: 'G 211' }] },
+        { time: '01:00 PM', items: [{ subject: 'Math 1', doctor: 'د. محمد حسين', hall: 'C 309' }] }
+      ]},
+      { day: 'الإثنين', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Scientific Thinking', doctor: 'د. حمادة محمود', hall: 'مدرج 4' }] },
+        { time: '11:00 AM', items: [{ subject: 'Human Rights', doctor: 'د. عادلي أبو هشيمة', hall: 'مدرج 1' }] },
+        { time: '01:00 PM', items: [{ subject: 'Fundamentals of CS', doctor: 'د. محمد قايد', hall: 'مدرج 2' }] }
+      ]},
+      { day: 'الثلاثاء', slots: [
+        { time: '09:00 AM', items: [{ subject: 'Sec Fundamentals', doctor: 'م. هيام', hall: 'E 312' }, { subject: 'Sec Electronics', doctor: 'م. سلمى', hall: 'H 203' }] },
+        { time: '11:00 AM', items: [{ subject: 'Sec Math 1', doctor: 'م. أسماء', hall: 'D 301' }, { subject: 'Sec Math 1', doctor: 'م. رضا', hall: 'B 314' }] },
+      ]},
+      { day: 'الأربعاء', slots: [
+        { time: '11:00 AM', items: [{ subject: 'English', doctor: 'د. شيماء', hall: 'مدرج 4' }] },
+        { time: '01:00 PM', items: [{ subject: 'Electronics', doctor: 'د. شريف', hall: 'مدرج 4' }] },
+        { time: '03:00 PM', items: [{ subject: 'Math 0', doctor: 'د. عبد المنعم', hall: 'مدرج 2' }] }
+      ]},
+      { day: 'الخميس', slots: [] },
+    ];
+
+    const announcements = [
+      { id: 1, title: 'بداية الفصل الدراسي', body: 'مرحباً بكم في العام الجامعي الجديد. نتمنى لكم التوفيق والنجاح.', date: '2026-09-15', type: 'info' },
+      { id: 2, title: 'تسجيل الجروبات', body: 'يرجى التأكد من اختيار الجروب الصحيح في جدول المحاضرات.', date: '2026-09-20', type: 'warning' },
+      { id: 3, title: 'تحديث مكتبة المحاضرات', body: 'تم إضافة ملخصات جديدة لمادة أساسيات علوم الحاسب.', date: '2026-10-05', type: 'success' },
+      { id: 4, title: 'نصيحة دراسية', body: 'استخدم المساعد الذكي لطلب شرح أي محاضرة، وحدد المفضلة للمتابعة السريعة.', date: '2026-10-12', type: 'tip' },
+    ];
+
+    const getTodayArabic = () => {
+      const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      return days[new Date().getDay()];
+    };
+
+    const formatTime = () => new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+    // ==================== APP ====================
+    function App() {
+      const [view, setViewState] = useState('admin');
+      const [adminSession, setAdminSession] = useState(null);
+      const [adminAllowed, setAdminAllowed] = useState(false);
+      const [adminChecking, setAdminChecking] = useState(true);
+      const [adminEmail, setAdminEmail] = useState('');
+      const [adminPassword, setAdminPassword] = useState('');
+      const [adminBusy, setAdminBusy] = useState(false);
+      const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
+      const [adminRecords, setAdminRecords] = useState([]);
+      const [adminDataBusy, setAdminDataBusy] = useState(false);
+      const [adminFormData, setAdminFormData] = useState({});
+      const [adminEditingId, setAdminEditingId] = useState(null);
+      const adminTableOptions = [
+        { value: 'subjects', label: 'المواد الدراسية' },
+        { value: 'lectures', label: 'المحاضرات' },
+        { value: 'schedule_days', label: 'أيام الجدول' },
+        { value: 'schedule_slots', label: 'مواعيد الجدول' },
+        { value: 'schedule_items', label: 'محاضرات الجدول' },
+        { value: 'announcements', label: 'الإعلانات' }
+      ];
+      const adminFieldConfig = {
+        subjects: [
+          { key: 'code', label: 'كود المادة', required: true },
+          { key: 'name', label: 'اسم المادة بالإنجليزية', required: true },
+          { key: 'arabic_name', label: 'اسم المادة بالعربية' },
+          { key: 'sort_order', label: 'ترتيب الظهور', type: 'number' }
+        ],
+        lectures: [
+          { key: 'subject_code', label: 'المادة الدراسية', type: 'subject', required: true },
+          { key: 'title', label: 'اسم المحاضرة', required: true },
+          { key: 'doctor', label: 'اسم الدكتور', type: 'instructor', required: true },
+          { key: 'file_url', label: 'رابط المحاضرة (Google Drive أو PDF)', type: 'url', required: true }
+        ],
+        schedule_days: [
+          { key: 'day_name', label: 'اسم اليوم', required: true },
+          { key: 'sort_order', label: 'ترتيب اليوم', type: 'number' }
+        ],
+        schedule_slots: [
+          { key: 'day_id', label: 'رقم اليوم (day_id)', type: 'number', required: true },
+          { key: 'time_label', label: 'موعد المحاضرة', required: true },
+          { key: 'sort_order', label: 'ترتيب الموعد', type: 'number' }
+        ],
+        schedule_items: [
+          { key: 'slot_id', label: 'رقم الموعد (slot_id)', type: 'number', required: true },
+          { key: 'subject', label: 'اسم المادة', required: true },
+          { key: 'doctor', label: 'اسم الدكتور' },
+          { key: 'hall', label: 'المدرج / القاعة' },
+          { key: 'group_name', label: 'الجروب' }
+        ],
+        announcements: [
+          { key: 'title', label: 'عنوان الإعلان', required: true },
+          { key: 'body', label: 'محتوى الإعلان', type: 'textarea', required: true },
+          { key: 'type', label: 'نوع الإعلان', required: true },
+          { key: 'published', label: 'نشر الإعلان؟', type: 'boolean' }
+        ]
+      };
+      const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
+      const [portalTheme, setPortalTheme] = useState(() => {
+        try {
+          const saved = localStorage.getItem('portalTheme');
+          return themeOptions.includes(saved) ? saved : 'sky';
+        } catch { return 'sky'; }
+      });
+      const cyclePortalTheme = () => {
+        setPortalTheme(current => themeOptions[(themeOptions.indexOf(current) + 1) % themeOptions.length]);
+      };
+      useEffect(() => {
+        document.documentElement.setAttribute('data-portal-theme', portalTheme);
+        try { localStorage.setItem('portalTheme', portalTheme); } catch {}
+      }, [portalTheme]);
+
+      const viewRef = useRef('home');
+      const viewHistoryRef = useRef(['home']);
+      const isHandlingPopRef = useRef(false);
+
+      // Keep one browser-history entry per in-app screen for Android back gestures.
+      const setView = (nextView) => {
+        const target = typeof nextView === 'function' ? nextView(viewRef.current) : nextView;
+        if (!target || target === viewRef.current) return;
+
+        const stack = viewHistoryRef.current;
+        if (!isHandlingPopRef.current && stack.length > 1 && stack[stack.length - 2] === target) {
+          window.history.back();
+          return;
+        }
+
+        if (!isHandlingPopRef.current) {
+          stack.push(target);
+          window.history.pushState(
+            { universityPortal: true, view: target, portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+        }
+
+        viewRef.current = target;
+        setViewState(target);
+      };
+
+      useEffect(() => {
+        const currentState = window.history.state;
+        if (!currentState || !currentState.universityPortal) {
+          window.history.replaceState(
+            { universityPortal: true, view: 'home', portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+          window.history.pushState(
+            { universityPortal: true, view: 'home', portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+        }
+
+        const handleBrowserBack = (event) => {
+          const stack = viewHistoryRef.current;
+          if (stack.length > 1) {
+            stack.pop();
+            const previousView = (event.state && event.state.universityPortal && event.state.view)
+              || stack[stack.length - 1]
+              || 'home';
+            if (stack[stack.length - 1] !== previousView) stack.push(previousView);
+
+            isHandlingPopRef.current = true;
+            viewRef.current = previousView;
+            setViewState(previousView);
+            isHandlingPopRef.current = false;
+            return;
+          }
+
+          // Keep the root page in place when back is pressed from the home screen.
+          window.history.pushState(
+            { universityPortal: true, view: 'home', portalEntry: true },
+            '',
+            window.location.pathname + window.location.search + '#app'
+          );
+          viewRef.current = 'home';
+          setViewState('home');
+        };
+
+        window.addEventListener('popstate', handleBrowserBack);
+        return () => window.removeEventListener('popstate', handleBrowserBack);
+      }, []);
+      const [showSplash, setShowSplash] = useState(false);
+      const [selectedSubject, setSelectedSubject] = useState(null);
+      const [selectedInstructor, setSelectedInstructor] = useState(null);
+      const [selectedGroup, setSelectedGroup] = useState(() => localStorage.getItem('group') || null);
+      const [selectedScheduleDay, setSelectedScheduleDay] = useState(null);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [toast, setToast] = useState(null);
+      const [favorites, setFavorites] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('fav') || '[]'); } catch { return []; }
+      });
+      const [completed, setCompleted] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('completed') || '{}'); } catch { return {}; }
+      });
+      const [notes, setNotes] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('notes') || '[]'); } catch { return []; }
+      });
+      const [preview, setPreview] = useState({ open: false, title: '', content: '', lang: 'ar', lecture: null });
+      const [documentPreview, setDocumentPreview] = useState({ open: false, title: '', url: '', content: '' });
+      const [chat, setChat] = useState([{
+        id: 1, sender: 'bot',
+        text: 'أهلاً بك! أنا المساعد الجامعي الذكي 🎓\n\nاسألني عن أي محاضرة أو مفهوم وسأشرحه لك.\n\nجرب: "اشرح أنظمة الأعداد" أو "ما هو Hardware؟"',
+        time: formatTime()
+      }]);
+      const [input, setInput] = useState('');
+      const [typing, setTyping] = useState(false);
+      const [gpaCourses, setGpaCourses] = useState([{ name: '', grade: '', hours: '' }]);
+      const [timerSeconds, setTimerSeconds] = useState(25 * 60);
+      const [timerRunning, setTimerRunning] = useState(false);
+      const [timerMode, setTimerMode] = useState('focus'); // focus | break
+      const [noteText, setNoteText] = useState('');
+      const [noteTitle, setNoteTitle] = useState('');
+      const [editingNote, setEditingNote] = useState(null);
+      const [globalSearch, setGlobalSearch] = useState('');
+      const [showSearch, setShowSearch] = useState(false);
+      const endRef = useRef(null);
+      const timerRef = useRef(null);
+
+      // Restore the Supabase session and independently verify admin membership.
+      useEffect(() => {
+        let active = true;
+        const restoreAdminSession = async () => {
+          if (!supabaseClient) { if (active) setAdminChecking(false); return; }
+          try {
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) throw error;
+            const session = data?.session || null;
+            if (!active) return;
+            setAdminSession(session);
+            if (session?.user?.id) {
+              const { data: adminRow, error: adminError } = await supabaseClient
+                .from('portal_admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
+              if (adminError) throw adminError;
+              if (active) setAdminAllowed(!!adminRow);
+            } else if (active) setAdminAllowed(false);
+          } catch (error) {
+            console.error('Supabase session restore failed:', error);
+            if (active) setAdminAllowed(false);
+          } finally {
+            if (active) setAdminChecking(false);
+          }
+        };
+        restoreAdminSession();
+        if (!supabaseClient) return () => { active = false; };
+        const { data: authListener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+          if (!active) return;
+          setAdminSession(session || null);
+          if (!session) setAdminAllowed(false);
+        });
+        return () => { active = false; authListener?.subscription?.unsubscribe(); };
+      }, []);
+
+      const handleAdminLogin = async (event) => {
+        event.preventDefault();
+        if (!supabaseClient) { showToast('تعذر الاتصال بخدمة تسجيل الدخول', 'error'); return; }
+        setAdminBusy(true);
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: adminEmail.trim(), password: adminPassword
+          });
+          if (error) throw error;
+          const userId = data?.user?.id;
+          if (!userId) throw new Error('تعذر التحقق من حساب المستخدم');
+          const { data: adminRow, error: adminError } = await supabaseClient
+            .from('portal_admins').select('user_id').eq('user_id', userId).maybeSingle();
+          if (adminError) throw adminError;
+          if (!adminRow) {
+            await supabaseClient.auth.signOut();
+            throw new Error('الحساب ده مش مضاف كمسؤول للموقع');
+          }
+          setAdminSession(data.session);
+          setAdminAllowed(true);
+          setAdminPassword('');
+          showToast('تم تسجيل دخول الأدمن بنجاح');
+        } catch (error) {
+          showToast(error?.message || 'فشل تسجيل الدخول، راجع البيانات', 'error');
+        } finally { setAdminBusy(false); }
+      };
+
+      const handleAdminLogout = async () => {
+        if (!supabaseClient) return;
+        setAdminBusy(true);
+        const { error } = await supabaseClient.auth.signOut();
+        setAdminBusy(false);
+        if (error) { showToast('تعذر تسجيل الخروج', 'error'); return; }
+        setAdminSession(null); setAdminAllowed(false); setView('settings');
+        showToast('تم تسجيل الخروج');
+      };
+
+      const loadAdminRecords = async (table = adminSelectedTable) => {
+        if (!supabaseClient || !adminAllowed || !adminSession) return;
+        setAdminDataBusy(true);
+        const { data, error } = await supabaseClient.from(table).select('*').limit(150);
+        setAdminDataBusy(false);
+        if (error) { showToast('تعذر تحميل البيانات: ' + error.message, 'error'); return; }
+        setAdminRecords(data || []);
+      };
+
+      const saveAdminRecord = async (event) => {
+        event.preventDefault();
+        if (!adminAllowed || !adminSession) return;
+        const payload = {};
+        for (const field of adminFieldConfig[adminSelectedTable]) {
+          const value = adminFormData[field.key];
+          if (value === undefined || value === null || value === '') continue;
+          payload[field.key] = field.type === 'number' ? Number(value) : field.type === 'boolean' ? value === 'true' : value;
+        }
+        if (adminSelectedTable === 'lectures' && payload.file_url) payload.has_content = true;
+        const missingField = adminFieldConfig[adminSelectedTable].find(field => field.required && (payload[field.key] === undefined || payload[field.key] === ''));
+        if (missingField) { showToast('من فضلك اكتب: ' + missingField.label, 'error'); return; }
+        setAdminDataBusy(true);
+        let result;
+        if (adminEditingId !== null) {
+          const { id, created_at, ...editableFields } = payload;
+          result = await supabaseClient.from(adminSelectedTable).update(editableFields).eq('id', adminEditingId);
+        } else {
+          result = await supabaseClient.from(adminSelectedTable).insert(payload);
+        }
+        setAdminDataBusy(false);
+        if (result.error) { showToast('لم يتم الحفظ: ' + result.error.message, 'error'); return; }
+        setAdminFormData({}); setAdminEditingId(null);
+        showToast(adminEditingId !== null ? 'تم تحديث السجل' : 'تمت إضافة السجل');
+        await loadAdminRecords(adminSelectedTable);
+      };
+
+      const editAdminRecord = (record) => {
+        if (record?.id === undefined || record?.id === null) {
+          showToast('هذا السجل لا يحتوي على حقل id', 'error'); return;
+        }
+        setAdminEditingId(record.id);
+        const values = {};
+        adminFieldConfig[adminSelectedTable].forEach(field => {
+          const value = record[field.key];
+          values[field.key] = field.type === 'boolean' ? String(Boolean(value)) : value === null || value === undefined ? '' : String(value);
+        });
+        setAdminFormData(values);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const deleteAdminRecord = async (record) => {
+        if (!adminAllowed || !adminSession || record?.id === undefined || record?.id === null) {
+          showToast('لا يمكن حذف السجل لعدم وجود معرّف id', 'error'); return;
+        }
+        if (!window.confirm('متأكد إنك عايز تحذف السجل ده نهائيًا؟')) return;
+        setAdminDataBusy(true);
+        const { error } = await supabaseClient.from(adminSelectedTable).delete().eq('id', record.id);
+        setAdminDataBusy(false);
+        if (error) { showToast('تعذر الحذف: ' + error.message, 'error'); return; }
+        showToast('تم حذف السجل');
+        await loadAdminRecords(adminSelectedTable);
+      };
+
+      useEffect(() => {
+        if (view === 'admin' && adminAllowed && adminSession) loadAdminRecords(adminSelectedTable);
+      }, [view, adminAllowed, adminSession, adminSelectedTable]);
+
+      // Skip the decorative splash so the portal is usable immediately.
+
+      // Persist
+      useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
+      useEffect(() => { localStorage.setItem('fav', JSON.stringify(favorites)); }, [favorites]);
+      useEffect(() => { localStorage.setItem('completed', JSON.stringify(completed)); }, [completed]);
+      useEffect(() => { localStorage.setItem('notes', JSON.stringify(notes)); }, [notes]);
+      useEffect(() => { if (selectedGroup) localStorage.setItem('group', selectedGroup); }, [selectedGroup]);
+      useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chat, typing]);
+
+      // Timer
+      useEffect(() => {
+        if (timerRunning && timerSeconds > 0) {
+          timerRef.current = setInterval(() => setTimerSeconds(s => s - 1), 1000);
+        } else if (timerSeconds === 0) {
+          setTimerRunning(false);
+          setToast(timerMode === 'focus' ? 'انتهى وقت التركيز! خذ استراحة ☕' : 'انتهت الاستراحة، عد للتركيز 💪');
+          if (timerMode === 'focus') { setTimerMode('break'); setTimerSeconds(5 * 60); }
+          else { setTimerMode('focus'); setTimerSeconds(25 * 60); }
+        }
+        return () => clearInterval(timerRef.current);
+      }, [timerRunning, timerSeconds, timerMode]);
+
+      const showToast = (msg, type = 'success') => setToast({ msg, type });
+
+      const toggleFav = (code) => {
+        setFavorites(prev => {
+          const next = prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code];
+          showToast(prev.includes(code) ? 'تمت الإزالة من المفضلة' : 'تمت الإضافة للمفضلة ⭐');
+          return next;
+        });
+      };
+
+      const toggleComplete = (code, lecId) => {
+        setCompleted(prev => {
+          const key = `${code}-${lecId}`;
+          const next = { ...prev };
+          if (next[key]) delete next[key];
+          else next[key] = true;
+          showToast(next[key] ? 'تم تحديد المحاضرة كمكتملة ✅' : 'تم إلغاء الإكمال');
+          return next;
+        });
+      };
+
+      const isCompleted = (code, lecId) => !!completed[`${code}-${lecId}`];
+
+      const filtecyan = useMemo(() => subjectsData.filter(s =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.arabicName.includes(searchQuery) ||
+        s.code.toLowerCase().includes(searchQuery.toLowerCase())
+      ), [searchQuery]);
+
+      const getProgress = (code) => {
+        const lec = allLecturesData[code] || allLecturesData.default;
+        const ready = lec.filter(l => l.hasContent).length;
+        const done = lec.filter(l => isCompleted(code, l.id)).length;
+        return { total: lec.length, ready, done, percent: Math.round((ready / lec.length) * 100), donePercent: Math.round((done / Math.max(ready, 1)) * 100) };
+      };
+
+      const overallProgress = useMemo(() => {
+        let totalReady = 0, totalDone = 0;
+        subjectsData.forEach(s => {
+          const p = getProgress(s.code);
+          totalReady += p.ready;
+          totalDone += p.done;
+        });
+        return { totalReady, totalDone, percent: totalReady ? Math.round((totalDone / totalReady) * 100) : 0 };
+      }, [completed]);
+
+      const today = getTodayArabic();
+      const currentSchedule = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
+      const todaySch = currentSchedule.find(d => d.day === today);
+
+      // Smart Bot
+      const reply = useCallback((text) => {
+        setTyping(true);
+        const l = text.toLowerCase();
+        let r = '';
+
+        // Search in all lecture content
+        let found = null;
+        for (const [code, lecs] of Object.entries(allLecturesData)) {
+          if (code === 'default') continue;
+          for (const lec of lecs) {
+            if (lec.hasContent && (lec.title.includes(text) || lec.summaryAr.includes(text) || lec.summaryEn.toLowerCase().includes(l) ||
+              (l.includes('أنظمة') && lec.title.includes('Number')) ||
+              (l.includes('hardware') || l.includes('هاردوير') || l.includes('مكونات')) && lec.title.includes('Hardware') ||
+              (l.includes('software') || l.includes('برمج')) && lec.title.includes('Software') ||
+              (l.includes('شبكة') || l.includes('network')) && lec.title.includes('Network') ||
+              (l.includes('أمن') || l.includes('security')) && lec.title.includes('Security') ||
+              (l.includes('تفاضل') || l.includes('derivative')) && lec.title.includes('تفاضل') ||
+              (l.includes('إلكترون') || l.includes('electronic')) && lec.title.includes('إلكترون') ||
+              (l.includes('تفكير') || l.includes('scientific')) && lec.title.includes('تفكير')
+            )) {
+              found = lec;
+              break;
+            }
+          }
+          if (found) break;
+        }
+
+        if (found) {
+          r = `📚 ${found.title}\nالمحاضر: ${found.doctor}\nالمدة: ${found.duration}\n\n${found.summaryAr}\n\n---\nهل تريد النسخة الإنجليزية أو شرحاً إضافياً؟`;
+        } else if (l.includes('مرحبا') || l.includes('اهلا') || l.includes('السلام') || l.includes('hello') || l.includes('hi')) {
+          r = 'أهلاً وسهلاً! 👋\nأنا هنا لمساعدتك في فهم المحاضرات والإجابة على أسئلتك.\nاسأل عن أي موضوع من موادك.';
+        } else if (l.includes('جدول') || l.includes('schedule')) {
+          r = selectedGroup
+            ? `جدولك الحالي (${selectedGroup}):\nيمكنك مراجعة التفاصيل من قسم "جدول المحاضرات".`
+            : 'لم تختر جروبك بعد. اذهب إلى قسم الجدول واختر جروب 1 أو جروب 2.';
+        } else if (l.includes('مفضلة') || l.includes('favorite')) {
+          r = favorites.length
+            ? `المواد المفضلة لديك:\n${favorites.map(c => '• ' + c).join('\n')}`
+            : 'لم تضف أي مادة للمفضلة بعد. اضغط على النجمة بجانب أي مادة.';
+        } else if (l.includes('تقدم') || l.includes('progress')) {
+          r = `تقدمك الدراسي:\nأكملت ${overallProgress.totalDone} من ${overallProgress.totalReady} محاضرة متاحة (${overallProgress.percent}%).\nاستمر! 💪`;
+        } else if (l.includes('نصيحة') || l.includes('tip') || l.includes('advice')) {
+          r = 'نصائح سريعة:\n1. راجع الملخصات بعد كل محاضرة\n2. استخدم مؤقت الدراسة (بومودورو)\n3. اكتب ملاحظاتك الخاصة\n4. اطلب شرحاً مني لأي جزء غير واضح\n5. حدد المحاضرات كمكتملة لتتبع تقدمك';
+        } else {
+          r = `تم استلام سؤالك: "${text}"\n\nجرب أن تسأل بشكل أدق عن اسم المحاضرة أو المفهوم (مثل: أنظمة الأعداد، Hardware، التفاضل، قانون أوم...)\n\nأو اكتب "نصيحة" للحصول على نصائح دراسية.`;
+        }
+
+        setTimeout(() => {
+          setChat(prev => [...prev, { id: Date.now(), sender: 'bot', text: r, time: formatTime() }]);
+          setTyping(false);
+        }, 700 + Math.random() * 400);
+      }, [favorites, selectedGroup, overallProgress]);
+
+      const [voiceListening, setVoiceListening] = useState(false);
+      const [voiceSpeaking, setVoiceSpeaking] = useState(false);
+      const recognitionRef = useRef(null);
+
+      const send = async (e, directText = null) => {
+        e?.preventDefault();
+        const t = String(directText ?? input).trim();
+        if (!t || typing) return;
+        setInput('');
+        setChat(prev => [...prev, { id: Date.now(), sender: 'user', text: t, time: formatTime() }]);
+        setTyping(true);
+        try {
+          if (!supabaseClient) throw new Error('الاتصال بالخادم غير متاح حالياً.');
+          let { data: sessionData } = await supabaseClient.auth.getSession();
+          if (!sessionData?.session) {
+            const { data, error } = await supabaseClient.auth.signInAnonymously();
+            if (error) throw new Error('يلزم تفعيل تسجيل الدخول المجهول من إعدادات Supabase أولاً.');
+            sessionData = { session: data.session };
+          }
+          const context = Object.entries(allLecturesData).filter(([code]) => code !== 'default')
+            .flatMap(([code, lectures]) => lectures.map(lec =>
+              [code, lec.title, lec.doctor, lec.duration, lec.summaryAr].join(' | ')
+            )).join('\\n').slice(0, 22000);
+          const history = chat.slice(-8).map(m => ({
+            role: m.sender === 'bot' ? 'model' : 'user', text: m.text
+          }));
+          const { data, error } = await supabaseClient.functions.invoke('university-assistant', {
+            body: { message: t, history, context }
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          setChat(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: data.answer, time: formatTime() }]);
+        } catch (err) {
+          const message = err?.message || 'تعذر الاتصال بالمساعد حالياً.';
+          setChat(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: message + '\\n\\nلو دي أول مرة تستخدم المساعد، قد نحتاج تفعيل Anonymous Sign-ins في Supabase وإضافة مفتاح Gemini في Secrets.', time: formatTime() }]);
+        } finally {
+          setTyping(false);
+        }
+      };
+
+      const startVoiceInput = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          showToast('المتصفح لا يدعم الإدخال الصوتي. جرّب Chrome.', 'error');
+          return;
+        }
+        if (recognitionRef.current) recognitionRef.current.stop();
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ar-EG';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onstart = () => setVoiceListening(true);
+        recognition.onend = () => setVoiceListening(false);
+        recognition.onerror = () => { setVoiceListening(false); showToast('تعذر التقاط الصوت. تأكد من إذن الميكروفون.', 'error'); };
+        recognition.onresult = (event) => {
+          const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+          if (transcript) send(null, transcript);
+        };
+        recognitionRef.current = recognition;
+        recognition.start();
+      };
+
+      const speakLastAnswer = () => {
+        const last = [...chat].reverse().find(m => m.sender === 'bot');
+        if (!last || !window.speechSynthesis) {
+          showToast('القراءة الصوتية غير مدعومة في هذا المتصفح.', 'error');
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(last.text);
+        utterance.lang = 'ar-EG';
+        utterance.rate = 0.96;
+        utterance.onstart = () => setVoiceSpeaking(true);
+        utterance.onend = () => setVoiceSpeaking(false);
+        utterance.onerror = () => setVoiceSpeaking(false);
+        window.speechSynthesis.speak(utterance);
+      };
+
+      const explain = (title) => {
+        setView('bot');
+        setTimeout(() => {
+          setChat(prev => [...prev, { id: Date.now(), sender: 'user', text: `أريد شرح: ${title}`, time: formatTime() }]);
+          reply(title);
+        }, 120);
+      };
+
+      const downloadText = (title, content) => {
+        const blob = new Blob([`${title}\n\n${content}`], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title.replace(/[^\w\u0600-\u06FF\s]/g, '').slice(0, 40)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('تم تحميل الملخص بنجاح 📥');
+      };
+
+      const saveNote = () => {
+        if (!noteTitle.trim() || !noteText.trim()) return showToast('اكتب عنواناً ومحتوى للملاحظة', 'error');
+        if (editingNote) {
+          setNotes(prev => prev.map(n => n.id === editingNote ? { ...n, title: noteTitle, text: noteText, updated: Date.now() } : n));
+          showToast('تم تحديث الملاحظة');
+        } else {
+          setNotes(prev => [...prev, { id: Date.now(), title: noteTitle, text: noteText, created: Date.now() }]);
+          showToast('تم حفظ الملاحظة 📝');
+        }
+        setNoteTitle(''); setNoteText(''); setEditingNote(null);
+      };
+
+      const deleteNote = (id) => {
+        setNotes(prev => prev.filter(n => n.id !== id));
+        showToast('تم حذف الملاحظة');
+      };
+
+      const calcGPA = () => {
+        const gradeMap = { 'A+': 4, 'A': 3.7, 'B+': 3.3, 'B': 3, 'C+': 2.7, 'C': 2.3, 'D': 1.7, 'F': 0 };
+        let totalPoints = 0, totalHours = 0;
+        gpaCourses.forEach(c => {
+          const g = gradeMap[c.grade.toUpperCase()];
+          const h = parseFloat(c.hours);
+          if (g !== undefined && h > 0) { totalPoints += g * h; totalHours += h; }
+        });
+        return totalHours ? (totalPoints / totalHours).toFixed(2) : '—';
+      };
+
+      const formatTimer = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+      // Global search results
+      const searchResults = useMemo(() => {
+        if (!globalSearch.trim()) return [];
+        const q = globalSearch.toLowerCase();
+        const res = [];
+        subjectsData.forEach(sub => {
+          const lecs = allLecturesData[sub.code] || [];
+          lecs.forEach(lec => {
+            if (lec.hasContent && (lec.title.includes(globalSearch) || lec.summaryAr.includes(globalSearch) || lec.summaryEn.toLowerCase().includes(q) || sub.arabicName.includes(globalSearch))) {
+              res.push({ type: 'lecture', subject: sub, lecture: lec });
+            }
+          });
+        });
+        return res.slice(0, 12);
+      }, [globalSearch]);
+
+      // ==================== VIEWS ====================
+      const NavBar = ({ title, onBack, right }) => (
+        <div className="sticky top-0 z-40 glass-strong border-b border-sky-200/10 px-4 py-3 flex items-center justify-between safe-top">
+          <button onClick={onBack} className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-semibold text-sm">
+            <Icons.ChevronRight className="w-5 h-5" /> {title || 'رجوع'}
+          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={cyclePortalTheme} aria-label="تغيير المظهر والألوان" title="اضغط هنا لتغيير ألوان وشكل الموقع"
+              className="flex h-9 items-center gap-2 rounded-lg border border-sky-300/25 bg-sky-950/50 px-2.5 text-[11px] font-bold text-sky-100 transition hover:border-sky-300/50">
+              <span className="h-3 w-3 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
+              <span className="home-theme-label">تغيير المظهر</span>
+            </button>
+            {right}
+          </div>
+        </div>
+      );
+
+      const Home = () => (
+        <div className="premium-home relative min-h-screen overflow-hidden pb-28">
+          <div className="premium-ambient premium-ambient-one" />
+          <div className="premium-ambient premium-ambient-two" />
+          <div className="premium-container relative z-10 mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8">
+            <header className="premium-header home-enter flex items-center justify-between gap-3 rounded-2xl px-4 py-3 sm:px-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="premium-brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
+                  <Icons.Graduation className="h-6 w-6" />
+                </div>
+                <div className="min-w-0">
+                  <p className="home-university-name text-[10px] font-semibold sm:text-[11px]">جامعة بني سويف الأهلية</p>
+                  <h1 className="truncate text-base font-black sm:text-lg">بوابتك الجامعية</h1>
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <button onClick={cyclePortalTheme} aria-label="تغيير لون الموقع" title="تغيير لون الموقع" className="premium-icon-button home-theme-toggle">
+                  <span className="h-3.5 w-3.5 rounded-full border border-white/40" style={{ background: portalTheme === 'sky' ? '#38bdf8' : portalTheme === 'violet' ? '#a78bfa' : portalTheme === 'emerald' ? '#34d399' : '#fbbf24' }} />
+                  <span className="home-theme-label">المظهر</span>
+                </button>
+                <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
+                <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
+              </div>
+            </header>
+
+            <section className="premium-welcome home-hero mt-5 overflow-hidden rounded-[1.8rem] p-5 sm:mt-7 sm:p-8 lg:p-10">
+              <div className="grid items-center gap-7 lg:grid-cols-[1.4fr_.8fr]">
+                <div className="relative">
+                  <span className="premium-eyebrow mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold sm:text-xs">
+                    <Icons.Sparkles className="h-3.5 w-3.5" /> مساحتك الدراسية في مكان واحد
+                  </span>
+                  <h2 className="max-w-2xl text-2xl font-black leading-[1.45] text-white sm:text-3xl lg:text-4xl">كل يوم دراسي يبدأ <span className="premium-highlight">بخطوة منظمة.</span></h2>
+                  <p className="mt-3 max-w-xl text-xs leading-7 text-slate-300 sm:text-sm">تابع محاضراتك، راجع موادك، واعرف جدولك بسهولة من بوابتك الجامعية.</p>
+                  <div className="mt-6 flex flex-wrap gap-2.5">
+                    <button onClick={() => setView('subjects')} className="premium-primary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-extrabold sm:text-sm">
+                      <Icons.BookOpen className="h-4 w-4" /> تصفح المحاضرات <Icons.ChevronRight className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setView('bot')} className="premium-secondary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold sm:text-sm">
+                      <Icons.Bot className="h-4 w-4" /> اسأل المساعد
+                    </button>
+                  </div>
+                </div>
+                <div className="premium-progress-card relative mx-auto w-full max-w-xs rounded-2xl p-5 lg:mx-0 lg:justify-self-end">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300">إنجازك الدراسي</span>
+                    <Icons.Trophy className="h-5 w-5 text-sky-300" />
+                  </div>
+                  <div className="mt-4 flex items-center gap-4">
+                    <div className="relative h-24 w-24 shrink-0">
+                      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,.16)" strokeWidth="8" />
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" strokeWidth="8" strokeLinecap="round" strokeDasharray={263.9} strokeDashoffset={263.9*(1-overallProgress.percent/100)} />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-xl font-black text-white">{overallProgress.percent}%</div>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-extrabold text-white">{overallProgress.totalDone} محاضرة</p>
+                      <p className="mt-1 text-[11px] leading-5 text-slate-400">من أصل {overallProgress.totalReady} محاضرة متاحة</p>
+                      <p className="mt-2 text-[10px] font-bold text-sky-300">استمر، أنت بتتقدم!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-7">
+              <div className="premium-section-heading mb-3 flex items-end justify-between">
+                <div><p className="premium-kicker">QUICK ACCESS</p><h3 className="mt-1 text-base font-black text-white sm:text-lg">ابدأ من هنا</h3></div>
+                <span className="text-[10px] text-slate-500">اختصاراتك الأساسية</span>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', desc: 'المواد والملخصات والشرح', v: 'subjects', number: '01' },
+                  { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', number: '02' },
+                  { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: selectedGroup ? 'schedule' : 'groups', number: '03' },
+                ].map(({ icon: I, label, desc, v, number }) => (
+                  <button key={v} onClick={() => setView(v)} className="premium-shortcut group flex items-center gap-3 rounded-2xl p-4 text-right">
+                    <span className="premium-shortcut-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"><I className="h-6 w-6" /></span>
+                    <span className="min-w-0 flex-1"><span className="block text-sm font-extrabold text-white">{label}</span><span className="mt-1 block text-[10px] text-slate-400">{desc}</span></span>
+                    <span className="self-start text-[10px] font-bold tracking-widest text-sky-300/60">{number}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="mt-7 grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+              <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <div><p className="premium-kicker">YOUR SCHEDULE</p><h3 className="mt-1 text-sm font-black text-white">محاضرات اليوم</h3></div>
+                  <span className="premium-date-chip rounded-lg px-3 py-1.5 text-[10px] font-bold">{today}</span>
+                </div>
+                {!selectedGroup ? (
+                  <button onClick={() => setView('groups')} className="premium-empty-state w-full rounded-xl px-4 py-5 text-xs">اختار جروبك عشان يظهر جدول محاضراتك <span className="mr-1">←</span></button>
+                ) : todaySch && todaySch.slots.length ? (
+                  <div className="space-y-2">{todaySch.slots.slice(0,3).map((slot,i) => (
+                    <div key={i} className="premium-lecture-row flex gap-3 rounded-xl p-3">
+                      <div className="premium-time-chip flex min-w-[76px] items-center justify-center rounded-lg px-2 py-2 text-[11px] font-extrabold" dir="ltr">{slot.time}</div>
+                      <div className="min-w-0 flex-1">{slot.items.map((it,j) => <div key={j} className={j?'mt-2 border-t border-white/5 pt-2':''}><p className="text-xs font-bold text-white">{it.subject}</p><p className="mt-1 text-[10px] text-slate-400">{it.doctor} <span className="mx-1 text-slate-600">•</span>{it.hall}</p></div>)}</div>
+                    </div>
+                  ))}</div>
+                ) : <p className="premium-empty-state rounded-xl px-4 py-6 text-center text-xs">مفيش محاضرات مسجلة لليوم ده 🎉</p>}
+                <button onClick={() => setView(selectedGroup ? 'schedule' : 'groups')} className="mt-4 text-[11px] font-bold text-sky-300">عرض الجدول بالكامل ←</button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between"><div><p className="premium-kicker">MY GROUP</p><h3 className="mt-1 text-sm font-black text-white">جروب المحاضرات</h3></div><Icons.Users className="h-5 w-5 text-sky-300" /></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['جروب 1','جروب 2'].map((g,i) => <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }} className={`premium-group-choice rounded-xl px-3 py-3 text-right ${selectedGroup===g?'is-selected':''}`}><span className="block text-xs font-extrabold text-white">{g}</span><span className="mt-1 block text-[9px] text-slate-400">{selectedGroup===g?'محدد حالياً':'عرض الجدول'}</span></button>)}
+                  </div>
+                </div>
+                <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between"><div><p className="premium-kicker">FAVORITES</p><h3 className="mt-1 text-sm font-black text-white">المواد المفضلة</h3></div><Icons.Star className="h-5 w-5 text-sky-300" /></div>
+                  {favorites.length ? <div className="flex flex-wrap gap-2">{favorites.map(code => { const sub=subjectsData.find(x=>x.code===code); return <button key={code} onClick={() => { if(sub){setSelectedSubject(sub);setSelectedInstructor(null);setView('lectures');} }} className="premium-favorite-chip rounded-full px-3 py-1.5 text-[10px] font-bold">{sub?.arabicName||code}</button>; })}</div> : <p className="text-[11px] leading-6 text-slate-400">المواد اللي بتضيفها للمفضلة هتظهر هنا علشان توصلها بسرعة.</p>}
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-7">
+              <div className="premium-section-heading mb-3"><p className="premium-kicker">STUDY TOOLS</p><h3 className="mt-1 text-base font-black text-white">أدوات تساعدك تذاكر</h3></div>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {[
+                  { icon: Icons.Timer, label: 'مؤقت الدراسة', v: 'timer' },
+                  { icon: Icons.Calculator, label: 'حساب GPA', v: 'gpa' },
+                  { icon: Icons.Bell, label: 'الإعلانات', v: 'announcements' },
+                  { icon: Icons.Note, label: 'ملاحظاتي', v: 'notes' },
+                ].map(({icon:I,label,v}) => <button key={v} onClick={() => setView(v)} className="premium-tool-tile flex flex-col items-center justify-center gap-2 rounded-xl px-2 py-4"><I className="h-5 w-5 text-sky-300" /><span className="text-[10px] font-bold text-slate-300">{label}</span></button>)}
+              </div>
+            </section>
+            <p className="mt-8 text-center text-[10px] text-slate-600">جامعة بني سويف الأهلية • 2026</p>
+          </div>
+        </div>
+      );
+
+      const Subjects = () => (
+        <div className="min-h-screen soft-page pb-28">
+          <NavBar title="المواد" onBack={() => setView('home')} />
+          <div className="px-4 pt-4">
+            <div className="relative mb-5">
+              <input type="text" placeholder="ابحث عن مادة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                className="soft-control w-full text-white rounded-xl py-3 px-4 pr-11 text-sm" />
+              <Icons.Search className="absolute right-3.5 top-3.5 w-5 h-5 text-cyan-500" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filtecyan.map(sub => {
+                const p = getProgress(sub.code);
+                const isFav = favorites.includes(sub.code);
+                return (
+                  <div key={sub.id} onClick={() => { setSelectedSubject(sub); setSelectedInstructor(null); setView('lectures'); }}
+                    className="glass soft-panel rounded-2xl p-4 cursor-pointer card-hover relative transition-all">
+                    <button onClick={e => { e.stopPropagation(); toggleFav(sub.code); }}
+                      className="absolute top-3 left-3 p-1.5 rounded-full hover:bg-cyan-900/30">
+                      <Icons.Star className={`w-4 h-4 ${isFav ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`} />
+                    </button>
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${sub.color} flex items-center justify-center mb-3 shadow-lg`}>
+                      {React.createElement(Icons[sub.icon] || Icons.BookOpen, { className: 'w-6 h-6 text-white' })}
+                    </div>
+                    <h3 className="font-bold text-white text-sm mb-0.5">{sub.arabicName}</h3>
+                    <p className="text-xs text-gray-500 mb-2">{sub.code}</p>
+                    <div className="flex justify-between text-[10px] text-gray-500 mb-1">
+                      <span>{p.done}/{p.ready} مكتمل</span>
+                      <span>{p.percent}% جاهز</span>
+                    </div>
+                    <div className="h-1.5 bg-[#10212a] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-l from-cyan-500 to-sky-400 rounded-full" style={{ width: `${p.donePercent}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+
+      const Lectures = () => {
+        const [databaseLectures, setDatabaseLectures] = useState(null);
+        useEffect(() => {
+          let active = true;
+          const load = async () => {
+            if (!supabaseClient || !selectedSubject?.code) { setDatabaseLectures(null); return; }
+            const { data, error } = await supabaseClient.from('lectures').select('*').eq('subject_code', selectedSubject.code).order('sort_order', { ascending: true });
+            if (!active) return;
+            if (error) { console.warn('تعذر تحميل محاضرات قاعدة البيانات:', error); setDatabaseLectures(null); return; }
+            setDatabaseLectures((data || []).map(row => ({
+              id: row.id, title: row.title, doctor: row.doctor || 'غير محدد', duration: row.duration || '',
+              summaryAr: row.summary_ar || '', summaryEn: row.summary_en || '', hasContent: !!row.file_url || !!row.has_content,
+              fileUrl: row.file_url || ''
+            })));
+          };
+          load();
+          return () => { active = false; };
+        }, [selectedSubject?.code]);
+        const allSubjectLectures = databaseLectures?.length ? databaseLectures : (allLecturesData[selectedSubject?.code] || allLecturesData.default);
+        const selectedDoctorKey = selectedInstructor ? normalizeDoctorName(selectedInstructor) : '';
+        const lectures = selectedInstructor ? allSubjectLectures.filter(lecture => {
+          const lectureDoctorKey = normalizeDoctorName(lecture.doctor || '');
+          return lectureDoctorKey.includes(selectedDoctorKey) || selectedDoctorKey.includes(lectureDoctorKey);
+        }) : [];
+        const instructors = instructorsBySubject[selectedSubject?.code] || [];
+        return (
+          <div className="min-h-screen soft-page pb-28">
+            <NavBar title="المحاضرات" onBack={() => {
+              if (selectedInstructor) setSelectedInstructor(null);
+              else setView('subjects');
+            }}
+              right={<button onClick={() => toggleFav(selectedSubject?.code)} className="p-2">
+                <Icons.Star className={`w-5 h-5 ${favorites.includes(selectedSubject?.code) ? 'text-amber-400 fill-amber-400' : 'text-gray-500'}`} />
+              </button>} />
+            <div className="px-4 pt-2">
+              <h2 className="text-xl font-bold text-white mb-1">{selectedSubject?.arabicName}</h2>
+              {!selectedInstructor ? (
+                <>
+                  <p className="text-gray-400 text-sm mb-4">اختار الدكتور لعرض محاضراته</p>
+                  <div className="space-y-3">
+                    {instructors.map(instructor => (
+                      <button key={instructor.name} type="button" onClick={() => setSelectedInstructor(instructor.name)}
+                        className="glass soft-panel card-hover w-full rounded-2xl p-4 text-right flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-3">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><Icons.User className="h-5 w-5" /></span>
+                          <span className="font-bold text-white text-sm">{instructor.name}</span>
+                        </span>
+                        {instructor.note && <span className="rounded-lg bg-sky-400/10 px-3 py-1.5 text-xs font-bold text-sky-200">{instructor.note}</span>}
+                        <Icons.ChevronLeft className="h-4 w-4 text-sky-300" />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mb-4 flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-white">{selectedInstructor}</p>
+                      <p className="text-gray-500 text-xs mt-1">{lectures.filter(l => l.hasContent).length} محاضرة متاحة</p>
+                    </div>
+                    <button type="button" onClick={() => setSelectedInstructor(null)} className="text-xs font-bold text-sky-300 underline">تغيير الدكتور</button>
+                  </div>
+                  {lectures.length === 0 ? (
+                    <div className="glass rounded-2xl p-6 text-center text-sm text-slate-400">لا توجد محاضرات مضافة لهذا الدكتور حاليًا.</div>
+                  ) : <div className="space-y-3">
+                {lectures.map(lec => {
+                  const done = isCompleted(selectedSubject?.code, lec.id);
+                  return (
+                    <div key={lec.id} className={`glass soft-panel card-hover rounded-2xl p-4 transition-all ${done ? 'border-emerald-400/25' : 'border-sky-200/10'}`}>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white text-sm leading-snug">{lec.title}</h4>
+                          <div className="flex flex-wrap gap-2 mt-1.5 text-[11px] text-gray-500">
+                            <span className="flex items-center gap-1"><Icons.User className="w-3 h-3" />{lec.doctor}</span>
+                            {lec.duration && <span className="flex items-center gap-1"><Icons.Clock className="w-3 h-3" />{lec.duration}</span>}
+                          </div>
+                        </div>
+                        {lec.hasContent && (
+                          <button onClick={() => toggleComplete(selectedSubject.code, lec.id)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${done ? 'bg-green-900/40 border-green-700 text-green-400' : 'border-gray-700 text-gray-600'}`}>
+                            <Icons.Check className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      {!lec.hasContent ? (
+                        <span className="inline-block mt-1 bg-cyan-950/50 text-cyan-400 text-[10px] px-2 py-0.5 rounded">قريباً</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {lec.fileUrl && <a href={lec.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-lg border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200"><Icons.Eye className="h-3.5 w-3.5" /> فتح المحاضرة</a>}
+                          <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryAr, lang: 'ar', lecture: lec })}
+                            className="flex items-center gap-1 border border-blue-700/50 text-blue-400 hover:bg-blue-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            <Icons.Eye className="w-3.5 h-3.5" /> عربي
+                          </button>
+                          <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryEn, lang: 'en', lecture: lec })}
+                            className="flex items-center gap-1 border border-amber-700/50 text-amber-400 hover:bg-amber-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            <Icons.Eye className="w-3.5 h-3.5" /> EN
+                          </button>
+                          <button onClick={() => explain(lec.title)}
+                            className="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                            <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
+                          </button>
+                          {lec.externalLinks?.map(link => (
+                            <button key={link.url} onClick={() => setDocumentPreview({ open: true, title: link.label, url: link.url, content: link.content })}
+                              className="flex items-center gap-1 border border-cyan-700/50 text-cyan-300 hover:bg-cyan-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
+                              <Icons.Eye className="w-3.5 h-3.5" /> {link.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                  </div>}
+                </>
+              )}
+            </div>
+
+            {/* Embedded document viewer */}
+            {documentPreview.open && (
+              <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+                <div className="bg-[#07151d] border border-cyan-900/60 rounded-2xl w-full max-w-5xl h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+                  <div className="p-3 sm:p-4 border-b border-cyan-900/40 flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-bold text-cyan-300 truncate">{documentPreview.title}</h3>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-300 border border-cyan-800 rounded-lg px-3 py-2">فتح في تبويب جديد</a>
+                      <button onClick={() => setDocumentPreview({ open: false, title: '', url: '', content: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
+                    </div>
+                  </div>
+                  <div className="w-full flex-1 overflow-auto bg-[#0b1c25] p-4 sm:p-6">
+                    <pre dir="auto" className="whitespace-pre-wrap break-words font-cairo text-sm sm:text-base leading-8 text-gray-100">{documentPreview.content || 'المحتوى غير مضاف لهذه المحاضرة بعد.'}</pre>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preview Modal */}
+            {preview.open && (
+              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-[#07151d] border border-cyan-900/60 rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+                  <div className="p-4 border-b border-cyan-900/40 flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-cyan-400 flex items-center gap-2 truncate"><Icons.BookOpen className="w-4 h-4 shrink-0" />{preview.title}</h3>
+                    <button onClick={() => setPreview({ ...preview, open: false })} className="text-gray-400 hover:text-white p-1"><Icons.X className="w-5 h-5" /></button>
+                  </div>
+                  <div className="p-5 overflow-y-auto flex-1 text-gray-200 text-sm whitespace-pre-wrap leading-relaxed" dir={preview.lang === 'ar' ? 'rtl' : 'ltr'}>
+                    {preview.content}
+                  </div>
+                  <div className="p-4 border-t border-cyan-900/40 flex gap-2 justify-end flex-wrap">
+                    <button onClick={() => { setPreview({ ...preview, open: false }); explain(preview.title); }}
+                      className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-bold">
+                      <Icons.Bot className="w-4 h-4" /> اطلب شرح
+                    </button>
+                    <button onClick={() => downloadText(preview.title, preview.content)}
+                      className="flex items-center gap-1.5 border border-green-700/50 text-green-400 hover:bg-green-900/20 px-3 py-2 rounded-xl text-xs font-bold">
+                      <Icons.Download className="w-4 h-4" /> تحميل
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const BotView = () => (
+        <div className="min-h-screen soft-page flex flex-col pb-28">
+          <NavBar title="المساعد الذكي" onBack={() => setView('home')}
+            right={<button onClick={() => { window.speechSynthesis?.cancel(); setChat([{ id: 1, sender: 'bot', text: 'أهلاً بك! أنا مساعدك الجامعي المدعوم بالذكاء الاصطناعي. اسألني في أي وقت 🎓', time: formatTime() }]); }} className="p-2 text-gray-500 hover:text-cyan-400"><Icons.Trash className="w-4 h-4" /></button>} />
+          <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-3">
+            <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-l from-cyan-950/60 to-slate-900/80 p-4 mt-3 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-400/20 flex items-center justify-center text-cyan-300"><Icons.Sparkles className="w-6 h-6" /></div>
+                <div className="flex-1">
+                  <div className="font-extrabold text-white text-sm">مساعد بوابتي الذكي</div>
+                  <div className="text-[11px] text-cyan-200/70 mt-1">Gemini AI · مساعد دراسي وبحثي</div>
+                </div>
+                <span className="text-[10px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-1">متصل بالجامعة</span>
+              </div>
+              <p className="text-xs text-slate-300 mt-3 leading-6">اسأل عن موادك ومحاضراتك أو أي موضوع علمي وبرمجي. تقدر تكتب أو تستخدم الميكروفون.</p>
+            </div>
+            <div className="flex-1 overflow-y-auto py-4 space-y-3 min-h-[42vh]">
+              {chat.map(m => (
+                <div key={m.id} className={`flex message-enter ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[90%] rounded-2xl px-4 py-3 ${m.sender === 'user' ? 'soft-chat-user text-white rounded-br-md' : 'soft-chat-assistant text-gray-100 rounded-bl-md'}`}>
+                    <div className="flex items-center gap-1.5 mb-1.5 opacity-60 text-[10px]">
+                      {m.sender === 'user' ? <Icons.User className="w-3 h-3" /> : <Icons.Bot className="w-3 h-3" />}
+                      {m.sender === 'user' ? 'أنت' : 'المساعد الذكي'}
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.text}</p>
+                    <span className="text-[9px] opacity-40 block mt-1.5" dir="ltr">{m.time}</span>
+                  </div>
+                </div>
+              ))}
+              {typing && <div className="flex justify-start"><div className="soft-chat-assistant rounded-2xl px-4 py-3 flex gap-1.5"><span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" /><span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce [animation-delay:150ms]" /><span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce [animation-delay:300ms]" /></div></div>}
+              <div ref={endRef} />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {['اشرح أنظمة الأعداد', 'ما هو الذكاء الاصطناعي؟', 'اعمل لي خطة مذاكرة', 'اشرح أساسيات البرمجة'].map(s => (
+                <button key={s} onClick={() => send(null, s)} disabled={typing} className="shrink-0 text-[11px] bg-cyan-950/40 border border-cyan-900/40 text-cyan-300 px-3 py-1.5 rounded-full disabled:opacity-40">{s}</button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 pb-2">
+              <button type="button" onClick={startVoiceInput} disabled={typing || voiceListening} className={`flex-1 rounded-xl border px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-2 ${voiceListening ? 'bg-red-500/15 border-red-400/40 text-red-300' : 'bg-cyan-950/40 border-cyan-800/40 text-cyan-200'}`}>
+                <span>{voiceListening ? '●' : '🎙️'}</span>{voiceListening ? 'جاري الاستماع...' : 'تحدث مع المساعد'}
+              </button>
+              <button type="button" onClick={speakLastAnswer} className="rounded-xl border border-cyan-800/40 bg-slate-900/70 text-cyan-200 px-3 py-2.5 text-xs font-bold">🔊 اقرأ آخر رد</button>
+              {voiceSpeaking && <button type="button" onClick={() => { window.speechSynthesis?.cancel(); setVoiceSpeaking(false); }} className="rounded-xl border border-red-800/40 text-red-300 px-3 py-2.5 text-xs">إيقاف</button>}
+            </div>
+            <form onSubmit={send} className="flex gap-2 pb-3 pt-1">
+              <input value={input} onChange={e => setInput(e.target.value)} placeholder="اكتب سؤالك هنا..." disabled={typing}
+                className="soft-control flex-1 text-white rounded-xl py-3 px-4 text-sm" />
+              <button type="submit" disabled={!input.trim() || typing}
+                className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+                <Icons.Send className="w-5 h-5" style={{ transform: 'scaleX(-1)' }} />
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+
+      const Groups = () => (
+        <div className="min-h-screen bg-[#030c13] flex flex-col items-center justify-center p-6">
+          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-cyan-400 font-semibold text-sm">
+            <Icons.ChevronRight className="w-5 h-5" /> العودة
+          </button>
+          <Icons.Users className="w-14 h-14 text-cyan-500 mb-4 animate-float" />
+          <h2 className="text-2xl font-bold text-white mb-2 glow-text">اختر جروبك</h2>
+          <p className="text-gray-500 text-sm mb-8 text-center">سيتم حفظ اختيارك تلقائياً</p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+            {['جروب 1', 'جروب 2'].map(g => (
+              <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }}
+                className={`flex-1 glass border-2 rounded-2xl p-6 flex flex-col items-center gap-3 card-hover ${selectedGroup === g ? 'border-cyan-500 glow-cyan' : 'border-cyan-900/50'}`}>
+                <div className="w-14 h-14 rounded-full bg-cyan-950/60 flex items-center justify-center">
+                  <Icons.Users className="w-7 h-7 text-cyan-400" />
+                </div>
+                <span className="text-white text-lg font-bold">{g}</span>
+                {selectedGroup === g && <span className="text-[10px] text-green-400">✓ مختار حالياً</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+
+      const Schedule = () => {
+        const data = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
+        const activeDay = data.find(day => day.day === selectedScheduleDay);
+        return (
+          <div className="min-h-screen soft-page pb-28">
+            <NavBar title={`جدول ${selectedGroup}`} onBack={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')}
+              right={<button onClick={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')} className="text-xs text-cyan-400">{activeDay ? 'كل الأيام' : 'تغيير الجروب'}</button>} />
+            <div className="px-4 pt-3 space-y-3">
+              {!activeDay ? (
+                <>
+                  <p className="text-sm text-slate-400 mb-2">اختار اليوم لعرض محاضراته فقط</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {data.map(day => (
+                      <button key={day.day} onClick={() => setSelectedScheduleDay(day.day)}
+                        className={`glass soft-panel rounded-2xl p-5 text-right transition ${day.day === today ? 'border-sky-300/40' : ''}`}>
+                        <span className="block text-base font-extrabold text-white">{day.day}</span>
+                        <span className="mt-1 block text-xs text-slate-400">{day.slots.reduce((n, slot) => n + slot.items.length, 0)} محاضرة</span>
+                        {day.day === today && <span className="mt-2 inline-block rounded-full bg-sky-500/15 px-2 py-1 text-[10px] text-sky-300">اليوم</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <section className="glass soft-panel rounded-2xl p-4">
+                  <div className="mb-4 flex items-center justify-between border-b border-cyan-900/20 pb-3">
+                    <h3 className="text-lg font-extrabold text-cyan-300">{activeDay.day}</h3>
+                    {activeDay.day === today && <span className="rounded-full bg-cyan-600 px-2 py-1 text-[10px] text-white">اليوم</span>}
+                  </div>
+                  {activeDay.slots.length === 0 ? <p className="py-6 text-center text-sm text-slate-400">لا توجد محاضرات في هذا اليوم</p> : activeDay.slots.map((slot, si) => (
+                    <div key={si} className="soft-surface mb-3 rounded-xl p-3 last:mb-0">
+                      <div className="mb-2 flex items-center text-xs font-bold text-cyan-300" dir="ltr"><Icons.Clock className="ml-1.5 h-3.5 w-3.5" />{slot.time}</div>
+                      {slot.items.map((it, ii) => <div key={ii} className="mb-2 rounded-lg border border-white/5 bg-slate-950/25 p-3 last:mb-0">
+                        <div className="text-sm font-bold text-white">{it.subject}</div>
+                        <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1"><Icons.User className="h-3 w-3 text-cyan-500/70" />{it.doctor}</span>
+                          <span className="flex items-center gap-1"><Icons.MapPin className="h-3 w-3 text-cyan-500/70" />{it.hall}</span>
+                        </div>
+                      </div>)}
+                    </div>
+                  ))}
+                </section>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const NotesView = () => (
+        <div className="min-h-screen bg-[#030c13] pb-8">
+          <NavBar title="ملاحظاتي" onBack={() => setView('home')} />
+          <div className="px-4 pt-3">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-4 mb-5">
+              <input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder="عنوان الملاحظة..."
+                className="w-full bg-transparent border-b border-cyan-900/40 text-white text-sm py-2 mb-3 focus:outline-none focus:border-cyan-500" />
+              <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="اكتب ملاحظاتك هنا..." rows={4}
+                className="w-full bg-transparent text-gray-300 text-sm focus:outline-none resize-none" />
+              <div className="flex gap-2 mt-3">
+                <button onClick={saveNote} className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5">
+                  <Icons.Check className="w-4 h-4" /> {editingNote ? 'تحديث' : 'حفظ'}
+                </button>
+                {editingNote && (
+                  <button onClick={() => { setEditingNote(null); setNoteTitle(''); setNoteText(''); }} className="px-4 border border-gray-700 text-gray-400 rounded-xl text-sm">إلغاء</button>
+                )}
+              </div>
+            </div>
+            {notes.length === 0 ? (
+              <div className="text-center py-12 text-gray-600">
+                <Icons.Note className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">لا توجد ملاحظات بعد</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {notes.slice().reverse().map(n => (
+                  <div key={n.id} className="glass border border-cyan-900/30 rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-bold text-white text-sm">{n.title}</h4>
+                      <div className="flex gap-1">
+                        <button onClick={() => { setEditingNote(n.id); setNoteTitle(n.title); setNoteText(n.text); }} className="p-1.5 text-gray-500 hover:text-blue-400"><Icons.Edit className="w-4 h-4" /></button>
+                        <button onClick={() => deleteNote(n.id)} className="p-1.5 text-gray-500 hover:text-cyan-400"><Icons.Trash className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-xs whitespace-pre-wrap leading-relaxed">{n.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      const TimerView = () => (
+        <div className="min-h-screen bg-[#030c13] flex flex-col items-center justify-center p-6">
+          <button onClick={() => setView('home')} className="absolute top-5 right-5 flex items-center text-cyan-400 font-semibold text-sm">
+            <Icons.ChevronRight className="w-5 h-5" /> العودة
+          </button>
+          <div className="text-center mb-8">
+            <Icons.Timer className="w-10 h-10 text-cyan-400 mx-auto mb-3" />
+            <h2 className="text-xl font-bold text-white">مؤقت بومودورو</h2>
+            <p className="text-gray-500 text-xs mt-1">{timerMode === 'focus' ? 'وقت التركيز' : 'وقت الاستراحة'}</p>
+          </div>
+          <div className="relative w-56 h-56 mb-8">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#10212a" strokeWidth="6" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke={timerMode === 'focus' ? '#22d3ee' : '#22c55e'} strokeWidth="6"
+                strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 45}`}
+                strokeDashoffset={`${2 * Math.PI * 45 * (1 - timerSeconds / (timerMode === 'focus' ? 25 * 60 : 5 * 60))}`}
+                className="progress-ring" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-4xl font-bold text-white tabular-nums" dir="ltr">{formatTimer(timerSeconds)}</span>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setTimerRunning(!timerRunning)}
+              className={`px-8 py-3 rounded-xl font-bold text-sm ${timerRunning ? 'bg-amber-600 text-white' : 'bg-cyan-600 text-white'}`}>
+              {timerRunning ? 'إيقاف' : 'ابدأ'}
+            </button>
+            <button onClick={() => { setTimerRunning(false); setTimerSeconds(timerMode === 'focus' ? 25 * 60 : 5 * 60); }}
+              className="px-5 py-3 rounded-xl border border-cyan-900/50 text-cyan-400 text-sm font-bold">
+              إعادة
+            </button>
+          </div>
+          <div className="flex gap-2 mt-6">
+            <button onClick={() => { setTimerMode('focus'); setTimerSeconds(25 * 60); setTimerRunning(false); }}
+              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'focus' ? 'bg-cyan-600 text-white' : 'bg-cyan-950/40 text-gray-400'}`}>تركيز 25</button>
+            <button onClick={() => { setTimerMode('break'); setTimerSeconds(5 * 60); setTimerRunning(false); }}
+              className={`px-4 py-1.5 rounded-full text-xs ${timerMode === 'break' ? 'bg-green-600 text-white' : 'bg-cyan-950/40 text-gray-400'}`}>استراحة 5</button>
+          </div>
+        </div>
+      );
+
+      const GPAView = () => (
+        <div className="min-h-screen bg-[#030c13] pb-8">
+          <NavBar title="حاسبة المعدل" onBack={() => setView('home')} />
+          <div className="px-4 pt-3">
+            <div className="glass border border-cyan-900/40 rounded-2xl p-5 mb-5 text-center">
+              <p className="text-gray-500 text-xs mb-1">المعدل التراكمي المتوقع</p>
+              <p className="text-4xl font-extrabold text-cyan-400">{calcGPA()}</p>
+              <p className="text-[10px] text-gray-600 mt-1">من 4.0</p>
+            </div>
+            <div className="space-y-3 mb-4">
+              {gpaCourses.map((c, i) => (
+                <div key={i} className="glass border border-cyan-900/30 rounded-xl p-3 flex gap-2 items-center">
+                  <input value={c.name} onChange={e => { const n = [...gpaCourses]; n[i].name = e.target.value; setGpaCourses(n); }}
+                    placeholder="المادة" className="flex-1 bg-transparent text-sm text-white focus:outline-none min-w-0" />
+                  <select value={c.grade} onChange={e => { const n = [...gpaCourses]; n[i].grade = e.target.value; setGpaCourses(n); }}
+                    className="bg-[#10212a] border border-cyan-900/40 text-white text-xs rounded-lg px-2 py-1.5">
+                    <option value="">درجة</option>
+                    {['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'].map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                  <input type="number" value={c.hours} onChange={e => { const n = [...gpaCourses]; n[i].hours = e.target.value; setGpaCourses(n); }}
+                    placeholder="ساعات" className="w-16 bg-transparent text-sm text-white text-center focus:outline-none border border-cyan-900/30 rounded-lg py-1" />
+                  {gpaCourses.length > 1 && (
+                    <button onClick={() => setGpaCourses(gpaCourses.filter((_, j) => j !== i))} className="text-gray-600 hover:text-cyan-400"><Icons.X className="w-4 h-4" /></button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setGpaCourses([...gpaCourses, { name: '', grade: '', hours: '' }])}
+              className="w-full border border-dashed border-cyan-900/50 text-cyan-400 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5">
+              <Icons.Plus className="w-4 h-4" /> إضافة مادة
+            </button>
+          </div>
+        </div>
+      );
+
+      const AnnouncementsView = () => (
+        <div className="min-h-screen bg-[#030c13] pb-8">
+          <NavBar title="الإعلانات" onBack={() => setView('home')} />
+          <div className="px-4 pt-3 space-y-3">
+            {announcements.map(a => (
+              <div key={a.id} className={`glass border rounded-2xl p-4 ${
+                a.type === 'warning' ? 'border-amber-800/40' : a.type === 'success' ? 'border-green-800/40' : a.type === 'tip' ? 'border-blue-800/40' : 'border-cyan-900/30'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    a.type === 'warning' ? 'bg-amber-950 text-amber-400' : a.type === 'success' ? 'bg-green-950 text-green-400' : a.type === 'tip' ? 'bg-blue-950 text-blue-400' : 'bg-cyan-950 text-cyan-400'
+                  }`}>
+                    <Icons.Bell className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{a.title}</h4>
+                    <p className="text-gray-400 text-xs mt-1 leading-relaxed">{a.body}</p>
+                    <p className="text-[10px] text-gray-600 mt-2" dir="ltr">{a.date}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      const SettingsView = () => (
+        <div className="min-h-screen bg-[#030c13] pb-8">
+          <NavBar title="الإعدادات" onBack={() => setView('home')} />
+          <div className="px-4 pt-3 space-y-3">
+            <div className="glass border border-cyan-900/30 rounded-2xl p-4">
+              <h3 className="font-bold text-white text-sm mb-3">البيانات المحفوظة</h3>
+              <div className="space-y-2 text-xs text-gray-400">
+                <div className="flex justify-between"><span>المفضلة</span><span className="text-cyan-400">{favorites.length}</span></div>
+                <div className="flex justify-between"><span>محاضرات مكتملة</span><span className="text-cyan-400">{Object.keys(completed).length}</span></div>
+                <div className="flex justify-between"><span>ملاحظات</span><span className="text-cyan-400">{notes.length}</span></div>
+                <div className="flex justify-between"><span>الجروب</span><span className="text-cyan-400">{selectedGroup || '—'}</span></div>
+              </div>
+            </div>
+            <button onClick={() => {
+              if (confirm('هل أنت متأكد من مسح كل البيانات المحلية؟')) {
+                localStorage.clear();
+                setFavorites([]); setCompleted({}); setNotes([]); setSelectedGroup(null);
+                showToast('تم مسح جميع البيانات');
+              }
+            }} className="w-full glass border border-cyan-900/40 text-cyan-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+              <Icons.Trash className="w-4 h-4" /> مسح كل البيانات المحلية
+            </button>
+            <div className="glass border border-cyan-900/30 rounded-2xl p-4">
+              <h3 className="mb-3 text-sm font-extrabold text-white">أدوات إضافية</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { icon: Icons.Note, label: 'ملاحظاتي', view: 'notes' },
+                  { icon: Icons.Timer, label: 'مؤقت المذاكرة', view: 'timer' },
+                  { icon: Icons.Calculator, label: 'حساب المعدل', view: 'gpa' },
+                  { icon: Icons.Bell, label: 'الإعلانات', view: 'announcements' },
+                ].map(({ icon: I, label, view: target }) => (
+                  <button key={target} onClick={() => setView(target)}
+                    className="flex items-center gap-2 rounded-xl border border-cyan-200/10 bg-cyan-400/[0.06] px-3 py-3 text-right text-xs font-bold text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-400/10">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-300"><I className="h-4 w-4" /></span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="glass border border-cyan-900/30 rounded-2xl p-4 text-center">
+              <Icons.Graduation className="w-7 h-7 text-cyan-400 mx-auto mb-2" />
+              <p className="text-white font-bold text-sm">بوابة جامعة بني سويف الأهلية</p>
+            </div>
+          </div>
+        </div>
+      );
+
+      // Global Search Overlay
+      const SearchOverlay = () => showSearch && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md animate-fade-in flex flex-col">
+          <div className="p-4 flex items-center gap-3">
+            <button onClick={() => { setShowSearch(false); setGlobalSearch(''); }} className="text-gray-400"><Icons.X className="w-6 h-6" /></button>
+            <input autoFocus value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} placeholder="ابحث في كل المحاضرات..."
+              className="flex-1 bg-[#091923] border border-cyan-900/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 pb-8">
+            {globalSearch && searchResults.length === 0 && <p className="text-center text-gray-600 mt-10 text-sm">لا توجد نتائج</p>}
+            {searchResults.map((r, i) => (
+              <button key={i} onClick={() => {
+                setShowSearch(false); setGlobalSearch('');
+                setSelectedSubject(r.subject); setSelectedInstructor(null); setView('lectures');
+                setTimeout(() => setPreview({ open: true, title: r.lecture.title, content: r.lecture.summaryAr, lang: 'ar', lecture: r.lecture }), 200);
+              }} className="w-full text-right glass border border-cyan-900/30 rounded-xl p-3 mb-2 hover:border-cyan-500/40 transition">
+                <div className="text-xs text-cyan-400 mb-0.5">{r.subject.arabicName}</div>
+                <div className="text-sm text-white font-medium">{r.lecture.title}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+
+      // Persistent glass navigation across the main portal views
+      const BottomNav = () => (
+        <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
+          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-md items-center justify-between gap-2 rounded-2xl px-3 py-2">
+            {[
+              { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
+              { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
+              { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
+              { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
+            ].map(({ icon: I, label, v }) => {
+              const active = view === v || (v === 'subjects' && view === 'lectures');
+              return (
+                <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => setView(v)}
+                  className={`soft-nav-item flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
+                  <I className="h-[19px] w-[19px] shrink-0" />
+                  <span className="text-[10px] leading-none font-semibold whitespace-nowrap">{label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      );
+
+      return (
+        <>
+          {showSplash && (
+            <div className="splash-screen fixed inset-0 z-[100] flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center" role="status" aria-label="جاري تحميل بوابتك الجامعية">
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-300/20 splash-ring" />
+              <div className="splash-mark relative flex flex-col items-center">
+                <div className="relative mb-7 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-cyan-200/30 bg-cyan-300/10 text-cyan-200 shadow-[0_0_65px_rgba(6,182,212,0.28)]">
+                  <Icons.Graduation className="h-12 w-12" />
+                  <div className="absolute -inset-3 rounded-[2.4rem] border border-cyan-300/15" />
+                </div>
+                <p className="mb-2 text-xs font-bold tracking-[.22em] text-cyan-300">BSNU • UNIVERSITY PORTAL</p>
+                <h1 className="text-2xl font-black text-white sm:text-4xl">بوابتك الجامعية</h1>
+                <p className="mt-3 text-sm font-semibold text-cyan-100/80 sm:text-base">جامعة بني سويف الأهلية</p>
+                <p className="mt-2 text-xs text-slate-400">حاسبات ومعلومات</p>
+                <div className="mt-10 h-1 w-40 overflow-hidden rounded-full bg-cyan-950/80">
+                  <div className="splash-progress h-full w-full rounded-full bg-gradient-to-l from-sky-300 to-cyan-400" />
+                </div>
+                <p className="mt-3 text-[10px] text-slate-500">جاري تجهيز بوابتك...</p>
+              </div>
+            </div>
+          )}
+          <div dir="rtl" className="portal-root font-cairo min-h-screen soft-page text-gray-200">
+          {view === 'home' && <Home />}
+          {view === 'subjects' && <Subjects />}
+          {view === 'lectures' && <Lectures />}
+          {view === 'bot' && <BotView />}
+          {view === 'groups' && <Groups />}
+          {view === 'schedule' && <Schedule />}
+          {view === 'notes' && <NotesView />}
+          {view === 'timer' && <TimerView />}
+          {view === 'gpa' && <GPAView />}
+          {view === 'announcements' && <AnnouncementsView />}
+          {view === 'admin' && (
+            <div className="min-h-screen bg-[#061321] px-4 py-8">
+              <div className="mx-auto max-w-md">
+                <button onClick={() => setView('settings')} className="mb-6 text-sm font-bold text-sky-300">→ العودة للإعدادات</button>
+                <div className="glass rounded-3xl border border-sky-300/20 p-6">
+                  <div className="mb-5 text-center">
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-400/10 text-sky-300"><Icons.User className="h-7 w-7" /></div>
+                    <h1 className="text-xl font-black text-white">لوحة تحكم الأدمن</h1>
+                    <p className="mt-1 text-xs text-slate-400">تسجيل دخول آمن عبر Supabase</p>
+                  </div>
+                  {!supabaseClient ? (
+                    <p className="rounded-xl bg-red-500/10 p-3 text-sm text-red-300">خدمة تسجيل الدخول غير متاحة حاليًا.</p>
+                  ) : adminChecking ? (
+                    <p className="py-6 text-center text-sm text-slate-300">جاري التحقق من الجلسة...</p>
+                  ) : adminAllowed && adminSession ? (
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-center">
+                        <p className="font-bold text-emerald-300">تم التحقق من صلاحيات الأدمن</p>
+                        <p className="mt-1 break-all text-xs text-slate-300">{adminSession.user?.email}</p>
+                      </div>
+                      <div className="space-y-4 text-right">
+                        <div>
+                          <label className="mb-2 block text-xs font-bold text-slate-300">اختار القسم اللي عايز تديره</label>
+                          <select value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminEditingId(null); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white">
+                            {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                        </div>
+                        <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل البيانات' : 'إضافة سجل جديد'}</h3>
+                            {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminFormData({}); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
+                          </div>
+                          <p className="text-[11px] leading-5 text-slate-400">املأ الخانات التالية، وسيتم حفظ البيانات مباشرة في قاعدة البيانات.</p>
+                          <div className="grid grid-cols-1 gap-3">
+                            {adminFieldConfig[adminSelectedTable].map(field => (
+                              <label key={field.key} className="block text-xs font-bold text-slate-300">
+                                <span className="mb-1.5 block">{field.label}{field.required ? ' *' : ''}</span>
+                                {field.type === 'subject' ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value, doctor: field.key === 'subject_code' ? '' : current.doctor }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    <option value="">اختار المادة</option>
+                                    {subjectsData.map(subject => <option key={subject.code} value={subject.code}>{subject.arabicName || subject.name}</option>)}
+                                  </select>
+                                ) : field.type === 'instructor' ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} disabled={!adminFormData.subject_code} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    <option value="">اختار الدكتور</option>
+                                    {(instructorsBySubject[adminFormData.subject_code] || []).map(instructor => (
+                                      <option key={instructor.name} value={instructor.name}>{instructor.name}{instructor.note ? ' — ' + instructor.note : ''}</option>
+                                    ))}
+                                  </select>
+                                ) : field.type === 'textarea' ? (
+                                  <textarea value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} rows={3} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-2.5 text-sm text-white" />
+                                ) : field.type === 'boolean' ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    <option value="">اختار الحالة</option>
+                                    <option value="true">نعم</option>
+                                    <option value="false">لا</option>
+                                  </select>
+                                ) : (
+                                  <input type={field.type === 'number' ? 'number' : field.type === 'url' ? 'url' : 'text'} value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} placeholder={field.type === 'url' ? 'https://...' : ''} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" dir={field.key.includes('url') || field.key.includes('code') ? 'ltr' : 'auto'} />
+                                )}
+                              </label>
+                            ))}
+                          </div>
+                          <button disabled={adminDataBusy} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
+                        </form>
+                        <div className="flex items-center justify-between">
+                          <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
+                          <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
+                        </div>
+                        {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs text-slate-400">مفيش سجلات في القسم ده حاليًا.</p> : (
+                          <div className="max-h-[460px] space-y-2 overflow-y-auto">
+                            {adminSelectedTable === 'lectures' ? (
+                              Object.entries(adminRecords.reduce((groups, record) => {
+                                const code = record.subject_code || 'بدون مادة';
+                                (groups[code] ||= []).push(record);
+                                return groups;
+                              }, {})).map(([code, records]) => {
+                                const subject = subjectsData.find(item => item.code === code);
+                                const SubjectIcon = Icons[subject?.icon] || Icons.BookOpen;
+                                return (
+                                  <details key={code} className="overflow-hidden rounded-xl border border-sky-300/20 bg-slate-900/80">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3">
+                                      <span className="flex min-w-0 items-center gap-3">
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><SubjectIcon className="h-5 w-5" /></span>
+                                        <span className="min-w-0">
+                                          <span className="block truncate text-sm font-extrabold text-white">{subject?.arabicName || code}</span>
+                                          <span className="mt-1 block text-[10px] text-slate-400">{code} • {records.length} محاضرة</span>
+                                        </span>
+                                      </span>
+                                      <Icons.ChevronDown className="h-4 w-4 shrink-0 text-sky-300" />
+                                    </summary>
+                                    <div className="space-y-2 border-t border-slate-700 p-3">
+                                      {records.map((record, index) => (
+                                        <div key={record.id ?? index} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                                          <p className="text-sm font-bold leading-6 text-white">{record.title || 'محاضرة بدون عنوان'}</p>
+                                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-400">
+                                            {record.doctor && <span>{record.doctor}</span>}
+                                            {record.duration && <span>{record.duration}</span>}
+                                          </div>
+                                          <div className="mt-3 flex gap-2">
+                                            <button onClick={() => editAdminRecord(record)} className="flex-1 rounded-lg bg-sky-400/10 py-2 text-xs font-bold text-sky-200">تعديل</button>
+                                            <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="flex-1 rounded-lg bg-red-400/10 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                );
+                              })
+                            ) : adminRecords.map((record, index) => (
+                              <div key={record.id ?? index} className="rounded-xl border border-slate-700 bg-slate-900/80 p-3">
+                                <pre dir="ltr" className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-left text-[10px] leading-5 text-slate-300">{JSON.stringify(record, null, 2)}</pre>
+                                <div className="mt-3 flex gap-2">
+                                  <button onClick={() => editAdminRecord(record)} className="flex-1 rounded-lg bg-sky-400/10 py-2 text-xs font-bold text-sky-200">تعديل</button>
+                                  <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="flex-1 rounded-lg bg-red-400/10 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-700 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}</button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleAdminLogin} className="space-y-3">
+                      <label className="block text-xs font-bold text-slate-300">البريد الإلكتروني</label>
+                      <input type="email" required autoComplete="username" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} placeholder="admin@example.com" className="soft-control w-full rounded-xl px-4 py-3 text-sm text-white" dir="ltr" />
+                      <label className="block text-xs font-bold text-slate-300">كلمة المرور</label>
+                      <input type="password" required autoComplete="current-password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="••••••••" className="soft-control w-full rounded-xl px-4 py-3 text-sm text-white" dir="ltr" />
+                      <button type="submit" disabled={adminBusy} className="mt-2 w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminBusy ? 'جاري التحقق...' : 'تسجيل الدخول'}</button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+                    {view === 'settings' && <SettingsView />}
+          <footer className="developer-footer relative z-10 mx-auto mt-3 w-full max-w-6xl px-4 pb-32 pt-0 sm:px-6" aria-label="معلومات المطور">
+            <div className="overflow-hidden rounded-2xl border border-sky-300/15 bg-slate-950/35 px-5 py-5 text-center">
+              <div className="mx-auto mb-3 h-px w-16 bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
+              <p className="text-[10px] font-bold tracking-[.18em] text-sky-300/75">DESIGNED & DEVELOPED BY</p>
+              <p className="mt-1 text-lg font-black text-white">Ahmed Osama</p>
+              <div className="mt-4 flex items-center justify-center gap-3" dir="ltr">
+                <a href="https://www.facebook.com/ahmed.osama.185953?mibextid=ZbWKwL" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
+                  className="developer-social-link" title="Facebook"><Icons.Facebook className="h-5 w-5" /></a>
+                <a href="https://www.instagram.com/a7med_osama_2008y?srtk=MWR3ZWd4NmVqOW5q" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                  className="developer-social-link" title="Instagram"><Icons.Instagram className="h-5 w-5" /></a>
+                <a href="https://wa.me/201119136553" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
+                  className="developer-social-link" title="WhatsApp"><Icons.WhatsApp className="h-5 w-5" /></a>
+              </div>
+              <p className="mt-4 text-[10px] text-slate-500">© 2026 • بوابة جامعة بني سويف الأهلية</p>
+              <p className="mt-2 text-[10px] font-bold text-sky-300/75">إصدار 2026 • للاستخدام التعليمي</p>
+            </div>
+          </footer>
+          <SearchOverlay />
+          <BottomNav />
+
+          {/* Toast */}
+          {toast && (
+            <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-xl shadow-lg font-semibold text-sm flex items-center gap-2 animate-slide-up ${
+              toast.type === 'error' ? 'bg-cyan-700 text-white' : 'bg-green-600 text-white'
+            }`}>
+              <Icons.CheckCircle className="w-4 h-4" /> {toast.msg || toast}
+            </div>
+          )}
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
