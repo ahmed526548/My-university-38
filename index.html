@@ -2250,23 +2250,23 @@ Civil & Political + Economic & Social rights.` },
             </header>
 
             <section className="premium-welcome home-hero mt-5 overflow-hidden rounded-[1.8rem] p-5 sm:mt-7 sm:p-8 lg:p-10">
-              <div className="grid items-center gap-7 lg:grid-cols-[1.4fr_.8fr]">
-                <div className="relative">
-                  <span className="premium-eyebrow mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold sm:text-xs">
-                    <Icons.Sparkles className="h-3.5 w-3.5" /> مساحتك الدراسية في مكان واحد
-                  </span>
-                  <h2 className="max-w-2xl text-2xl font-black leading-[1.45] text-white sm:text-3xl lg:text-4xl">كل يوم دراسي يبدأ <span className="premium-highlight">بخطوة منظمة.</span></h2>
-                  <p className="mt-3 max-w-xl text-xs leading-7 text-slate-300 sm:text-sm">تابع محاضراتك، راجع موادك، واعرف جدولك بسهولة من بوابتك الجامعية.</p>
-                  <div className="mt-6 flex flex-wrap gap-2.5">
-                    <button onClick={() => setView('subjects')} className="premium-primary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-extrabold sm:text-sm">
-                      <Icons.BookOpen className="h-4 w-4" /> تصفح المحاضرات <Icons.ChevronRight className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => setView('bot')} className="premium-secondary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold sm:text-sm">
-                      <Icons.Bot className="h-4 w-4" /> اسأل المساعد
-                    </button>
-                  </div>
+              <div className="relative">
+                <span className="premium-eyebrow mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold sm:text-xs">
+                  <Icons.Sparkles className="h-3.5 w-3.5" /> مساحتك الدراسية في مكان واحد
+                </span>
+                <h2 className="max-w-2xl text-2xl font-black leading-[1.45] text-white sm:text-3xl lg:text-4xl">كل يوم دراسي يبدأ <span className="premium-highlight">بخطوة منظمة.</span></h2>
+                <p className="mt-3 max-w-xl text-xs leading-7 text-slate-300 sm:text-sm">تابع محاضراتك، راجع موادك، واعرف جدولك بسهولة من بوابتك الجامعية.</p>
+              </div>
+              <div className="mt-7 grid grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_auto] sm:gap-6">
+                <div className="flex flex-wrap items-center gap-2.5 sm:justify-start">
+                  <button onClick={() => setView('subjects')} className="premium-primary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-extrabold sm:text-sm">
+                    <Icons.BookOpen className="h-4 w-4" /> تصفح المحاضرات <Icons.ChevronRight className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => setView('bot')} className="premium-secondary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold sm:text-sm">
+                    <Icons.Bot className="h-4 w-4" /> اسأل المساعد
+                  </button>
                 </div>
-                <div className="premium-progress-card relative mx-auto w-full max-w-xs rounded-2xl p-5 lg:mx-0 lg:justify-self-end">
+                <div className="premium-progress-card relative mx-auto w-full max-w-xs rounded-2xl p-5 sm:mx-0 sm:justify-self-end">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-300">إنجازك الدراسي</span>
                     <Icons.Trophy className="h-5 w-5 text-sky-300" />
