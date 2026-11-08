@@ -1318,7 +1318,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminBusy, setAdminBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
       const [adminRecords, setAdminRecords] = useState([]);
-      const [adminOverview, setAdminOverview] = useState({ students: 0, posts: 0, reports: 0, tasks: 0, activity: [], topLectures: [] });
+      const [adminOverview, setAdminOverview] = useState({ students: 0, tasks: 0, activity: [], topLectures: [] });
       const [adminDataBusy, setAdminDataBusy] = useState(false);
       const [adminFormData, setAdminFormData] = useState({});
       const [adminEditingId, setAdminEditingId] = useState(null);
@@ -1331,10 +1331,6 @@ Civil & Political + Economic & Social rights.` },
         { value: 'announcements', label: 'الإعلانات' },
         { value: 'student_tasks', label: 'التكليفات والامتحانات' },
         { value: 'portal_notifications', label: 'الإشعارات العامة' },
-        { value: 'community_reports', label: 'بلاغات المجتمع' },
-        { value: 'community_posts', label: 'منشورات المجتمع' },
-        { value: 'community_comments', label: 'تعليقات المجتمع' },
-        { value: 'student_profiles', label: 'ملفات الطلاب' }
       ];
       const adminFieldConfig = {
         subjects: [
@@ -1387,27 +1383,6 @@ Civil & Political + Economic & Social rights.` },
           { key: 'target_group', label: 'الجروب المستهدف (اختياري)' },
           { key: 'published', label: 'نشر الإشعار؟', type: 'boolean' }
         ],
-        community_reports: [
-          { key: 'post_id', label: 'معرّف المنشور' },
-          { key: 'comment_id', label: 'معرّف التعليق' },
-          { key: 'reporter_id', label: 'معرّف المبلّغ' },
-          { key: 'reason', label: 'سبب البلاغ', type: 'textarea' },
-          { key: 'status', label: 'حالة البلاغ', type: 'reportstatus', required: true }
-        ],
-        community_posts: [
-          { key: 'author_id', label: 'معرّف صاحب المنشور', required: true },
-          { key: 'body', label: 'محتوى المنشور', type: 'textarea', required: true }
-        ],
-        community_comments: [
-          { key: 'post_id', label: 'معرّف المنشور', required: true },
-          { key: 'author_id', label: 'معرّف صاحب التعليق', required: true },
-          { key: 'body', label: 'محتوى التعليق', type: 'textarea', required: true }
-        ],
-        student_profiles: [
-          { key: 'user_id', label: 'معرّف حساب الطالب', type: 'readonly', required: true },
-          { key: 'display_name', label: 'اسم العرض', required: true },
-          { key: 'group_name', label: 'الجروب' }
-        ]
       };
       const themeOptions = ['sky', 'burgundy', 'violet', 'emerald', 'amber'];
       const [portalTheme, setPortalTheme] = useState(() => {
@@ -1676,15 +1651,15 @@ Civil & Political + Economic & Social rights.` },
           const result = await query;
           return result.count || 0;
         };
-        const [students, posts, reports, tasks, activityResult, viewsResult] = await Promise.all([
-          countRows('student_profiles'), countRows('community_posts'), countRows('community_reports', [['status','open']]),
-          countRows('student_tasks'), supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8),
+        const [students, tasks, activityResult, viewsResult] = await Promise.all([
+          countRows('student_profiles'), countRows('student_tasks'),
+          supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8),
           supabaseClient.from('lecture_views').select('lecture_id,lectures(title,subject_code)').limit(2000)
         ]);
         const groupedViews = {};
         (viewsResult.data || []).forEach(row => { const key=row.lecture_id; if(!groupedViews[key]) groupedViews[key]={ title:row.lectures?.title || 'محاضرة', subject:row.lectures?.subject_code || '', count:0 }; groupedViews[key].count++; });
         const topLectures = Object.values(groupedViews).sort((a,b)=>b.count-a.count).slice(0,5);
-        setAdminOverview({ students, posts, reports, tasks, activity: activityResult.data || [], topLectures });
+        setAdminOverview({ students, tasks, activity: activityResult.data || [], topLectures });
       };
 
       useEffect(() => {
@@ -2718,7 +2693,7 @@ Civil & Political + Economic & Social rights.` },
                   { icon: Icons.Timer, label: 'مؤقت المذاكرة', view: 'timer' },
                   { icon: Icons.Calculator, label: 'حساب المعدل', view: 'gpa' },
                   { icon: Icons.Bell, label: 'الإعلانات', view: 'announcements' },
-                  { icon: Icons.Users, label: 'مجتمع الطلاب', view: 'community' },
+                  
                   { icon: Icons.Calendar, label: 'التكليفات والامتحانات', view: 'tasks' },
                   { icon: Icons.Bell, label: 'الإشعارات', view: 'notifications' },
                   { icon: Icons.MapPin, label: 'خريطة الجامعة', view: 'campus-map' },
@@ -2762,168 +2737,6 @@ Civil & Political + Economic & Social rights.` },
           </div>
         </div>
       );
-
-      const CommunityView = () => {
-        const [session, setSession] = useState(null);
-        const [profile, setProfile] = useState(null);
-        const [posts, setPosts] = useState([]);
-        const [comments, setComments] = useState({});
-        const [draft, setDraft] = useState('');
-        const [commentDrafts, setCommentDrafts] = useState({});
-        const [email, setEmail] = useState('');
-        const [password, setPassword] = useState('');
-        const [displayName, setDisplayName] = useState('');
-        const [authMode, setAuthMode] = useState('signin');
-        const [busy, setBusy] = useState(false);
-        const [loading, setLoading] = useState(true);
-        const [error, setError] = useState('');
-        const isMember = !!session?.user?.id && session.user.is_anonymous !== true;
-        const loadPosts = async (force = false) => {
-          if (!isMember && !force) return;
-          const { data, error: postError } = await supabaseClient.from('community_posts').select('id,author_id,body,created_at').order('created_at', { ascending: false }).limit(50);
-          if (postError) { setError(postError.message); return; }
-          const ids = [...new Set((data || []).map(p => p.author_id))];
-          let profileRows = [];
-          if (ids.length) {
-            const { data: rows } = await supabaseClient.from('student_profiles').select('user_id,display_name,group_name').in('user_id', ids);
-            profileRows = rows || [];
-          }
-          const names = Object.fromEntries(profileRows.map(p => [p.user_id, p]));
-          setPosts((data || []).map(p => ({ ...p, profile: names[p.author_id] || null })));
-          if (data?.length) {
-            const { data: commentRows } = await supabaseClient.from('community_comments').select('id,post_id,author_id,body,created_at').in('post_id', data.map(p => p.id)).order('created_at');
-            const commentIds = [...new Set((commentRows || []).map(c => c.author_id))];
-            let commentProfiles = [];
-            if (commentIds.length) {
-              const { data: rows } = await supabaseClient.from('student_profiles').select('user_id,display_name').in('user_id', commentIds);
-              commentProfiles = rows || [];
-            }
-            const commentNames = Object.fromEntries(commentProfiles.map(p => [p.user_id, p.display_name]));
-            const grouped = {};
-            (commentRows || []).forEach(c => { (grouped[c.post_id] ||= []).push({ ...c, display_name: commentNames[c.author_id] || 'طالب' }); });
-            setComments(grouped);
-          } else setComments({});
-        };
-        useEffect(() => {
-          let alive = true;
-          (async () => {
-            const { data } = await supabaseClient.auth.getSession();
-            if (!alive) return;
-            const current = data?.session?.user?.is_anonymous ? null : (data?.session || null);
-            setSession(current);
-            if (current?.user?.id) {
-              const { data: row } = await supabaseClient.from('student_profiles').select('*').eq('user_id', current.user.id).maybeSingle();
-              if (alive) { setProfile(row || null); if (row) await loadPosts(true); }
-            }
-            if (alive) setLoading(false);
-          })();
-          return () => { alive = false; };
-        }, []);
-        const authenticate = async (event) => {
-          event.preventDefault(); setBusy(true); setError('');
-          try {
-            let result;
-            if (authMode === 'signup') {
-              result = await supabaseClient.auth.signUp({ email: email.trim(), password });
-              if (result.error) throw result.error;
-              if (!result.data.session) {
-                const login = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password });
-                if (login.error) throw new Error('تم إنشاء الحساب. أكّد البريد إذا طُلب منك، ثم سجّل الدخول.');
-                result = login;
-              }
-            } else {
-              result = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password });
-              if (result.error) throw result.error;
-            }
-            const user = result.data.user || result.data.session?.user;
-            if (!user?.id) throw new Error('تعذر إنشاء جلسة دخول.');
-            setSession(result.data.session);
-            const { data: existing } = await supabaseClient.from('student_profiles').select('*').eq('user_id', user.id).maybeSingle();
-            if (existing) { setProfile(existing); await loadPosts(true); }
-            else {
-              if (displayName.trim().length < 2) { setError('اكتب اسم عرض من حرفين على الأقل لإكمال ملفك.'); return; }
-              const { data: created, error: profileError } = await supabaseClient.from('student_profiles').insert({ user_id: user.id, display_name: displayName.trim(), group_name: selectedGroup }).select().single();
-              if (profileError) throw profileError;
-              setProfile(created); await loadPosts(true);
-            }
-          } catch (err) { setError(err?.message || 'تعذر تسجيل الدخول.'); }
-          finally { setBusy(false); }
-        };
-        useEffect(() => {
-          if (!isMember) return;
-          const channel = supabaseClient.channel('community-live')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts(true))
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'community_comments' }, () => loadPosts(true))
-            .subscribe();
-          return () => { supabaseClient.removeChannel(channel); };
-        }, [isMember]);
-
-        const publishPost = async (event) => {
-          event.preventDefault();
-          if (!draft.trim() || !session?.user?.id) return;
-          setBusy(true);
-          const { error: postError } = await supabaseClient.from('community_posts').insert({ author_id: session.user.id, body: draft.trim() });
-          setBusy(false);
-          if (postError) { setError(postError.message); return; }
-          setDraft(''); await loadPosts();
-        };
-        const publishComment = async (postId) => {
-          const body = (commentDrafts[postId] || '').trim();
-          if (!body) return;
-          const { error: commentError } = await supabaseClient.from('community_comments').insert({ post_id: postId, author_id: session.user.id, body });
-          if (commentError) { setError(commentError.message); return; }
-          setCommentDrafts(current => ({ ...current, [postId]: '' })); await loadPosts();
-        };
-        const reportPost = async (postId) => {
-          const reason = window.prompt('اكتب سبب الإبلاغ باختصار:');
-          if (!reason?.trim()) return;
-          const { error: reportError } = await supabaseClient.from('community_reports').insert({ post_id: postId, reporter_id: session.user.id, reason: reason.trim() });
-          if (reportError) setError(reportError.message); else showToast('تم إرسال البلاغ للمراجعة');
-        };
-        return (
-          <div className="min-h-screen soft-page pb-28">
-            <NavBar title="مجتمع الطلاب" onBack={() => setView('home')} right={<button onClick={loadPosts} className="text-xs font-bold text-sky-300">تحديث</button>} />
-            <div className="mx-auto max-w-3xl space-y-4 px-4 pt-4">
-              <div className="soft-panel rounded-2xl p-4">
-                <div className="flex items-center gap-2 text-sky-200"><Icons.Users className="h-5 w-5" /><b>مجتمع بوابتي</b></div>
-                <p className="mt-2 text-xs leading-6 text-slate-300">اسأل زملاءك وشارك ملخصات ونصائح دراسية. استخدم اسم عرض فقط، ومتشاركش رقمك أو بريدك أو بياناتك الشخصية. يوجد زر للإبلاغ عن أي محتوى غير مناسب.</p>
-              </div>
-              {loading ? <p className="py-8 text-center text-sm text-slate-400">جاري التحميل...</p> : !isMember ? (
-                <form onSubmit={authenticate} className="soft-panel space-y-3 rounded-2xl p-4">
-                  <h3 className="font-extrabold text-white">{authMode === 'signup' ? 'إنشاء حساب طالب' : 'تسجيل دخول الطلاب'}</h3>
-                  {authMode === 'signup' && <input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="اسم العرض (بدون بيانات شخصية)" maxLength={32} className="soft-control w-full rounded-xl p-3 text-sm" required />}
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="البريد الإلكتروني" className="soft-control w-full rounded-xl p-3 text-sm" required dir="ltr" />
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="كلمة المرور" className="soft-control w-full rounded-xl p-3 text-sm" required minLength={6} dir="ltr" />
-                  {error && <p className="text-xs text-rose-300">{error}</p>}
-                  <button disabled={busy} className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950">{busy ? 'جاري التنفيذ...' : authMode === 'signup' ? 'إنشاء الحساب' : 'دخول المجتمع'}</button>
-                  <button type="button" onClick={() => { setAuthMode(authMode === 'signup' ? 'signin' : 'signup'); setError(''); }} className="w-full py-2 text-xs text-sky-300">{authMode === 'signup' ? 'عندي حساب بالفعل' : 'إنشاء حساب جديد'}</button>
-                </form>
-              ) : (
-                <>
-                  {!profile ? <form onSubmit={async e=>{e.preventDefault();if(displayName.trim().length<2)return;setBusy(true);const {data,error:profileError}=await supabaseClient.from('student_profiles').insert({user_id:session.user.id,display_name:displayName.trim(),group_name:selectedGroup}).select().single();setBusy(false);if(profileError){setError(profileError.message);return;}setProfile(data);await loadPosts(true);}} className="soft-panel space-y-3 rounded-2xl p-4"><p className="text-sm font-bold text-white">كمّل ملفك باسم عرض</p><input value={displayName} onChange={e=>setDisplayName(e.target.value)} maxLength={32} minLength={2} required placeholder="اسم العرض" className="soft-control w-full rounded-xl p-3 text-sm"/>{error&&<p className="text-xs text-rose-300">{error}</p>}<button disabled={busy} className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950">{busy?'جاري الحفظ...':'حفظ الملف'}</button></form> : (
-                    <form onSubmit={publishPost} className="soft-panel space-y-3 rounded-2xl p-4">
-                      <div className="flex items-center justify-between"><b className="text-sm text-white">أهلاً {profile.display_name}</b><button type="button" onClick={async()=>{await supabaseClient.auth.signOut();setSession(null);setProfile(null);}} className="text-[11px] text-slate-400">خروج</button></div>
-                      <textarea value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} rows={3} placeholder="اكتب سؤالاً أو شارك فائدة دراسية..." className="soft-control w-full rounded-xl p-3 text-sm" />
-                      <div className="flex items-center justify-between"><span className="text-[10px] text-slate-500">{draft.length}/2000</span><button disabled={busy || !draft.trim()} className="rounded-xl bg-sky-500 px-5 py-2.5 text-xs font-black text-slate-950">نشر المشاركة</button></div>
-                    </form>
-                  )}
-                  {error && <p className="rounded-xl bg-rose-500/10 p-3 text-xs text-rose-300">{error}</p>}
-                  {posts.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">لسه مفيش مشاركات. ابدأ أول نقاش دراسي!</p> : posts.map(post => (
-                    <article key={post.id} className="soft-panel rounded-2xl p-4">
-                      <div className="flex items-start justify-between gap-3"><div><b className="text-sm text-sky-200">{post.profile?.display_name || 'طالب'}</b><p className="mt-1 text-[10px] text-slate-500">{post.profile?.group_name || 'طالب بالجامعة'} • {new Date(post.created_at).toLocaleString('ar-EG')}</p></div><button onClick={()=>reportPost(post.id)} className="text-[10px] text-amber-300">إبلاغ</button></div>
-                      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-100">{post.body}</p>
-                      <div className="mt-4 space-y-2 border-t border-white/10 pt-3">
-                        {(comments[post.id] || []).map(comment=><div key={comment.id} className="rounded-xl bg-slate-950/30 p-2.5"><b className="text-[11px] text-sky-200">{comment.display_name}</b><p className="mt-1 text-xs leading-6 text-slate-200">{comment.body}</p></div>)}
-                        <div className="flex gap-2"><input value={commentDrafts[post.id] || ''} onChange={e=>setCommentDrafts(current=>({...current,[post.id]:e.target.value}))} maxLength={1000} placeholder="اكتب تعليقاً..." className="soft-control min-w-0 flex-1 rounded-xl px-3 py-2 text-xs" /><button onClick={()=>publishComment(post.id)} className="rounded-xl bg-sky-500/15 px-3 text-xs font-bold text-sky-200">تعليق</button></div>
-                      </div>
-                    </article>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        );
-      };
 
       const TasksView = () => {
         const [tasks, setTasks] = useState([]);
@@ -2977,7 +2790,7 @@ Civil & Political + Economic & Social rights.` },
               { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
               { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
-              { icon: Icons.Users, label: 'المجتمع', v: 'community' },
+              
             ].map(({ icon: I, label, v }) => {
               const active = view === v || (v === 'subjects' && view === 'lectures');
               return (
@@ -3067,7 +2880,6 @@ Civil & Political + Economic & Social rights.` },
           {view === 'timer' && <TimerView />}
           {view === 'gpa' && <GPAView />}
           {view === 'announcements' && <AnnouncementsView />}
-          {view === 'community' && <CommunityView />}
           {view === 'tasks' && <TasksView />}
           {view === 'notifications' && <NotificationsView />}
           {view === 'campus-map' && <CampusMapView />}
@@ -3093,7 +2905,7 @@ Civil & Political + Economic & Social rights.` },
                       </div>
                       <section className="mb-4 space-y-3">
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          {[['ملفات الطلاب المسجلين',adminOverview.students],['منشورات المجتمع',adminOverview.posts],['بلاغات مفتوحة',adminOverview.reports],['التكليفات',adminOverview.tasks]].map(([label,value])=><div key={label} className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3"><div className="text-[10px] text-slate-400">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div></div>)}
+                          {[['ملفات الطلاب المسجلين',adminOverview.students],['التكليفات',adminOverview.tasks]].map(([label,value])=><div key={label} className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3"><div className="text-[10px] text-slate-400">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div></div>)}
                         </div>
                         <div className="rounded-xl border border-sky-300/15 bg-slate-950/30 p-3">
                           <div className="mb-2 flex items-center justify-between"><b className="text-xs text-white">سجل النشاط الإداري</b><button type="button" onClick={loadAdminOverview} className="text-[10px] text-sky-300">تحديث</button></div>
@@ -3114,7 +2926,7 @@ Civil & Political + Economic & Social rights.` },
                             {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminFormData({}); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
                           </div>
                           <p className="text-[11px] leading-5 text-slate-400">املأ الخانات التالية، وسيتم حفظ البيانات مباشرة في قاعدة البيانات.</p>
-                          {adminEditingId === null && ['community_reports','community_comments','student_profiles'].includes(adminSelectedTable) && <p className="rounded-lg bg-amber-400/10 p-2 text-[10px] leading-5 text-amber-200">هذا القسم يُنشأ تلقائيًا من تفاعل الطلاب. اختار سجلًا من القائمة لتعديله أو مراجعته.</p>}
+                          {adminEditingId === null && [].includes(adminSelectedTable) && <p className="rounded-lg bg-amber-400/10 p-2 text-[10px] leading-5 text-amber-200">هذا القسم يُنشأ تلقائيًا من تفاعل الطلاب. اختار سجلًا من القائمة لتعديله أو مراجعته.</p>}
                           <div className="grid grid-cols-1 gap-3">
                             {adminFieldConfig[adminSelectedTable].map(field => (
                               <label key={field.key} className="block text-xs font-bold text-slate-300">
