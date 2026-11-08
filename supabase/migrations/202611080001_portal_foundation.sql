@@ -175,6 +175,16 @@ drop policy if exists "Admins manage portal settings" on public.portal_settings;
 create policy "Admins manage portal settings" on public.portal_settings for all to authenticated
 using (public.has_role(auth.uid(), 'admin')) with check (public.has_role(auth.uid(), 'admin'));
 
+
+-- Explicit table grants; RLS policies above remain the authorization boundary.
+grant select on public.subjects, public.lectures, public.schedule_days,
+  public.schedule_slots, public.schedule_items, public.announcements,
+  public.portal_settings to anon, authenticated;
+grant select, insert, update, delete on public.subjects, public.lectures,
+  public.schedule_days, public.schedule_slots, public.schedule_items,
+  public.announcements, public.portal_settings to authenticated;
+grant select, insert, update, delete on public.user_roles to authenticated;
+
 -- Lecture PDFs are public to read; uploads, replacements and deletes require admin role.
 insert into storage.buckets (id, name, public)
 values ('lecture-files', 'lecture-files', true)
