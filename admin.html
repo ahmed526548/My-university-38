@@ -1172,9 +1172,9 @@ Civil & Political + Economic & Social rights.` },
         ],
         student_tasks: [
           { key: 'title', label: 'عنوان التكليف أو الامتحان', required: true },
-          { key: 'kind', label: 'النوع (assignment أو exam)' },
+          { key: 'kind', label: 'نوع التكليف', type: 'taskkind' },
           { key: 'description', label: 'التفاصيل والتعليمات', type: 'textarea' },
-          { key: 'subject_code', label: 'كود المادة' },
+          { key: 'subject_code', label: 'المادة الدراسية', type: 'subject' },
           { key: 'due_at', label: 'آخر موعد', type: 'datetime-local' },
           { key: 'group_name', label: 'الجروب (اختياري)' },
           { key: 'published', label: 'إظهار للطلاب؟', type: 'boolean' }
@@ -1182,7 +1182,7 @@ Civil & Political + Economic & Social rights.` },
         portal_notifications: [
           { key: 'title', label: 'عنوان الإشعار', required: true },
           { key: 'body', label: 'نص الإشعار', type: 'textarea', required: true },
-          { key: 'kind', label: 'النوع (info / warning / exam / schedule / success)', required: true },
+          { key: 'kind', label: 'نوع الإشعار', type: 'notificationkind', required: true },
           { key: 'target_group', label: 'الجروب المستهدف (اختياري)' },
           { key: 'published', label: 'نشر الإشعار؟', type: 'boolean' }
         ],
@@ -1191,7 +1191,7 @@ Civil & Political + Economic & Social rights.` },
           { key: 'comment_id', label: 'معرّف التعليق' },
           { key: 'reporter_id', label: 'معرّف المبلّغ' },
           { key: 'reason', label: 'سبب البلاغ', type: 'textarea' },
-          { key: 'status', label: 'الحالة (open / reviewed / dismissed)', required: true }
+          { key: 'status', label: 'حالة البلاغ', type: 'reportstatus', required: true }
         ],
         community_posts: [
           { key: 'author_id', label: 'معرّف صاحب المنشور', required: true },
@@ -2576,6 +2576,10 @@ Civil & Political + Economic & Social rights.` },
                                     <option value="">اختار الحالة</option>
                                     <option value="true">نعم</option>
                                     <option value="false">لا</option>
+                                  </select>
+                                ) : ['taskkind','notificationkind','reportstatus'].includes(field.type) ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    {(field.type === 'taskkind' ? [['assignment','تكليف'],['exam','امتحان']] : field.type === 'reportstatus' ? [['open','مفتوح'],['reviewed','تمت المراجعة'],['dismissed','مرفوض']] : [['info','معلومات'],['warning','تحذير'],['success','نجاح'],['exam','امتحان'],['schedule','جدول']]).map(([value,label]) => <option key={value} value={value}>{label}</option>)}
                                   </select>
                                 ) : (
                                   <input type={field.type === 'number' ? 'number' : field.type === 'url' ? 'url' : field.type === 'datetime-local' ? 'datetime-local' : 'text'} value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} placeholder={field.type === 'url' ? 'https://...' : ''} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" dir={field.key.includes('url') || field.key.includes('code') ? 'ltr' : 'auto'} />
