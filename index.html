@@ -1747,7 +1747,7 @@ Civil & Political + Economic & Social rights.` },
       const [showSplash, setShowSplash] = useState(false);
       const [selectedSubject, setSelectedSubject] = useState(null);
       const [selectedInstructor, setSelectedInstructor] = useState(null);
-      const [selectedGroup, setSelectedGroup] = useState(() => localStorage.getItem('group') || null);
+      const [selectedGroup, setSelectedGroup] = useState(null);
       const [selectedScheduleDay, setSelectedScheduleDay] = useState(null);
       const [toast, setToast] = useState(null);
       const [favorites, setFavorites] = useState(() => {
@@ -1964,7 +1964,6 @@ Civil & Political + Economic & Social rights.` },
       useEffect(() => { localStorage.setItem('fav', JSON.stringify(favorites)); }, [favorites]);
       useEffect(() => { localStorage.setItem('completed', JSON.stringify(completed)); }, [completed]);
       useEffect(() => { localStorage.setItem('notes', JSON.stringify(notes)); }, [notes]);
-      useEffect(() => { if (selectedGroup) localStorage.setItem('group', selectedGroup); }, [selectedGroup]);
       useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chat, typing]);
 
       // Timer state is isolated inside TimerView so its one-second updates never rerender the whole portal.
@@ -2298,9 +2297,9 @@ Civil & Political + Economic & Social rights.` },
                 {[
                   { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', desc: 'المواد والملخصات والشرح', v: 'subjects', number: '01' },
                   { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', number: '02' },
-                  { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: selectedGroup ? 'schedule' : 'groups', number: '03' },
+                  { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: 'groups', number: '03' },
                 ].map(({ icon: I, label, desc, v, number }) => (
-                  <button key={v} onClick={() => setView(v)} className="premium-shortcut group flex min-w-0 flex-col items-start gap-2 rounded-2xl p-2.5 text-right sm:gap-3 sm:p-4">
+                  <button key={v} onClick={() => { if (v === 'groups') { setSelectedGroup(null); setSelectedScheduleDay(null); } setView(v); }} className="premium-shortcut group flex min-w-0 flex-col items-start gap-2 rounded-2xl p-2.5 text-right sm:gap-3 sm:p-4">
                     <span className="premium-shortcut-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12"><I className="h-5 w-5 sm:h-6 sm:w-6" /></span>
                     <span className="min-w-0 w-full"><span className="block text-[11px] font-extrabold leading-5 text-white sm:text-sm">{label}</span><span className="mt-1 block text-[9px] leading-4 text-slate-400 sm:text-[10px]">{desc}</span></span>
                     <span className="text-[9px] font-bold tracking-widest text-sky-300/60 sm:text-[10px]">{number}</span>
@@ -2619,7 +2618,7 @@ Civil & Political + Economic & Social rights.` },
           <p className="text-gray-500 text-sm mb-8 text-center">سيتم حفظ اختيارك تلقائياً</p>
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             {['جروب 1', 'جروب 2'].map(g => (
-              <button key={g} onClick={() => { setSelectedGroup(g); setView('schedule'); showToast(`تم اختيار ${g}`); }}
+              <button key={g} onClick={() => { setSelectedGroup(g); setSelectedScheduleDay(null); setView('schedule'); showToast(`تم اختيار ${g}`); }}
                 className={`flex-1 glass border-2 rounded-2xl p-6 flex flex-col items-center gap-3 card-hover ${selectedGroup === g ? 'border-cyan-500 glow-cyan' : 'border-cyan-900/50'}`}>
                 <div className="w-14 h-14 rounded-full bg-cyan-950/60 flex items-center justify-center">
                   <Icons.Users className="w-7 h-7 text-cyan-400" />
@@ -2637,48 +2636,16 @@ Civil & Political + Economic & Social rights.` },
         const activeDay = data.find(day => day.day === selectedScheduleDay);
         return (
           <div className="min-h-screen soft-page pb-28">
-            <NavBar title={`جدول ${selectedGroup}`} onBack={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')}
+            <NavBar title={activeDay ? `جدول يوم ${activeDay.day}` : `أيام ${selectedGroup}`} onBack={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')}
               right={<button onClick={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')} className="text-xs text-cyan-400">{activeDay ? 'كل الأيام' : 'تغيير الجروب'}</button>} />
-            <div className="px-4 pt-3 space-y-4">
-              <section className="glass soft-panel rounded-2xl p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div><p className="premium-kicker">MY GROUP</p><h3 className="mt-1 text-sm font-black text-white">جروب المحاضرات</h3></div>
-                  <Icons.Users className="h-5 w-5 text-sky-300" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {['جروب 1','جروب 2'].map(g => (
-                    <button key={g} onClick={() => { setSelectedGroup(g); setSelectedScheduleDay(null); showToast(`تم اختيار ${g}`); }}
-                      className={`premium-group-choice rounded-xl px-3 py-3 text-right ${selectedGroup===g?'is-selected':''}`}>
-                      <span className="block text-xs font-extrabold text-white">{g}</span>
-                      <span className="mt-1 block text-[9px] text-slate-400">{selectedGroup===g?'محدد حالياً':'اختيار الجروب'}</span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-              <section className="glass soft-panel rounded-2xl p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <div><p className="premium-kicker">YOUR SCHEDULE</p><h3 className="mt-1 text-sm font-black text-white">محاضرات اليوم</h3></div>
-                  <span className="premium-date-chip rounded-lg px-3 py-1.5 text-[10px] font-bold">{today}</span>
-                </div>
-                {!selectedGroup ? (
-                  <p className="premium-empty-state rounded-xl px-4 py-5 text-center text-xs">اختار جروبك عشان تظهر محاضراتك.</p>
-                ) : todaySch && todaySch.slots.length ? (
-                  <div className="space-y-2">{todaySch.slots.map((slot,i) => (
-                    <div key={i} className="premium-lecture-row flex gap-3 rounded-xl p-3">
-                      <div className="premium-time-chip flex min-w-[76px] items-center justify-center rounded-lg px-2 py-2 text-[11px] font-extrabold" dir="ltr">{slot.time}</div>
-                      <div className="min-w-0 flex-1">{slot.items.map((it,j) => (
-                        <div key={j} className={j?'mt-2 border-t border-white/5 pt-2':''}>
-                          <p className="text-xs font-bold text-white">{it.subject}</p>
-                          <p className="mt-1 text-[10px] text-slate-400">{it.doctor} <span className="mx-1 text-slate-600">•</span>{it.hall}</p>
-                        </div>
-                      ))}</div>
-                    </div>
-                  ))}</div>
-                ) : <p className="premium-empty-state rounded-xl px-4 py-6 text-center text-xs">مفيش محاضرات مسجلة لليوم ده 🎉</p>}
-              </section>
+            <div className="px-4 pt-4 space-y-4">
               {!activeDay ? (
                 <>
-                  <p className="text-sm text-slate-400 mb-2">اختار اليوم لعرض محاضراته فقط</p>
+                  <div className="glass soft-panel rounded-2xl p-4">
+                    <p className="premium-kicker">YOUR SCHEDULE</p>
+                    <h3 className="mt-1 text-base font-black text-white">اختار اليوم</h3>
+                    <p className="mt-2 text-xs text-slate-400">الجروب المحدد: {selectedGroup}. اختار اليوم علشان تشوف محاضراتك.</p>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     {data.map(day => (
                       <button key={day.day} onClick={() => setSelectedScheduleDay(day.day)}
@@ -2693,7 +2660,7 @@ Civil & Political + Economic & Social rights.` },
               ) : (
                 <section className="glass soft-panel rounded-2xl p-4">
                   <div className="mb-4 flex items-center justify-between border-b border-cyan-900/20 pb-3">
-                    <h3 className="text-lg font-extrabold text-cyan-300">{activeDay.day}</h3>
+                    <div><p className="premium-kicker">{selectedGroup}</p><h3 className="text-lg font-extrabold text-cyan-300">{activeDay.day}</h3></div>
                     {activeDay.day === today && <span className="rounded-full bg-cyan-600 px-2 py-1 text-[10px] text-white">اليوم</span>}
                   </div>
                   {activeDay.slots.length === 0 ? <p className="py-6 text-center text-sm text-slate-400">لا توجد محاضرات في هذا اليوم</p> : activeDay.slots.map((slot, si) => (
@@ -2976,7 +2943,7 @@ Civil & Political + Economic & Social rights.` },
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
               { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
-              { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
+              { icon: Icons.Calendar, label: 'الجدول', v: 'groups' },
               { icon: Icons.Layers, label: 'الأدوات', v: 'tools' },
               
             ].map(({ icon: I, label, v }) => {
