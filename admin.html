@@ -1154,12 +1154,12 @@ Civil & Political + Economic & Social rights.` },
           { key: 'sort_order', label: 'ترتيب اليوم', type: 'number' }
         ],
         schedule_slots: [
-          { key: 'day_id', label: 'معرّف اليوم', required: true },
+          { key: 'day_id', label: 'اليوم', type: 'dayref', required: true },
           { key: 'time_label', label: 'موعد المحاضرة', required: true },
           { key: 'sort_order', label: 'ترتيب الموعد', type: 'number' }
         ],
         schedule_items: [
-          { key: 'slot_id', label: 'معرّف الموعد', required: true },
+          { key: 'slot_id', label: 'اليوم والموعد', type: 'slotref', required: true },
           { key: 'subject', label: 'اسم المادة', required: true },
           { key: 'doctor', label: 'اسم الدكتور' },
           { key: 'hall', label: 'المدرج / القاعة' },
@@ -1458,12 +1458,13 @@ Civil & Political + Economic & Social rights.` },
         let result;
         if (adminEditingId !== null) {
           const { id, created_at, ...editableFields } = payload;
-          result = await supabaseClient.from(adminSelectedTable).update(editableFields).eq(adminSelectedTable === 'student_profiles' ? 'user_id' : 'id', adminEditingId);
+          result = await supabaseClient.from(adminSelectedTable).update(editableFields).eq(adminSelectedTable === 'student_profiles' ? 'user_id' : 'id', adminEditingId).select(adminSelectedTable === 'student_profiles' ? 'user_id' : 'id').maybeSingle();
         } else {
           result = await supabaseClient.from(adminSelectedTable).insert(payload);
         }
         setAdminDataBusy(false);
         if (result.error) { showToast('لم يتم الحفظ: ' + result.error.message, 'error'); return; }
+        if (adminEditingId !== null && !result.data) { showToast('لم يتم العثور على السجل أو ليست لديك صلاحية تعديله.', 'error'); return; }
         try { await supabaseClient.from('portal_activity_log').insert({ actor_id: adminSession.user.id, action: adminEditingId !== null ? 'update' : 'create', entity: adminSelectedTable, details: { section: adminSelectedTable } }); } catch (_) {}
         setAdminFormData({}); setAdminEditingId(null);
         showToast(adminEditingId !== null ? 'تم تحديث السجل' : 'تمت إضافة السجل');
@@ -2642,6 +2643,16 @@ Civil & Political + Economic & Social rights.` },
                                     {(instructorsBySubject[adminFormData.subject_code] || []).map(instructor => (
                                       <option key={instructor.name} value={instructor.name}>{instructor.name}{instructor.note ? ' — ' + instructor.note : ''}</option>
                                     ))}
+                                  </select>
+                                ) : field.type === 'dayref' ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    <option value="">اختار اليوم</option>
+                                    {adminSchedulePreview.days.map(day => <option key={day.id} value={day.id}>{day.day_name}</option>)}
+                                  </select>
+                                ) : field.type === 'slotref' ? (
+                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    <option value="">اختار اليوم والموعد</option>
+                                    {adminSchedulePreview.slots.map(slot => <option key={slot.id} value={slot.id}>{(adminSchedulePreview.days.find(day => day.id === slot.day_id)?.day_name || 'يوم غير معروف') + ' — ' + slot.time_label}</option>)}
                                   </select>
                                 ) : field.type === 'textarea' ? (
                                   <textarea value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} rows={3} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-2.5 text-sm text-white" />
