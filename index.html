@@ -594,6 +594,32 @@
       .premium-shortcut:hover { transform:none; }
     }
 
+  
+    /* Accessible multi-accent student experience */
+    :root {
+      --portal-burgundy: #9f3658;
+      --portal-green: #269b72;
+      --portal-gold: #d6a84b;
+      --portal-sky: #58bce8;
+    }
+    .portal-root button, .portal-root a { -webkit-tap-highlight-color: transparent; }
+    .portal-root button:focus-visible, .portal-root a:focus-visible,
+    .portal-root input:focus-visible, .portal-root select:focus-visible,
+    .portal-root textarea:focus-visible {
+      outline: 2px solid var(--portal-sky); outline-offset: 3px;
+    }
+    .portal-root [class*="bg-cyan-"], .portal-root [class*="bg-sky-"] { --tw-ring-color: rgba(88,188,232,.25); }
+    .portal-root [class*="border-cyan-"], .portal-root [class*="border-sky-"] { border-color: rgba(88,188,232,.30); }
+    .portal-root .student-accent-burgundy { border-color: rgba(159,54,88,.38); background: linear-gradient(145deg,rgba(159,54,88,.14),rgba(15,31,52,.72)); }
+    .portal-root .student-accent-green { border-color: rgba(38,155,114,.38); background: linear-gradient(145deg,rgba(38,155,114,.14),rgba(15,31,52,.72)); }
+    .portal-root .student-accent-gold { border-color: rgba(214,168,75,.38); background: linear-gradient(145deg,rgba(214,168,75,.13),rgba(15,31,52,.72)); }
+    .portal-root .student-accent-sky { border-color: rgba(88,188,232,.38); background: linear-gradient(145deg,rgba(88,188,232,.13),rgba(15,31,52,.72)); }
+    .portal-root button, .portal-root a { transition: filter .18s ease, transform .18s ease, box-shadow .18s ease; }
+    .portal-root button:active, .portal-root a:active { filter: brightness(1.08); }
+    @media (prefers-reduced-motion: reduce) {
+      .portal-root button, .portal-root a { transition: none !important; }
+    }
+
   </style>
 </head>
 <body>
