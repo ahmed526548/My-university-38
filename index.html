@@ -1123,22 +1123,47 @@ Civil & Political + Economic & Social rights.` },
       const [studentAuthBusy, setStudentAuthBusy] = useState(false);
       const [studentAuthError, setStudentAuthError] = useState('');
 
-      // Restore the signed-in student and keep the UI in sync with Supabase Auth.
+      // Restore the signed-in student with a bounded wait, so a stalled auth lock
+      // never leaves the portal permanently on the verification screen.
       useEffect(() => {
-        if (!supabaseClient) { setStudentAuthLoading(false); return; }
+        if (!supabaseClient) { setStudentAuthError('خدمة تسجيل الدخول غير متاحة.'); setStudentAuthLoading(false); return; }
         let active = true;
-        supabaseClient.auth.getSession().then(({ data, error }) => {
-          if (!active) return;
-          if (error) setStudentAuthError(error.message || 'تعذر استعادة جلسة الدخول');
-          setStudentSession(data?.session || null);
-          setStudentAuthLoading(false);
-        }).catch(error => {
-          if (active) { setStudentAuthError(error?.message || 'تعذر الاتصال بخدمة الدخول'); setStudentAuthLoading(false); }
-        });
+        let settled = false;
+        const timeoutId = setTimeout(() => {
+          if (active && !settled) {
+            setStudentAuthError('استغرق التحقق وقتًا أطول من المعتاد. حدّث الصفحة وحاول مرة أخرى.');
+            setStudentAuthLoading(false);
+          }
+        }, 10000);
         const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-          if (active) setStudentSession(session || null);
+          if (active) {
+            setStudentSession(session || null);
+            if (session?.user && !session.user.is_anonymous) {
+              settled = true;
+              clearTimeout(timeoutId);
+              setStudentAuthLoading(false);
+              setStudentAuthError('');
+            }
+          }
         });
-        return () => { active = false; listener?.subscription?.unsubscribe(); };
+        (async () => {
+          try {
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (!active) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            if (error) setStudentAuthError(error.message || 'تعذر استعادة جلسة الدخول');
+            setStudentSession(data?.session || null);
+            setStudentAuthLoading(false);
+          } catch (error) {
+            if (!active) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            setStudentAuthError(error?.message || 'تعذر الاتصال بخدمة الدخول');
+            setStudentAuthLoading(false);
+          }
+        })();
+        return () => { active = false; clearTimeout(timeoutId); listener?.subscription?.unsubscribe(); };
       }, []);
 
       // Create a basic profile for each verified Google account without overwriting existing student choices.
@@ -1171,7 +1196,7 @@ Civil & Political + Economic & Social rights.` },
         setStudentAuthBusy(true);
         setStudentAuthError('');
         try {
-          const redirectTo = window.location.origin + window.location.pathname + '#app';
+          const redirectTo = window.location.origin + window.location.pathname;
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo, queryParams: { prompt: 'select_account' } }
