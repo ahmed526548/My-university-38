@@ -2436,7 +2436,45 @@ Civil & Political + Economic & Social rights.` },
                         </div>
                         {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs text-slate-400">مفيش سجلات في القسم ده حاليًا.</p> : (
                           <div className="max-h-[460px] space-y-2 overflow-y-auto">
-                            {adminRecords.map((record, index) => (
+                            {adminSelectedTable === 'lectures' ? (
+                              Object.entries(adminRecords.reduce((groups, record) => {
+                                const code = record.subject_code || 'بدون مادة';
+                                (groups[code] ||= []).push(record);
+                                return groups;
+                              }, {})).map(([code, records]) => {
+                                const subject = subjectsData.find(item => item.code === code);
+                                const SubjectIcon = Icons[subject?.icon] || Icons.BookOpen;
+                                return (
+                                  <details key={code} className="overflow-hidden rounded-xl border border-sky-300/20 bg-slate-900/80">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3">
+                                      <span className="flex min-w-0 items-center gap-3">
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><SubjectIcon className="h-5 w-5" /></span>
+                                        <span className="min-w-0">
+                                          <span className="block truncate text-sm font-extrabold text-white">{subject?.arabicName || code}</span>
+                                          <span className="mt-1 block text-[10px] text-slate-400">{code} • {records.length} محاضرة</span>
+                                        </span>
+                                      </span>
+                                      <Icons.ChevronDown className="h-4 w-4 shrink-0 text-sky-300" />
+                                    </summary>
+                                    <div className="space-y-2 border-t border-slate-700 p-3">
+                                      {records.map((record, index) => (
+                                        <div key={record.id ?? index} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                                          <p className="text-sm font-bold leading-6 text-white">{record.title || 'محاضرة بدون عنوان'}</p>
+                                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-400">
+                                            {record.doctor && <span>{record.doctor}</span>}
+                                            {record.duration && <span>{record.duration}</span>}
+                                          </div>
+                                          <div className="mt-3 flex gap-2">
+                                            <button onClick={() => editAdminRecord(record)} className="flex-1 rounded-lg bg-sky-400/10 py-2 text-xs font-bold text-sky-200">تعديل</button>
+                                            <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="flex-1 rounded-lg bg-red-400/10 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                );
+                              })
+                            ) : adminRecords.map((record, index) => (
                               <div key={record.id ?? index} className="rounded-xl border border-slate-700 bg-slate-900/80 p-3">
                                 <pre dir="ltr" className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-left text-[10px] leading-5 text-slate-300">{JSON.stringify(record, null, 2)}</pre>
                                 <div className="mt-3 flex gap-2">
