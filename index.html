@@ -2961,7 +2961,7 @@ Civil & Political + Economic & Social rights.` },
                               </label>
                             ))}
                           </div>
-                          <button disabled={adminDataBusy || (adminEditingId === null && ['community_reports','community_comments','student_profiles'].includes(adminSelectedTable))} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
+                          <button disabled={adminDataBusy || (adminEditingId === null && ['student_profiles'].includes(adminSelectedTable))} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
                         </form>
                         <div className="flex items-center justify-between">
                           <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
