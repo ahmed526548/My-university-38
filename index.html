@@ -1770,6 +1770,43 @@ Civil & Political + Economic & Social rights.` },
       const [selectedInstructor, setSelectedInstructor] = useState(null);
       const [selectedGroup, setSelectedGroup] = useState(null);
       const [selectedScheduleDay, setSelectedScheduleDay] = useState(null);
+      const [liveSchedule, setLiveSchedule] = useState({ 'جروب 1': scheduleGroup1, 'جروب 2': scheduleGroup2 });
+      useEffect(() => {
+        if (!supabaseClient) return;
+        let active = true;
+        const loadLiveSchedule = async () => {
+          const [daysResult, slotsResult, itemsResult] = await Promise.all([
+            supabaseClient.from('schedule_days').select('*').order('sort_order', { ascending: true }),
+            supabaseClient.from('schedule_slots').select('*').order('sort_order', { ascending: true }),
+            supabaseClient.from('schedule_items').select('*')
+          ]);
+          if (!active) return;
+          const failure = [daysResult, slotsResult, itemsResult].find(result => result.error);
+          if (failure) { console.warn('تعذر تحميل الجدول المباشر:', failure.error.message); return; }
+          if (!daysResult.data?.length) return;
+          const buildGroup = groupName => daysResult.data.map(day => ({
+            day: day.day_name,
+            slots: slotsResult.data
+              .filter(slot => slot.day_id === day.id)
+              .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+              .map(slot => ({
+                time: slot.time_label,
+                items: itemsResult.data
+                  .filter(item => item.slot_id === slot.id && item.group_name === groupName)
+                  .map(item => ({ subject: item.subject, doctor: item.doctor || '', hall: item.hall || '' }))
+              }))
+              .filter(slot => slot.items.length > 0)
+          }));
+          setLiveSchedule({ 'جروب 1': buildGroup('جروب 1'), 'جروب 2': buildGroup('جروب 2') });
+        };
+        loadLiveSchedule();
+        const channel = supabaseClient.channel('student-schedule-live')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'schedule_days' }, loadLiveSchedule)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'schedule_slots' }, loadLiveSchedule)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'schedule_items' }, loadLiveSchedule)
+          .subscribe();
+        return () => { active = false; supabaseClient.removeChannel(channel); };
+      }, []);
       const [toast, setToast] = useState(null);
       const [favorites, setFavorites] = useState(() => {
         try { return JSON.parse(localStorage.getItem('fav') || '[]'); } catch { return []; }
@@ -2653,7 +2690,7 @@ Civil & Political + Economic & Social rights.` },
       );
 
       const Schedule = () => {
-        const data = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
+        const data = liveSchedule[selectedGroup] || (selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1);
         const activeDay = data.find(day => day.day === selectedScheduleDay);
         return (
           <div className="min-h-screen soft-page pb-28">
