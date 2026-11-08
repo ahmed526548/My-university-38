@@ -2615,7 +2615,7 @@ Civil & Political + Economic & Social rights.` },
           </button>
           <Icons.Users className="w-14 h-14 text-cyan-500 mb-4 animate-float" />
           <h2 className="text-2xl font-bold text-white mb-2 glow-text">اختر جروبك</h2>
-          <p className="text-gray-500 text-sm mb-8 text-center">سيتم حفظ اختيارك تلقائياً</p>
+          <p className="text-gray-500 text-sm mb-8 text-center">اختار الجروب في كل مرة تفتح فيها الجدول</p>
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             {['جروب 1', 'جروب 2'].map(g => (
               <button key={g} onClick={() => { setSelectedGroup(g); setSelectedScheduleDay(null); setView('schedule'); showToast(`تم اختيار ${g}`); }}
@@ -2949,7 +2949,7 @@ Civil & Political + Economic & Social rights.` },
             ].map(({ icon: I, label, v }) => {
               const active = view === v || (v === 'subjects' && view === 'lectures');
               return (
-                <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => setView(v)}
+                <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => { if (v === 'groups') { setSelectedGroup(null); setSelectedScheduleDay(null); } setView(v); }}
                   className={`soft-nav-item flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
                   <I className="h-[19px] w-[19px] shrink-0" />
                   <span className="text-[10px] leading-none font-semibold whitespace-nowrap">{label}</span>
