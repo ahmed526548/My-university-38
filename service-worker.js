@@ -1,4 +1,4 @@
-const CACHE_NAME = "bsnu-portal-v39";
+const CACHE_NAME = "bsnu-portal-v40";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -90,6 +90,12 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   const sameOrigin = url.origin === self.location.origin;
+
+  // Admin page: always fetch the newest published HTML; do not serve stale cached admin markup.
+  if (sameOrigin && url.pathname.endsWith("/admin.html") && request.mode === "navigate") {
+    event.respondWith(fetch(request, { cache: "no-store" }));
+    return;
+  }
 
   // App pages: network first, then the saved app shell when offline.
   if (sameOrigin && request.mode === "navigate") {
