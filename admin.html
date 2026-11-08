@@ -22,9 +22,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>إدارة بوابتي | لوحة الأدمن</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js'"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js'"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.4/babel.min.js'"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" onerror="window.adminBootError && window.adminBootError('تعذر تحميل React من شبكة التوصيل.')"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" onerror="window.adminBootError && window.adminBootError('تعذر تحميل ReactDOM.')"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.4/babel.min.js" onerror="window.adminBootError && window.adminBootError('تعذر تحميل Babel المسؤول عن تشغيل كود الصفحة.')"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -621,6 +621,38 @@
 </head>
 <body>
   <div id="root"><div id="admin-boot-fallback" dir="rtl" style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#061321;color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center"><div style="max-width:420px"><h1 style="font-size:22px;font-weight:900">جاري تحميل لوحة الأدمن...</h1><p style="margin-top:10px;color:#94a3b8;font-size:14px">لو استمرت الشاشة دي، أعد تحميل الصفحة بعد لحظات.</p></div></div></div>
+
+  <script>
+    // Show a useful startup diagnostic instead of leaving the admin page on an endless loader.
+    window.adminBootError = function(message) {
+      const root = document.getElementById('root');
+      if (!root) return;
+      root.innerHTML = '<div dir="rtl" style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#061321;color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center"><section style="max-width:520px"><h1 style="font-size:22px;font-weight:900">تعذر تشغيل لوحة الأدمن</h1><p style="margin-top:12px;color:#fca5a5;font-size:14px;line-height:1.9"></p><p style="margin-top:10px;color:#94a3b8;font-size:12px">تأكد من اتصال الإنترنت، ثم أعد تحميل الصفحة. لو استمرت المشكلة أرسل صورة لهذه الرسالة.</p><button onclick="location.reload()" style="margin-top:18px;padding:10px 18px;border-radius:10px;background:#38bdf8;color:#082f49;font-weight:800">إعادة المحاولة</button></section></div>';
+      const p = root.querySelector('p');
+      if (p) p.textContent = message;
+    };
+    window.addEventListener('error', function(event) {
+      if (document.getElementById('admin-boot-fallback')) {
+        window.adminBootError('خطأ أثناء تحميل ملفات الصفحة: ' + (event.message || event.filename || 'خطأ غير محدد'));
+      }
+    });
+    window.addEventListener('unhandledrejection', function(event) {
+      if (document.getElementById('admin-boot-fallback')) {
+        const reason = event.reason;
+        window.adminBootError('تعذر إكمال تشغيل الصفحة: ' + String(reason && (reason.message || reason) || 'خطأ غير محدد'));
+      }
+    });
+    window.setTimeout(function() {
+      if (!document.getElementById('admin-boot-fallback')) return;
+      const missing = [];
+      if (!window.React) missing.push('React');
+      if (!window.ReactDOM) missing.push('ReactDOM');
+      if (!window.Babel) missing.push('Babel');
+      window.adminBootError(missing.length
+        ? 'لم يتم تحميل المكتبات الأساسية: ' + missing.join(' و ') + '. قد تكون شبكة CDN محجوبة أو بطيئة.'
+        : 'المكتبات الأساسية وصلت، لكن كود لوحة الأدمن لم يبدأ العرض. أرسل هذه الشاشة حتى نحدد الخطأ بدقة.');
+    }, 12000);
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
