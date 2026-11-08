@@ -2294,17 +2294,6 @@ Civil & Political + Economic & Social rights.` },
               </div>
             </section>
 
-            <section className="mt-7">
-              <div className="premium-section-heading mb-3"><p className="premium-kicker">STUDY TOOLS</p><h3 className="mt-1 text-base font-black text-white">أدوات تساعدك تذاكر</h3></div>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {[
-                  { icon: Icons.Timer, label: 'مؤقت الدراسة', v: 'timer' },
-                  { icon: Icons.Calculator, label: 'حساب GPA', v: 'gpa' },
-                  { icon: Icons.Bell, label: 'الإعلانات', v: 'announcements' },
-                  { icon: Icons.Note, label: 'ملاحظاتي', v: 'notes' },
-                ].map(({icon:I,label,v}) => <button key={v} onClick={() => setView(v)} className="premium-tool-tile flex flex-col items-center justify-center gap-2 rounded-xl px-2 py-4"><I className="h-5 w-5 text-sky-300" /><span className="text-[10px] font-bold text-slate-300">{label}</span></button>)}
-              </div>
-            </section>
           </div>
         </div>
       );
@@ -2830,27 +2819,6 @@ Civil & Political + Economic & Social rights.` },
             }} className="w-full glass border border-cyan-900/40 text-cyan-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
               <Icons.Trash className="w-4 h-4" /> مسح كل البيانات المحلية
             </button>
-            <div className="glass border border-cyan-900/30 rounded-2xl p-4">
-              <h3 className="mb-3 text-sm font-extrabold text-white">أدوات إضافية</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: Icons.Note, label: 'ملاحظاتي', view: 'notes' },
-                  { icon: Icons.Timer, label: 'مؤقت المذاكرة', view: 'timer' },
-                  { icon: Icons.Calculator, label: 'حساب المعدل', view: 'gpa' },
-                  { icon: Icons.Bell, label: 'الإعلانات', view: 'announcements' },
-                  
-                  { icon: Icons.Calendar, label: 'التكليفات والامتحانات', view: 'tasks' },
-                  { icon: Icons.Bell, label: 'الإشعارات', view: 'notifications' },
-                  { icon: Icons.MapPin, label: 'خريطة الجامعة', view: 'campus-map' },
-                ].map(({ icon: I, label, view: target }) => (
-                  <button key={target} onClick={() => setView(target)}
-                    className="flex items-center gap-2 rounded-xl border border-cyan-200/10 bg-cyan-400/[0.06] px-3 py-3 text-right text-xs font-bold text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-400/10">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-300"><I className="h-4 w-4" /></span>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="glass border border-cyan-900/30 rounded-2xl p-4 text-center">
               <Icons.Graduation className="w-7 h-7 text-cyan-400 mx-auto mb-2" />
               <p className="text-white font-bold text-sm">بوابة جامعة بني سويف الأهلية</p>
@@ -2914,6 +2882,32 @@ Civil & Political + Economic & Social rights.` },
       );
 
 
+      const ToolsView = () => (
+        <div className="min-h-screen soft-page pb-28">
+          <NavBar title="الأدوات" onBack={() => setView('home')} />
+          <div className="mx-auto max-w-3xl px-4 pt-4">
+            <div className="mb-5 rounded-2xl border border-sky-300/15 bg-sky-400/[0.05] p-4">
+              <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><Icons.Layers className="h-6 w-6" /></span><div><h2 className="text-base font-black text-white">كل أدواتك في مكان واحد</h2><p className="mt-1 text-[11px] text-slate-400">اختار الأداة اللي تساعدك في مذاكرتك وتنظيم يومك.</p></div></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {[
+                { icon: Icons.Timer, label: 'مؤقت المذاكرة', desc: 'حدد وقت تركيزك وراحتك', view: 'timer' },
+                { icon: Icons.Calculator, label: 'حساب المعدل GPA', desc: 'احسب معدلك الدراسي', view: 'gpa' },
+                { icon: Icons.Note, label: 'ملاحظاتي', desc: 'اكتب واحفظ ملاحظاتك', view: 'notes' },
+                { icon: Icons.Bell, label: 'الإعلانات', desc: 'آخر إعلانات الجامعة', view: 'announcements' },
+                { icon: Icons.Calendar, label: 'التكليفات والامتحانات', desc: 'تابع مواعيدك المهمة', view: 'tasks' },
+                { icon: Icons.Bell, label: 'الإشعارات', desc: 'تنبيهات حسابك', view: 'notifications' },
+                { icon: Icons.MapPin, label: 'خريطة الجامعة', desc: 'اعرف مكان الحرم الجامعي', view: 'campus-map' },
+              ].map(({ icon: I, label, desc, view: target }) => (
+                <button key={target} onClick={() => setView(target)} className="premium-tool-tile flex min-h-32 flex-col items-start justify-between rounded-2xl p-4 text-right">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-300/10 text-sky-200"><I className="h-5 w-5" /></span>
+                  <span className="mt-4 block"><span className="block text-xs font-extrabold text-white">{label}</span><span className="mt-1 block text-[10px] text-slate-400">{desc}</span></span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
       // Persistent glass navigation across the main portal views
       const BottomNav = () => (
         <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
@@ -2923,6 +2917,7 @@ Civil & Political + Economic & Social rights.` },
               { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
               { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
               { icon: Icons.Calendar, label: 'الجدول', v: selectedGroup ? 'schedule' : 'groups' },
+              { icon: Icons.Layers, label: 'الأدوات', v: 'tools' },
               
             ].map(({ icon: I, label, v }) => {
               const active = view === v || (v === 'subjects' && view === 'lectures');
@@ -3168,6 +3163,7 @@ Civil & Political + Economic & Social rights.` },
             </div>
           )}
                     {view === 'settings' && <SettingsView />}
+          {view === 'tools' && <ToolsView />}
           <footer className="developer-footer relative z-10 mx-auto mt-3 w-full max-w-6xl px-4 pb-32 pt-0 sm:px-6" aria-label="معلومات المطور">
             <div className="overflow-hidden rounded-2xl border border-sky-300/15 bg-slate-950/35 px-5 py-5 text-center">
               <div className="mx-auto mb-3 h-px w-16 bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
