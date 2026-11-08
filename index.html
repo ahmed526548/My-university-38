@@ -1142,6 +1142,7 @@ Civil & Political + Economic & Social rights.` },
         { value: 'portal_notifications', label: 'الإشعارات العامة' },
         { value: 'community_reports', label: 'بلاغات المجتمع' },
         { value: 'community_posts', label: 'منشورات المجتمع' },
+        { value: 'community_comments', label: 'تعليقات المجتمع' },
         { value: 'student_profiles', label: 'ملفات الطلاب' }
       ];
       const adminFieldConfig = {
@@ -1181,6 +1182,7 @@ Civil & Political + Economic & Social rights.` },
         ],
         student_tasks: [
           { key: 'title', label: 'عنوان التكليف أو الامتحان', required: true },
+          { key: 'kind', label: 'النوع (assignment أو exam)' },
           { key: 'description', label: 'التفاصيل والتعليمات', type: 'textarea' },
           { key: 'subject_code', label: 'المادة الدراسية', type: 'subject' },
           { key: 'due_at', label: 'آخر موعد', type: 'datetime-local' },
@@ -1204,6 +1206,11 @@ Civil & Political + Economic & Social rights.` },
         community_posts: [
           { key: 'author_id', label: 'معرّف صاحب المنشور', required: true },
           { key: 'body', label: 'محتوى المنشور', type: 'textarea', required: true }
+        ],
+        community_comments: [
+          { key: 'post_id', label: 'معرّف المنشور', required: true },
+          { key: 'author_id', label: 'معرّف صاحب التعليق', required: true },
+          { key: 'body', label: 'محتوى التعليق', type: 'textarea', required: true }
         ],
         student_profiles: [
           { key: 'user_id', label: 'معرّف حساب الطالب', type: 'readonly', required: true },
@@ -2698,7 +2705,7 @@ Civil & Political + Economic & Social rights.` },
         }, [selectedGroup]);
         return <div className="min-h-screen soft-page pb-28"><NavBar title="التكليفات والامتحانات" onBack={()=>setView('home')} /><div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
           <p className="text-xs leading-6 text-slate-400">تابع مواعيد التسليم والاختبارات المنشورة من إدارة المنصة.</p>
-          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل المواعيد...</p> : tasks.length ? tasks.map(task=><article key={task.id} className="soft-panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><b className="text-sm text-white">{task.title}</b><p className="mt-1 text-[11px] text-sky-200">{task.subject_code || 'عام'} {task.group_name ? '• '+task.group_name : ''}</p></div><span className="rounded-lg bg-amber-400/10 px-2 py-1 text-[10px] text-amber-200">{task.due_at ? new Date(task.due_at).toLocaleString('ar-EG') : 'بدون موعد محدد'}</span></div>{task.description && <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-300">{task.description}</p>}</article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد تكليفات أو امتحانات منشورة حالياً.</p>}
+          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل المواعيد...</p> : tasks.length ? tasks.map(task=><article key={task.id} className="soft-panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><b className="text-sm text-white">{task.title}</b><span className="mr-2 rounded-md bg-sky-400/10 px-2 py-0.5 text-[9px] text-sky-200">{task.kind === 'exam' ? 'امتحان' : 'تكليف'}</span><p className="mt-1 text-[11px] text-sky-200">{task.subject_code || 'عام'} {task.group_name ? '• '+task.group_name : ''}</p></div><span className="rounded-lg bg-amber-400/10 px-2 py-1 text-[10px] text-amber-200">{task.due_at ? new Date(task.due_at).toLocaleString('ar-EG') : 'بدون موعد محدد'}</span></div>{task.description && <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-300">{task.description}</p>}</article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد تكليفات أو امتحانات منشورة حالياً.</p>}
         </div></div>;
       };
 
