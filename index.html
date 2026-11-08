@@ -10,26 +10,11 @@
   <meta name="apple-mobile-web-app-title" content="بوابتي" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
-    // One-time cleanup of stale installed service workers and cached app files.
-    // This prevents older app-shell versions from masking newly deployed HTML.
+    // Register the offline app worker. It caches the app shell and public UI libraries.
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", async () => {
-        const resetKey = "bsnu-portal-cache-reset-v1";
-        if (sessionStorage.getItem(resetKey) === "done") return;
-        sessionStorage.setItem(resetKey, "done");
-        try {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration) => registration.unregister()));
-          if ("caches" in window) {
-            const cacheNames = await caches.keys();
-            await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-          }
-          const freshUrl = new URL(window.location.href);
-          freshUrl.searchParams.set("fresh", "1");
-          window.location.replace(freshUrl.href);
-        } catch (error) {
-          console.warn("تعذر تنظيف النسخة القديمة:", error);
-        }
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
+          .catch((error) => console.warn("تعذر تفعيل وضع عدم الاتصال:", error));
       });
     }
   </script>
@@ -1883,15 +1868,37 @@ Civil & Political + Economic & Social rights.` },
         useEffect(() => {
           let active = true;
           const load = async () => {
-            if (!supabaseClient || !selectedSubject?.code) { setDatabaseLectures(null); return; }
-            const { data, error } = await supabaseClient.from('lectures').select('*').eq('subject_code', selectedSubject.code).order('sort_order', { ascending: true });
+            const subjectCode = selectedSubject?.code;
+            if (!subjectCode) { setDatabaseLectures(null); return; }
+            const cacheKey = `bsnu-offline-lectures-${subjectCode}`;
+            let cachedLectures = null;
+            try {
+              const saved = localStorage.getItem(cacheKey);
+              if (saved) {
+                cachedLectures = JSON.parse(saved);
+                if (active) setDatabaseLectures(cachedLectures);
+              } else if (active) setDatabaseLectures(null);
+            } catch (cacheError) {
+              console.warn('تعذر قراءة المحاضرات المحفوظة:', cacheError);
+            }
+            // Supabase needs internet. If offline, keep the last saved copy on this device.
+            if (!supabaseClient || !navigator.onLine) return;
+            const { data, error } = await supabaseClient.from('lectures').select('*').eq('subject_code', subjectCode).order('sort_order', { ascending: true });
             if (!active) return;
-            if (error) { console.warn('تعذر تحميل محاضرات قاعدة البيانات:', error); setDatabaseLectures(null); return; }
-            setDatabaseLectures((data || []).map(row => ({
+            if (error) {
+              console.warn('تعذر تحديث المحاضرات من قاعدة البيانات:', error);
+              if (cachedLectures === null) setDatabaseLectures(null);
+              return;
+            }
+            const normalizedLectures = (data || []).map(row => ({
               id: row.id, title: row.title, doctor: row.doctor || 'غير محدد', duration: row.duration || '',
               summaryAr: row.summary_ar || '', summaryEn: row.summary_en || '', hasContent: !!row.file_url || !!row.has_content,
               fileUrl: row.file_url || ''
-            })));
+            }));
+            setDatabaseLectures(normalizedLectures);
+            try { localStorage.setItem(cacheKey, JSON.stringify(normalizedLectures)); } catch (cacheError) {
+              console.warn('مساحة التخزين المحلية ممتلئة:', cacheError);
+            }
           };
           load();
           return () => { active = false; };
