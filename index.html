@@ -1668,6 +1668,7 @@ Civil & Political + Economic & Social rights.` },
       const viewRef = useRef('home');
       const viewHistoryRef = useRef(['home']);
       const isHandlingPopRef = useRef(false);
+      const selectedScheduleDayRef = useRef(null);
 
       // Keep one browser-history entry per in-app screen for Android back gestures.
       const setView = (nextView) => {
@@ -1710,6 +1711,14 @@ Civil & Political + Economic & Social rights.` },
 
         const handleBrowserBack = (event) => {
           const stack = viewHistoryRef.current;
+          // Nested schedule navigation: return from a selected day to the days list
+          // before leaving the schedule screen itself.
+          if (viewRef.current === 'schedule' && selectedScheduleDayRef.current) {
+            selectedScheduleDayRef.current = null;
+            setSelectedScheduleDay(null);
+            return;
+          }
+
           // Nested lecture navigation: Android/browser Back returns from a doctor's
           // lecture list to the instructor names before leaving the lectures screen.
           if (viewRef.current === 'lectures' && event.state?.universityPortal && event.state.view === 'lectures') {
@@ -2299,7 +2308,7 @@ Civil & Political + Economic & Social rights.` },
                   { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', number: '02' },
                   { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: 'groups', number: '03' },
                 ].map(({ icon: I, label, desc, v, number }) => (
-                  <button key={v} onClick={() => { if (v === 'groups') { setSelectedGroup(null); setSelectedScheduleDay(null); } setView(v); }} className="premium-shortcut group flex min-w-0 flex-col items-start gap-2 rounded-2xl p-2.5 text-right sm:gap-3 sm:p-4">
+                  <button key={v} onClick={() => { if (v === 'groups') { setSelectedGroup(null); selectedScheduleDayRef.current = null; setSelectedScheduleDay(null); } setView(v); }} className="premium-shortcut group flex min-w-0 flex-col items-start gap-2 rounded-2xl p-2.5 text-right sm:gap-3 sm:p-4">
                     <span className="premium-shortcut-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12"><I className="h-5 w-5 sm:h-6 sm:w-6" /></span>
                     <span className="min-w-0 w-full"><span className="block text-[11px] font-extrabold leading-5 text-white sm:text-sm">{label}</span><span className="mt-1 block text-[9px] leading-4 text-slate-400 sm:text-[10px]">{desc}</span></span>
                     <span className="text-[9px] font-bold tracking-widest text-sky-300/60 sm:text-[10px]">{number}</span>
@@ -2618,7 +2627,7 @@ Civil & Political + Economic & Social rights.` },
           <p className="text-gray-500 text-sm mb-8 text-center">اختار الجروب في كل مرة تفتح فيها الجدول</p>
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             {['جروب 1', 'جروب 2'].map(g => (
-              <button key={g} onClick={() => { setSelectedGroup(g); setSelectedScheduleDay(null); setView('schedule'); showToast(`تم اختيار ${g}`); }}
+              <button key={g} onClick={() => { setSelectedGroup(g); selectedScheduleDayRef.current = null; setSelectedScheduleDay(null); setView('schedule'); showToast(`تم اختيار ${g}`); }}
                 className={`flex-1 glass border-2 rounded-2xl p-6 flex flex-col items-center gap-3 card-hover ${selectedGroup === g ? 'border-cyan-500 glow-cyan' : 'border-cyan-900/50'}`}>
                 <div className="w-14 h-14 rounded-full bg-cyan-950/60 flex items-center justify-center">
                   <Icons.Users className="w-7 h-7 text-cyan-400" />
@@ -2636,8 +2645,8 @@ Civil & Political + Economic & Social rights.` },
         const activeDay = data.find(day => day.day === selectedScheduleDay);
         return (
           <div className="min-h-screen soft-page pb-28">
-            <NavBar title={activeDay ? `جدول يوم ${activeDay.day}` : `أيام ${selectedGroup}`} onBack={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')}
-              right={<button onClick={() => activeDay ? setSelectedScheduleDay(null) : setView('groups')} className="text-xs text-cyan-400">{activeDay ? 'كل الأيام' : 'تغيير الجروب'}</button>} />
+            <NavBar title={activeDay ? `جدول يوم ${activeDay.day}` : `أيام ${selectedGroup}`} onBack={() => activeDay ? window.history.back() : setView('groups')}
+              right={<button onClick={() => activeDay ? window.history.back() : setView('groups')} className="text-xs text-cyan-400">{activeDay ? 'كل الأيام' : 'تغيير الجروب'}</button>} />
             <div className="px-4 pt-4 space-y-4">
               {!activeDay ? (
                 <>
@@ -2648,7 +2657,7 @@ Civil & Political + Economic & Social rights.` },
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {data.map(day => (
-                      <button key={day.day} onClick={() => setSelectedScheduleDay(day.day)}
+                      <button key={day.day} onClick={() => { selectedScheduleDayRef.current = day.day; window.history.pushState({ universityPortal: true, view: 'schedule', scheduleStep: 'day', day: day.day }, '', window.location.pathname + window.location.search + '#app'); setSelectedScheduleDay(day.day); }}
                         className={`glass soft-panel rounded-2xl p-5 text-right transition ${day.day === today ? 'border-sky-300/40' : ''}`}>
                         <span className="block text-base font-extrabold text-white">{day.day}</span>
                         <span className="mt-1 block text-xs text-slate-400">{day.slots.reduce((n, slot) => n + slot.items.length, 0)} محاضرة</span>
