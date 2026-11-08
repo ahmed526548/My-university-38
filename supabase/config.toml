@@ -1,0 +1,4 @@
+project_id = "my-university-38"
+
+[functions.ai-chat]
+verify_jwt = true
