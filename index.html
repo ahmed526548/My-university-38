@@ -1080,6 +1080,19 @@ Civil & Political + Economic & Social rights.` },
       const [adminEmail, setAdminEmail] = useState('');
       const [adminPassword, setAdminPassword] = useState('');
       const [adminBusy, setAdminBusy] = useState(false);
+      const [adminSelectedTable, setAdminSelectedTable] = useState('subjects');
+      const [adminRecords, setAdminRecords] = useState([]);
+      const [adminDataBusy, setAdminDataBusy] = useState(false);
+      const [adminJsonDraft, setAdminJsonDraft] = useState('');
+      const [adminEditingId, setAdminEditingId] = useState(null);
+      const adminTableOptions = [
+        { value: 'subjects', label: 'المواد الدراسية' },
+        { value: 'lectures', label: 'المحاضرات' },
+        { value: 'schedule_days', label: 'أيام الجدول' },
+        { value: 'schedule_slots', label: 'مواعيد الجدول' },
+        { value: 'schedule_items', label: 'محاضرات الجدول' },
+        { value: 'announcements', label: 'الإعلانات' }
+      ];
       const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
       const [portalTheme, setPortalTheme] = useState(() => {
         try {
@@ -1272,6 +1285,65 @@ Civil & Political + Economic & Social rights.` },
         setAdminSession(null); setAdminAllowed(false); setView('settings');
         showToast('تم تسجيل الخروج');
       };
+
+      const loadAdminRecords = async (table = adminSelectedTable) => {
+        if (!supabaseClient || !adminAllowed || !adminSession) return;
+        setAdminDataBusy(true);
+        const { data, error } = await supabaseClient.from(table).select('*').limit(150);
+        setAdminDataBusy(false);
+        if (error) { showToast('تعذر تحميل البيانات: ' + error.message, 'error'); return; }
+        setAdminRecords(data || []);
+      };
+
+      const saveAdminRecord = async (event) => {
+        event.preventDefault();
+        if (!adminAllowed || !adminSession) return;
+        let payload;
+        try { payload = JSON.parse(adminJsonDraft); }
+        catch { showToast('صيغة JSON غير صحيحة', 'error'); return; }
+        if (!payload || Array.isArray(payload) || typeof payload !== 'object') {
+          showToast('اكتب سجلًا واحدًا بصيغة JSON', 'error'); return;
+        }
+        setAdminDataBusy(true);
+        let result;
+        if (adminEditingId !== null) {
+          const { id, created_at, ...editableFields } = payload;
+          result = await supabaseClient.from(adminSelectedTable).update(editableFields).eq('id', adminEditingId);
+        } else {
+          result = await supabaseClient.from(adminSelectedTable).insert(payload);
+        }
+        setAdminDataBusy(false);
+        if (result.error) { showToast('لم يتم الحفظ: ' + result.error.message, 'error'); return; }
+        setAdminJsonDraft(''); setAdminEditingId(null);
+        showToast(adminEditingId !== null ? 'تم تحديث السجل' : 'تمت إضافة السجل');
+        await loadAdminRecords(adminSelectedTable);
+      };
+
+      const editAdminRecord = (record) => {
+        if (record?.id === undefined || record?.id === null) {
+          showToast('هذا السجل لا يحتوي على حقل id', 'error'); return;
+        }
+        setAdminEditingId(record.id);
+        setAdminJsonDraft(JSON.stringify(record, null, 2));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const deleteAdminRecord = async (record) => {
+        if (!adminAllowed || !adminSession || record?.id === undefined || record?.id === null) {
+          showToast('لا يمكن حذف السجل لعدم وجود معرّف id', 'error'); return;
+        }
+        if (!window.confirm('متأكد إنك عايز تحذف السجل ده نهائيًا؟')) return;
+        setAdminDataBusy(true);
+        const { error } = await supabaseClient.from(adminSelectedTable).delete().eq('id', record.id);
+        setAdminDataBusy(false);
+        if (error) { showToast('تعذر الحذف: ' + error.message, 'error'); return; }
+        showToast('تم حذف السجل');
+        await loadAdminRecords(adminSelectedTable);
+      };
+
+      useEffect(() => {
+        if (view === 'admin' && adminAllowed && adminSession) loadAdminRecords(adminSelectedTable);
+      }, [view, adminAllowed, adminSession, adminSelectedTable]);
 
       // Skip the decorative splash so the portal is usable immediately.
 
@@ -2177,8 +2249,39 @@ Civil & Political + Economic & Social rights.` },
                         <p className="font-bold text-emerald-300">تم التحقق من صلاحيات الأدمن</p>
                         <p className="mt-1 break-all text-xs text-slate-300">{adminSession.user?.email}</p>
                       </div>
-                      <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-4 text-sm leading-7 text-slate-200">
-                        الاتصال بقاعدة البيانات وتسجيل الدخول شغالين. المرحلة التالية هي تفعيل إدارة المحاضرات والجدول والإعلانات من هنا.
+                      <div className="space-y-4 text-right">
+                        <div>
+                          <label className="mb-2 block text-xs font-bold text-slate-300">اختار القسم اللي عايز تديره</label>
+                          <select value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminJsonDraft(''); setAdminEditingId(null); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white">
+                            {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                        </div>
+                        <form onSubmit={saveAdminRecord} className="space-y-2 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل سجل موجود' : 'إضافة سجل جديد'}</h3>
+                            {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminJsonDraft(''); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
+                          </div>
+                          <p className="text-[11px] leading-5 text-slate-400">اكتب بيانات السجل بصيغة JSON حسب أعمدة الجدول. عند تعديل سجل، سيظهر هنا محتواه الحالي.</p>
+                          <textarea value={adminJsonDraft} onChange={e => setAdminJsonDraft(e.target.value)} rows={7} dir="ltr" placeholder={'{\n  "name": "اسم المادة",\n  "code": "CS101"\n}'} className="w-full rounded-xl border border-slate-600 bg-slate-950 p-3 font-mono text-xs text-sky-100 outline-none focus:border-sky-400" />
+                          <button disabled={adminDataBusy || !adminJsonDraft.trim()} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري التنفيذ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
+                        </form>
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-extrabold text-white">السجلات الحالية ({adminRecords.length})</h3>
+                          <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
+                        </div>
+                        {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs text-slate-400">مفيش سجلات في القسم ده حاليًا.</p> : (
+                          <div className="max-h-[460px] space-y-2 overflow-y-auto">
+                            {adminRecords.map((record, index) => (
+                              <div key={record.id ?? index} className="rounded-xl border border-slate-700 bg-slate-900/80 p-3">
+                                <pre dir="ltr" className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-left text-[10px] leading-5 text-slate-300">{JSON.stringify(record, null, 2)}</pre>
+                                <div className="mt-3 flex gap-2">
+                                  <button onClick={() => editAdminRecord(record)} className="flex-1 rounded-lg bg-sky-400/10 py-2 text-xs font-bold text-sky-200">تعديل</button>
+                                  <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="flex-1 rounded-lg bg-red-400/10 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-700 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}</button>
                     </div>
