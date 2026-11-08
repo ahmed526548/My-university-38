@@ -1117,6 +1117,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminBusy, setAdminBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
       const [adminRecords, setAdminRecords] = useState([]);
+      const [adminSchedulePreview, setAdminSchedulePreview] = useState({ days: [], slots: [], items: [] });
       const [adminOverview, setAdminOverview] = useState({ students: 0, posts: 0, reports: 0, tasks: 0, activity: [], topLectures: [] });
       const [adminDataBusy, setAdminDataBusy] = useState(false);
       const [adminFormData, setAdminFormData] = useState({});
@@ -1153,12 +1154,12 @@ Civil & Political + Economic & Social rights.` },
           { key: 'sort_order', label: 'ترتيب اليوم', type: 'number' }
         ],
         schedule_slots: [
-          { key: 'day_id', label: 'رقم اليوم (day_id)', type: 'number', required: true },
+          { key: 'day_id', label: 'معرّف اليوم', required: true },
           { key: 'time_label', label: 'موعد المحاضرة', required: true },
           { key: 'sort_order', label: 'ترتيب الموعد', type: 'number' }
         ],
         schedule_items: [
-          { key: 'slot_id', label: 'رقم الموعد (slot_id)', type: 'number', required: true },
+          { key: 'slot_id', label: 'معرّف الموعد', required: true },
           { key: 'subject', label: 'اسم المادة', required: true },
           { key: 'doctor', label: 'اسم الدكتور' },
           { key: 'hall', label: 'المدرج / القاعة' },
@@ -1403,6 +1404,30 @@ Civil & Political + Economic & Social rights.` },
         showToast('تم تسجيل الخروج');
       };
 
+      const loadAdminSchedulePreview = async () => {
+        if (!supabaseClient || !adminAllowed || !adminSession) return;
+        const [daysResult, slotsResult, itemsResult] = await Promise.all([
+          supabaseClient.from('schedule_days').select('*').order('sort_order', { ascending: true }),
+          supabaseClient.from('schedule_slots').select('*').order('sort_order', { ascending: true }),
+          supabaseClient.from('schedule_items').select('*')
+        ]);
+        const failed = [daysResult, slotsResult, itemsResult].find(result => result.error);
+        if (failed) { showToast('تعذر تحميل معاينة الجدول: ' + failed.error.message, 'error'); return; }
+        setAdminSchedulePreview({ days: daysResult.data || [], slots: slotsResult.data || [], items: itemsResult.data || [] });
+      };
+
+      const beginScheduleEdit = (table, record) => {
+        const fields = table === 'schedule_days' ? ['day_name','sort_order']
+          : table === 'schedule_slots' ? ['day_id','time_label','sort_order']
+          : ['slot_id','subject','doctor','hall','group_name'];
+        const values = {};
+        fields.forEach(key => { values[key] = record[key] === null || record[key] === undefined ? '' : String(record[key]); });
+        setAdminSelectedTable(table);
+        setAdminEditingId(record.id);
+        setAdminFormData(values);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
       const loadAdminRecords = async (table = adminSelectedTable) => {
         if (!supabaseClient || !adminAllowed || !adminSession) return;
         setAdminDataBusy(true);
@@ -1443,6 +1468,7 @@ Civil & Political + Economic & Social rights.` },
         setAdminFormData({}); setAdminEditingId(null);
         showToast(adminEditingId !== null ? 'تم تحديث السجل' : 'تمت إضافة السجل');
         await loadAdminRecords(adminSelectedTable);
+        if (['schedule_days','schedule_slots','schedule_items'].includes(adminSelectedTable)) await loadAdminSchedulePreview();
       };
 
       const editAdminRecord = (record) => {
@@ -1473,6 +1499,7 @@ Civil & Political + Economic & Social rights.` },
         try { await supabaseClient.from('portal_activity_log').insert({ actor_id: adminSession.user.id, action: 'delete', entity: adminSelectedTable, entity_id: String(record.id), details: { section: adminSelectedTable } }); } catch (_) {}
         showToast('تم حذف السجل');
         await loadAdminRecords(adminSelectedTable);
+        if (['schedule_days','schedule_slots','schedule_items'].includes(adminSelectedTable)) await loadAdminSchedulePreview();
       };
 
       const loadAdminOverview = async () => {
@@ -1495,7 +1522,7 @@ Civil & Political + Economic & Social rights.` },
       };
 
       useEffect(() => {
-        if (view === 'admin' && adminAllowed && adminSession) { loadAdminRecords(adminSelectedTable); loadAdminOverview(); }
+        if (view === 'admin' && adminAllowed && adminSession) { loadAdminRecords(adminSelectedTable); loadAdminOverview(); loadAdminSchedulePreview(); }
       }, [view, adminAllowed, adminSession, adminSelectedTable]);
 
       // Skip the decorative splash so the portal is usable immediately.
@@ -2521,7 +2548,7 @@ Civil & Political + Economic & Social rights.` },
           {view === 'announcements' && <AnnouncementsView />}
           {view === 'admin' && (
             <div className="min-h-screen bg-[#061321] px-4 py-8">
-              <div className="mx-auto max-w-md">
+              <div className="mx-auto max-w-4xl">
                 <button onClick={() => setView('settings')} className="mb-6 text-sm font-bold text-sky-300">→ العودة للإعدادات</button>
                 <div className="glass rounded-3xl border border-sky-300/20 p-6">
                   <div className="mb-5 text-center">
@@ -2556,7 +2583,44 @@ Civil & Political + Economic & Social rights.` },
                             {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </div>
-                        {adminSelectedTable !== 'student_profiles' && <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
+                        {adminSelectedTable !== 'student_profiles' &&                         <section className="rounded-2xl border border-sky-300/20 bg-slate-950/40 p-3 text-right">
+                          <div className="mb-3 flex items-center justify-between gap-2">
+                            <div><h3 className="text-sm font-black text-white">إدارة الجدول الدراسي</h3><p className="mt-1 text-[10px] text-slate-400">اعرض الأيام والمواعيد والمحاضرات وعدّلها مباشرة</p></div>
+                            <button type="button" onClick={loadAdminSchedulePreview} className="rounded-lg bg-sky-400/10 px-3 py-2 text-[10px] font-bold text-sky-200">تحديث الجدول</button>
+                          </div>
+                          {adminSchedulePreview.days.length === 0 ? <p className="py-4 text-center text-xs text-slate-500">لا توجد أيام مسجلة في الجدول حاليًا.</p> : (
+                            <div className="max-h-[520px] space-y-3 overflow-y-auto">
+                              {adminSchedulePreview.days.map(day => (
+                                <div key={day.id} className="overflow-hidden rounded-xl border border-white/10 bg-slate-900/70">
+                                  <div className="flex items-center justify-between gap-2 bg-sky-400/10 px-3 py-2">
+                                    <b className="text-xs text-sky-100">{day.day_name}</b>
+                                    <button type="button" onClick={() => beginScheduleEdit('schedule_days', day)} className="text-[10px] font-bold text-sky-300 underline">تعديل اليوم</button>
+                                  </div>
+                                  <div className="space-y-2 p-2">
+                                    {adminSchedulePreview.slots.filter(slot => slot.day_id === day.id).map(slot => (
+                                      <div key={slot.id} className="rounded-lg border border-white/5 bg-black/20 p-2">
+                                        <div className="mb-2 flex items-center justify-between gap-2">
+                                          <b className="text-[11px] text-amber-200">{slot.time_label}</b>
+                                          <button type="button" onClick={() => beginScheduleEdit('schedule_slots', slot)} className="text-[10px] text-amber-200 underline">تعديل الوقت</button>
+                                        </div>
+                                        {adminSchedulePreview.items.filter(item => item.slot_id === slot.id).length ? adminSchedulePreview.items.filter(item => item.slot_id === slot.id).map(item => (
+                                          <div key={item.id} className="mb-1 flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2 py-2">
+                                            <div className="min-w-0">
+                                              <p className="truncate text-[11px] font-bold text-white">{item.subject}</p>
+                                              <p className="mt-0.5 truncate text-[10px] text-slate-400">{item.doctor || 'بدون دكتور'} • {item.hall || 'بدون مدرج'} • {item.group_name || 'بدون جروب'}</p>
+                                            </div>
+                                            <button type="button" onClick={() => beginScheduleEdit('schedule_items', item)} className="shrink-0 rounded-md bg-sky-400/10 px-2 py-1.5 text-[10px] font-bold text-sky-200">تعديل</button>
+                                          </div>
+                                        )) : <p className="text-[10px] text-slate-500">لا توجد محاضرات في هذا الموعد.</p>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+                        <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
                           <div className="flex items-center justify-between gap-2">
                             <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل البيانات' : 'إضافة سجل جديد'}</h3>
                             {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminFormData({}); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
