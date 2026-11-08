@@ -1853,9 +1853,9 @@ Civil & Political + Economic & Social rights.` },
           }
           const context = Object.entries(allLecturesData).filter(([code]) => code !== 'default')
             .flatMap(([code, lectures]) => lectures.map(lec =>
-              [code, lec.title, lec.doctor, lec.duration, lec.summaryAr].join(' | ')
-            )).join('\\n').slice(0, 22000);
-          const history = chat.slice(-8).map(m => ({
+              [code, lec.title, lec.doctor, lec.duration, lec.summaryAr, lec.description, lec.content].filter(Boolean).join(' | ')
+            )).join('\\n').slice(0, 30000);
+          const history = chat.slice(-12).map(m => ({
             role: m.sender === 'bot' ? 'model' : 'user', text: m.text
           }));
           const { data, error } = await supabaseClient.functions.invoke('university-assistant', {
