@@ -614,8 +614,15 @@
 <body>
   <div id="root"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    // Supabase public client configuration. Keep secret/service-role keys out of the browser.
+    const SUPABASE_URL = 'https://azlplcbphvaiexmyfdbp.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
+    const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
 
     // ==================== ICONS (Expanded & Improved) ====================
     const Icon = ({ d, className = "w-5 h-5", strokeWidth = 1.8 }) => (
@@ -1067,6 +1074,12 @@ Civil & Political + Economic & Social rights.` },
     // ==================== APP ====================
     function App() {
       const [view, setViewState] = useState('home');
+      const [adminSession, setAdminSession] = useState(null);
+      const [adminAllowed, setAdminAllowed] = useState(false);
+      const [adminChecking, setAdminChecking] = useState(true);
+      const [adminEmail, setAdminEmail] = useState('');
+      const [adminPassword, setAdminPassword] = useState('');
+      const [adminBusy, setAdminBusy] = useState(false);
       const themeOptions = ['sky', 'violet', 'emerald', 'amber'];
       const [portalTheme, setPortalTheme] = useState(() => {
         try {
@@ -1188,6 +1201,77 @@ Civil & Political + Economic & Social rights.` },
       const [showSearch, setShowSearch] = useState(false);
       const endRef = useRef(null);
       const timerRef = useRef(null);
+
+      // Restore the Supabase session and independently verify admin membership.
+      useEffect(() => {
+        let active = true;
+        const restoreAdminSession = async () => {
+          if (!supabaseClient) { if (active) setAdminChecking(false); return; }
+          try {
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (error) throw error;
+            const session = data?.session || null;
+            if (!active) return;
+            setAdminSession(session);
+            if (session?.user?.id) {
+              const { data: adminRow, error: adminError } = await supabaseClient
+                .from('portal_admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
+              if (adminError) throw adminError;
+              if (active) setAdminAllowed(!!adminRow);
+            } else if (active) setAdminAllowed(false);
+          } catch (error) {
+            console.error('Supabase session restore failed:', error);
+            if (active) setAdminAllowed(false);
+          } finally {
+            if (active) setAdminChecking(false);
+          }
+        };
+        restoreAdminSession();
+        if (!supabaseClient) return () => { active = false; };
+        const { data: authListener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+          if (!active) return;
+          setAdminSession(session || null);
+          if (!session) setAdminAllowed(false);
+        });
+        return () => { active = false; authListener?.subscription?.unsubscribe(); };
+      }, []);
+
+      const handleAdminLogin = async (event) => {
+        event.preventDefault();
+        if (!supabaseClient) { showToast('تعذر الاتصال بخدمة تسجيل الدخول', 'error'); return; }
+        setAdminBusy(true);
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: adminEmail.trim(), password: adminPassword
+          });
+          if (error) throw error;
+          const userId = data?.user?.id;
+          if (!userId) throw new Error('تعذر التحقق من حساب المستخدم');
+          const { data: adminRow, error: adminError } = await supabaseClient
+            .from('portal_admins').select('user_id').eq('user_id', userId).maybeSingle();
+          if (adminError) throw adminError;
+          if (!adminRow) {
+            await supabaseClient.auth.signOut();
+            throw new Error('الحساب ده مش مضاف كمسؤول للموقع');
+          }
+          setAdminSession(data.session);
+          setAdminAllowed(true);
+          setAdminPassword('');
+          showToast('تم تسجيل دخول الأدمن بنجاح');
+        } catch (error) {
+          showToast(error?.message || 'فشل تسجيل الدخول، راجع البيانات', 'error');
+        } finally { setAdminBusy(false); }
+      };
+
+      const handleAdminLogout = async () => {
+        if (!supabaseClient) return;
+        setAdminBusy(true);
+        const { error } = await supabaseClient.auth.signOut();
+        setAdminBusy(false);
+        if (error) { showToast('تعذر تسجيل الخروج', 'error'); return; }
+        setAdminSession(null); setAdminAllowed(false); setView('settings');
+        showToast('تم تسجيل الخروج');
+      };
 
       // Skip the decorative splash so the portal is usable immediately.
 
@@ -1965,6 +2049,9 @@ Civil & Political + Economic & Social rights.` },
             }} className="w-full glass border border-cyan-900/40 text-cyan-400 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
               <Icons.Trash className="w-4 h-4" /> مسح كل البيانات المحلية
             </button>
+            <button onClick={() => setView('admin')} className="w-full rounded-xl border border-sky-300/30 bg-sky-400/10 px-4 py-3 text-sm font-extrabold text-sky-200 flex items-center justify-center gap-2">
+              <Icons.User className="w-4 h-4" /> لوحة تحكم الأدمن
+            </button>
             <div className="glass border border-cyan-900/30 rounded-2xl p-4">
               <h3 className="mb-3 text-sm font-extrabold text-white">أدوات إضافية</h3>
               <div className="grid grid-cols-2 gap-2">
@@ -2070,7 +2157,45 @@ Civil & Political + Economic & Social rights.` },
           {view === 'timer' && <TimerView />}
           {view === 'gpa' && <GPAView />}
           {view === 'announcements' && <AnnouncementsView />}
-          {view === 'settings' && <SettingsView />}
+          {view === 'admin' && (
+            <div className="min-h-screen bg-[#061321] px-4 py-8">
+              <div className="mx-auto max-w-md">
+                <button onClick={() => setView('settings')} className="mb-6 text-sm font-bold text-sky-300">→ العودة للإعدادات</button>
+                <div className="glass rounded-3xl border border-sky-300/20 p-6">
+                  <div className="mb-5 text-center">
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-400/10 text-sky-300"><Icons.User className="h-7 w-7" /></div>
+                    <h1 className="text-xl font-black text-white">لوحة تحكم الأدمن</h1>
+                    <p className="mt-1 text-xs text-slate-400">تسجيل دخول آمن عبر Supabase</p>
+                  </div>
+                  {!supabaseClient ? (
+                    <p className="rounded-xl bg-red-500/10 p-3 text-sm text-red-300">خدمة تسجيل الدخول غير متاحة حاليًا.</p>
+                  ) : adminChecking ? (
+                    <p className="py-6 text-center text-sm text-slate-300">جاري التحقق من الجلسة...</p>
+                  ) : adminAllowed && adminSession ? (
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-center">
+                        <p className="font-bold text-emerald-300">تم التحقق من صلاحيات الأدمن</p>
+                        <p className="mt-1 break-all text-xs text-slate-300">{adminSession.user?.email}</p>
+                      </div>
+                      <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-4 text-sm leading-7 text-slate-200">
+                        الاتصال بقاعدة البيانات وتسجيل الدخول شغالين. المرحلة التالية هي تفعيل إدارة المحاضرات والجدول والإعلانات من هنا.
+                      </div>
+                      <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-700 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}</button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleAdminLogin} className="space-y-3">
+                      <label className="block text-xs font-bold text-slate-300">البريد الإلكتروني</label>
+                      <input type="email" required autoComplete="username" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} placeholder="admin@example.com" className="soft-control w-full rounded-xl px-4 py-3 text-sm text-white" dir="ltr" />
+                      <label className="block text-xs font-bold text-slate-300">كلمة المرور</label>
+                      <input type="password" required autoComplete="current-password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="••••••••" className="soft-control w-full rounded-xl px-4 py-3 text-sm text-white" dir="ltr" />
+                      <button type="submit" disabled={adminBusy} className="mt-2 w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminBusy ? 'جاري التحقق...' : 'تسجيل الدخول'}</button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+                    {view === 'settings' && <SettingsView />}
           <footer className="developer-footer relative z-10 mx-auto mt-8 w-full max-w-6xl px-4 pb-32 pt-2 sm:px-6" aria-label="معلومات المطور">
             <div className="overflow-hidden rounded-2xl border border-sky-300/15 bg-slate-950/35 px-5 py-5 text-center">
               <div className="mx-auto mb-3 h-px w-16 bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
