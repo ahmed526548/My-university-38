@@ -1132,6 +1132,7 @@ Civil & Political + Economic & Social rights.` },
         { value: 'portal_notifications', label: 'الإشعارات العامة' },
         { value: 'community_reports', label: 'بلاغات المجتمع' },
         { value: 'community_posts', label: 'منشورات المجتمع' },
+        { value: 'community_comments', label: 'تعليقات المجتمع' },
         { value: 'student_profiles', label: 'ملفات الطلاب' }
       ];
       const adminFieldConfig = {
@@ -1171,6 +1172,7 @@ Civil & Political + Economic & Social rights.` },
         ],
         student_tasks: [
           { key: 'title', label: 'عنوان التكليف أو الامتحان', required: true },
+          { key: 'kind', label: 'النوع (assignment أو exam)' },
           { key: 'description', label: 'التفاصيل والتعليمات', type: 'textarea' },
           { key: 'subject_code', label: 'كود المادة' },
           { key: 'due_at', label: 'آخر موعد', type: 'datetime-local' },
@@ -1194,6 +1196,11 @@ Civil & Political + Economic & Social rights.` },
         community_posts: [
           { key: 'author_id', label: 'معرّف صاحب المنشور', required: true },
           { key: 'body', label: 'محتوى المنشور', type: 'textarea', required: true }
+        ],
+        community_comments: [
+          { key: 'post_id', label: 'معرّف المنشور', required: true },
+          { key: 'author_id', label: 'معرّف صاحب التعليق', required: true },
+          { key: 'body', label: 'محتوى التعليق', type: 'textarea', required: true }
         ],
         student_profiles: [
           { key: 'user_id', label: 'معرّف حساب الطالب', required: true },
