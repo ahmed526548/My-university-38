@@ -1127,7 +1127,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminBusy, setAdminBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
       const [adminRecords, setAdminRecords] = useState([]);
-      const [adminOverview, setAdminOverview] = useState({ students: 0, posts: 0, reports: 0, tasks: 0, activity: [] });
+      const [adminOverview, setAdminOverview] = useState({ students: 0, posts: 0, reports: 0, tasks: 0, activity: [], topLectures: [] });
       const [adminDataBusy, setAdminDataBusy] = useState(false);
       const [adminFormData, setAdminFormData] = useState({});
       const [adminEditingId, setAdminEditingId] = useState(null);
@@ -1485,11 +1485,15 @@ Civil & Political + Economic & Social rights.` },
           const result = await query;
           return result.count || 0;
         };
-        const [students, posts, reports, tasks, activityResult] = await Promise.all([
+        const [students, posts, reports, tasks, activityResult, viewsResult] = await Promise.all([
           countRows('student_profiles'), countRows('community_posts'), countRows('community_reports', [['status','open']]),
-          countRows('student_tasks'), supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8)
+          countRows('student_tasks'), supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8),
+          supabaseClient.from('lecture_views').select('lecture_id,lectures(title,subject_code)').limit(2000)
         ]);
-        setAdminOverview({ students, posts, reports, tasks, activity: activityResult.data || [] });
+        const groupedViews = {};
+        (viewsResult.data || []).forEach(row => { const key=row.lecture_id; if(!groupedViews[key]) groupedViews[key]={ title:row.lectures?.title || 'محاضرة', subject:row.lectures?.subject_code || '', count:0 }; groupedViews[key].count++; });
+        const topLectures = Object.values(groupedViews).sort((a,b)=>b.count-a.count).slice(0,5);
+        setAdminOverview({ students, posts, reports, tasks, activity: activityResult.data || [], topLectures });
       };
 
       useEffect(() => {
@@ -1497,6 +1501,29 @@ Civil & Political + Economic & Social rights.` },
       }, [view, adminAllowed, adminSession, adminSelectedTable]);
 
       // Skip the decorative splash so the portal is usable immediately.
+
+      // Record lecture opens for the admin's usage analytics. Anonymous IDs are not shown in the dashboard.
+      useEffect(() => {
+        let active = true;
+        const lectureId = preview?.lecture?.id;
+        if (!preview?.open || typeof lectureId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lectureId)) return;
+        (async () => {
+          try {
+            let { data } = await supabaseClient.auth.getSession();
+            let session = data?.session;
+            if (!session) {
+              const result = await supabaseClient.auth.signInAnonymously();
+              if (result.error) throw result.error;
+              session = result.data?.session;
+            }
+            if (active && session?.user?.id) {
+              const { error } = await supabaseClient.from('lecture_views').insert({ lecture_id: lectureId, viewer_id: session.user.id });
+              if (error) console.warn('تعذر تسجيل مشاهدة المحاضرة:', error.message);
+            }
+          } catch (error) { console.warn('تعذر تسجيل مشاهدة المحاضرة:', error?.message); }
+        })();
+        return () => { active = false; };
+      }, [preview?.open, preview?.lecture?.id]);
 
       // Persist
       useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 2800); return () => clearTimeout(t); } }, [toast]);
@@ -2823,6 +2850,7 @@ Civil & Political + Economic & Social rights.` },
                         </div>
                         <div className="rounded-xl border border-sky-300/15 bg-slate-950/30 p-3">
                           <div className="mb-2 flex items-center justify-between"><b className="text-xs text-white">سجل النشاط الإداري</b><button type="button" onClick={loadAdminOverview} className="text-[10px] text-sky-300">تحديث</button></div>
+                          {adminOverview.topLectures.length ? <div className="mb-3 border-b border-white/5 pb-3">{adminOverview.topLectures.map((item,index)=><div key={index} className="flex items-center justify-between gap-2 py-1.5 text-[10px]"><span className="truncate text-slate-300">{item.title} {item.subject ? '• '+item.subject : ''}</span><b className="text-sky-200">{item.count} مشاهدة</b></div>)}</div> : <p className="mb-2 text-[10px] text-slate-500">ستظهر أكثر المحاضرات مشاهدة بعد تفاعل الطلاب معها.</p>}
                           {adminOverview.activity.length ? adminOverview.activity.map(item=><div key={item.id} className="flex items-center justify-between gap-2 border-t border-white/5 py-2 text-[10px]"><span className="text-slate-300">{item.action === 'create' ? 'إضافة' : item.action === 'update' ? 'تعديل' : 'حذف'} • {item.entity}</span><span className="text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</span></div>) : <p className="text-[10px] text-slate-500">لا توجد عمليات مسجلة بعد.</p>}
                         </div>
                       </section>
