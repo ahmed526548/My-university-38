@@ -2123,7 +2123,7 @@ Civil & Political + Economic & Social rights.` },
 
       useEffect(() => {
         if (view === 'admin' && adminAllowed && adminSession) { loadAdminRecords(adminSelectedTable); loadAdminOverview(); }
-      }, [view, adminAllowed, adminSession, adminSelectedTable]);
+      }, [view, adminAllowed, adminSession, adminSelectedTable, adminSelectedProgram]);
 
       // Skip the decorative splash so the portal is usable immediately.
 
@@ -3335,12 +3335,13 @@ Civil & Political + Economic & Social rights.` },
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             {[
                               {id:'ai',name:'AI',subtitle:'Artificial Intelligence',icon:'Bot'},
-                              {id:'cyber',name:'Cyber',subtitle:'Cybersecurity',icon:'Shield'},
-                              {id:'medical',name:'Medical',subtitle:'Medical Informatics',icon:'HeartPulse'}
+                              {id:'cyber',name:'Cyber',subtitle:'Cybersecurity',icon:'Zap'},
+                              {id:'medical',name:'Medical',subtitle:'Medical Informatics',icon:'BookOpen'}
                             ].map(program => {
                               const ProgramIcon = Icons[program.icon] || Icons.Layers;
                               return <button key={program.id} type="button" onClick={() => {
                                 setAdminSelectedProgram(program.id);
+                                setAdminProgramSubjects([]);
                                 setAdminSelectedTable('lectures');
                                 setAdminEditingId(null);
                                 setAdminFormData({});
@@ -3431,7 +3432,7 @@ Civil & Political + Economic & Social rights.` },
                                 (groups[code] ||= []).push(record);
                                 return groups;
                               }, {})).map(([code, records]) => {
-                                const subject = subjectsData.find(item => item.code === code);
+                                const subject = adminProgramSubjects.find(item => item.code === code);
                                 const SubjectIcon = Icons[subject?.icon] || Icons.BookOpen;
                                 return (
                                   <details key={code} className="overflow-hidden rounded-xl border border-sky-300/20 bg-slate-900/80">
@@ -3439,7 +3440,7 @@ Civil & Political + Economic & Social rights.` },
                                       <span className="flex min-w-0 items-center gap-3">
                                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><SubjectIcon className="h-5 w-5" /></span>
                                         <span className="min-w-0">
-                                          <span className="block truncate text-sm font-extrabold text-white">{subject?.arabicName || code}</span>
+                                          <span className="block truncate text-sm font-extrabold text-white">{subject?.arabic_name || subject?.name || code}</span>
                                           <span className="mt-1 block text-[10px] text-slate-400">{code} • {records.length} محاضرة</span>
                                         </span>
                                       </span>
@@ -3463,7 +3464,19 @@ Civil & Political + Economic & Social rights.` },
                                   </details>
                                 );
                               })
-                            ) : adminRecords.map((record, index) => (
+                            ) : adminSelectedTable === 'subjects' ? adminRecords.map((record, index) => {
+                              const SubjectIcon = Icons[record.icon] || Icons.BookOpen;
+                              return (
+                                <div key={record.id ?? index} className="flex items-center gap-3 rounded-xl border border-sky-300/15 bg-slate-900/80 p-3">
+                                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${record.color || 'from-sky-600 to-cyan-700'} text-white`}><SubjectIcon className="h-5 w-5" /></span>
+                                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-extrabold text-white">{record.name}</p><p className="mt-1 text-[10px] text-slate-400">{record.code}</p></div>
+                                  <div className="flex shrink-0 gap-2">
+                                    <button onClick={() => editAdminRecord(record)} className="rounded-lg bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200">تعديل</button>
+                                    <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="rounded-lg bg-red-400/10 px-3 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
+                                  </div>
+                                </div>
+                              );
+                            }) : adminRecords.map((record, index) => (
                               <div key={record.id ?? index} className="rounded-xl border border-slate-700 bg-slate-900/80 p-3">
                                 <pre dir="ltr" className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-left text-[10px] leading-5 text-slate-300">{JSON.stringify(record, null, 2)}</pre>
                                 <div className="mt-3 flex gap-2">
