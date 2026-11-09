@@ -2036,14 +2036,11 @@ Civil & Political + Economic & Social rights.` },
         if (!preview?.open || typeof lectureId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lectureId)) return;
         (async () => {
           try {
-            let { data } = await supabaseClient.auth.getSession();
-            let session = data?.session;
-            if (!session) {
-              const result = await supabaseClient.auth.signInAnonymously();
-              if (result.error) throw result.error;
-              session = result.data?.session;
-            }
-            if (active && session?.user?.id) {
+            const { data } = await supabaseClient.auth.getSession();
+            const session = data?.session;
+            // Usage analytics are recorded only for a real signed-in student.
+            if (!session?.user?.id || session.user.is_anonymous) return;
+            if (active && session.user.id) {
               const { error } = await supabaseClient.from('lecture_views').insert({ lecture_id: lectureId, viewer_id: session.user.id });
               if (error) console.warn('تعذر تسجيل مشاهدة المحاضرة:', error.message);
             }
@@ -2173,11 +2170,9 @@ Civil & Political + Economic & Social rights.` },
         setTyping(true);
         try {
           if (!supabaseClient) throw new Error('الاتصال بالخادم غير متاح حالياً.');
-          let { data: sessionData } = await supabaseClient.auth.getSession();
-          if (!sessionData?.session) {
-            const { data, error } = await supabaseClient.auth.signInAnonymously();
-            if (error) throw new Error('يلزم تفعيل تسجيل الدخول المجهول من إعدادات Supabase أولاً.');
-            sessionData = { session: data.session };
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          if (!sessionData?.session?.user?.id || sessionData.session.user.is_anonymous) {
+            throw new Error('سجّل الدخول بحساب الطالب أولاً لاستخدام المساعد الجامعي.');
           }
           const context = Object.entries(allLecturesData).filter(([code]) => code !== 'default')
             .flatMap(([code, lectures]) => lectures.map(lec =>
