@@ -1649,7 +1649,8 @@ Civil & Political + Economic & Social rights.` },
           setStudentAuthBusy(false);
         }
       };
-      const initialView = new URLSearchParams(window.location.search).get('view') === 'admin' ? 'admin' : 'home';
+      const adminStandaloneMode = new URLSearchParams(window.location.search).get('standalone') === '1' || window.location.pathname.endsWith('/admin.html');
+      const initialView = (new URLSearchParams(window.location.search).get('view') === 'admin' || adminStandaloneMode) ? 'admin' : 'home';
       const getPortalHistoryUrl = (target) => {
         const nextUrl = new URL(window.location.href);
         if (target !== 'admin') nextUrl.searchParams.delete('view');
@@ -1800,6 +1801,15 @@ Civil & Political + Economic & Social rights.` },
         }
 
         const handleBrowserBack = (event) => {
+          // Keep the standalone admin workspace isolated from student navigation.
+          if (adminStandaloneMode && viewRef.current === 'admin') {
+            window.history.pushState(
+              { universityPortal: true, view: 'admin', portalEntry: true },
+              '',
+              getPortalHistoryUrl('admin')
+            );
+            return;
+          }
           // Close the lecture viewer first; keep the selected doctor and lecture list intact.
           if (documentPreviewRef.current?.open) {
             // Closing a lecture file must never change the selected subject or doctor.
@@ -2044,7 +2054,7 @@ Civil & Political + Economic & Social rights.` },
         const { error } = await supabaseClient.auth.signOut();
         setAdminBusy(false);
         if (error) { showToast('تعذر تسجيل الخروج', 'error'); return; }
-        setAdminSession(null); setAdminAllowed(false); setView('settings');
+        setAdminSession(null); setAdminAllowed(false);
         showToast('تم تسجيل الخروج');
       };
 
@@ -3344,7 +3354,6 @@ Civil & Political + Economic & Social rights.` },
           {view === 'admin' && (
             <div className="min-h-screen bg-[#061321] px-4 py-8">
               <div className="mx-auto max-w-6xl">
-                <button onClick={() => setView('settings')} className="mb-6 text-sm font-bold text-sky-300">→ العودة للإعدادات</button>
                 <div className="glass rounded-3xl border border-sky-300/20 p-6">
                   <div className="mb-5 text-center">
                     <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-400/10 text-sky-300"><Icons.User className="h-7 w-7" /></div>
@@ -3541,6 +3550,7 @@ Civil & Political + Economic & Social rights.` },
           )}
                     {view === 'settings' && <SettingsView />}
           {view === 'tools' && <ToolsView />}
+          {view !== 'admin' && (<>
           <footer className="developer-footer relative z-10 mx-auto mt-3 w-full max-w-6xl px-4 pb-32 pt-0 sm:px-6" aria-label="معلومات المطور">
             <div className="overflow-hidden rounded-2xl border border-sky-300/15 bg-slate-950/35 px-5 py-5 text-center">
               <div className="mx-auto mb-3 h-px w-16 bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
@@ -3560,6 +3570,7 @@ Civil & Political + Economic & Social rights.` },
           </footer>
           <SearchOverlay />
           <BottomNav />
+          </>)}
 
           {/* Toast */}
           {toast && (
