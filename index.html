@@ -2609,7 +2609,7 @@ Civil & Political + Economic & Social rights.` },
                             const rawUrl = String(lec.fileUrl || '').trim();
                             let parsedUrl;
                             try { parsedUrl = new URL(rawUrl); } catch (_) { parsedUrl = null; }
-                            const driveId = rawUrl.match(/drive\\.google\\.com\\/(?:file\\/d\\/|open\\?id=|uc\\?[^#]*id=)([^/?&]+)/)?.[1]
+                            const driveId = rawUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?[^#]*id=)([^/?&]+)/)?.[1]
                               || rawUrl.match(/[?&]id=([^&]+)/)?.[1];
                             const isDriveUrl = !!parsedUrl && (parsedUrl.hostname === 'drive.google.com' || parsedUrl.hostname.endsWith('.drive.google.com'));
                             const embeddedUrl = driveId && isDriveUrl
