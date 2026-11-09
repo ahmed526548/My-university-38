@@ -880,6 +880,22 @@
 <body>
   <div id="root"></div>
 
+  <script>
+    // If React/Babel fails before mounting, replace the empty blue screen with a
+    // recoverable message instead of leaving students stuck on a blank page.
+    (() => {
+      const showBootError = () => {
+        const root = document.getElementById("root");
+        if (!root || root.childElementCount > 0) return;
+        root.innerHTML = '<main dir="rtl" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#061321;color:#eaf6ff;font-family:Arial,sans-serif;text-align:center"><section style="max-width:420px;border:1px solid #38bdf8;border-radius:22px;padding:28px;background:#0c2238"><h1 style="font-size:22px;font-weight:700">تعذر تحميل بوابة الجامعة</h1><p style="margin:14px 0;line-height:1.9;color:#cbd5e1">حصل خطأ أثناء تشغيل الصفحة. حدّث الصفحة، ولو استمرت المشكلة جرّب فتحها بعد مسح بيانات الموقع المؤقتة.</p><button id="portal-retry" style="padding:12px 22px;border-radius:12px;background:#38bdf8;color:#082032;font-weight:700">إعادة تحميل الموقع</button></section></main>';
+        document.getElementById("portal-retry")?.addEventListener("click", () => location.reload());
+      };
+      window.addEventListener("error", () => setTimeout(showBootError, 0));
+      window.addEventListener("unhandledrejection", () => setTimeout(showBootError, 0));
+      window.addEventListener("load", () => setTimeout(showBootError, 12000));
+    })();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
