@@ -1644,7 +1644,13 @@ Civil & Political + Economic & Social rights.` },
           setStudentAuthBusy(false);
         }
       };
-      const [view, setViewState] = useState('home');
+      const initialView = new URLSearchParams(window.location.search).get('view') === 'admin' ? 'admin' : 'home';
+      const getPortalHistoryUrl = (target) => {
+        const nextUrl = new URL(window.location.href);
+        if (target !== 'admin') nextUrl.searchParams.delete('view');
+        return `${nextUrl.pathname}${nextUrl.search}#app`;
+      };
+      const [view, setViewState] = useState(initialView);
       const [adminSession, setAdminSession] = useState(null);
       const [adminAllowed, setAdminAllowed] = useState(false);
       const [adminChecking, setAdminChecking] = useState(true);
@@ -1734,8 +1740,8 @@ Civil & Political + Economic & Social rights.` },
         try { localStorage.setItem('portalTheme', portalTheme); } catch {}
       }, [portalTheme]);
 
-      const viewRef = useRef('home');
-      const viewHistoryRef = useRef(['home']);
+      const viewRef = useRef(initialView);
+      const viewHistoryRef = useRef([initialView]);
       const isHandlingPopRef = useRef(false);
       const selectedScheduleDayRef = useRef(null);
 
@@ -1761,7 +1767,7 @@ Civil & Political + Economic & Social rights.` },
           window.history.pushState(
             { universityPortal: true, view: target, portalEntry: true },
             '',
-            window.location.pathname + window.location.search + '#app'
+            getPortalHistoryUrl(target)
           );
         }
 
@@ -1773,14 +1779,14 @@ Civil & Political + Economic & Social rights.` },
         const currentState = window.history.state;
         if (!currentState || !currentState.universityPortal) {
           window.history.replaceState(
-            { universityPortal: true, view: 'home', portalEntry: true },
+            { universityPortal: true, view: initialView, portalEntry: true },
             '',
-            window.location.pathname + window.location.search + '#app'
+            getPortalHistoryUrl(initialView)
           );
           window.history.pushState(
-            { universityPortal: true, view: 'home', portalEntry: true },
+            { universityPortal: true, view: initialView, portalEntry: true },
             '',
-            window.location.pathname + window.location.search + '#app'
+            getPortalHistoryUrl(initialView)
           );
         }
 
@@ -1830,7 +1836,7 @@ Civil & Political + Economic & Social rights.` },
           window.history.pushState(
             { universityPortal: true, view: 'home', portalEntry: true },
             '',
-            window.location.pathname + window.location.search + '#app'
+            getPortalHistoryUrl('home')
           );
           viewRef.current = 'home';
           setViewState('home');
