@@ -1906,6 +1906,15 @@ Civil & Political + Economic & Social rights.` },
       }, [selectedProgram, programSelectionConfirmed]);
       const [selectedGroup, setSelectedGroup] = useState(null);
       const [selectedScheduleDay, setSelectedScheduleDay] = useState(null);
+
+      // Start every newly opened screen or nested section at the top.
+      // Scrolling down remains entirely under the student's control.
+      useEffect(() => {
+        try { window.history.scrollRestoration = 'manual'; } catch {}
+        window.scrollTo(0, 0);
+        if (document.documentElement) document.documentElement.scrollTop = 0;
+        if (document.body) document.body.scrollTop = 0;
+      }, [view, selectedSubject, selectedInstructor, selectedGroup, selectedScheduleDay, selectedProgram, programSelectionConfirmed]);
       const [liveSchedule, setLiveSchedule] = useState({ 'جروب 1': scheduleGroup1, 'جروب 2': scheduleGroup2 });
       useEffect(() => {
         if (!supabaseClient) return;
