@@ -1,0 +1,40 @@
+name: Validate portal JSX
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - ".github/workflows/validate-portal.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Parse inline React JSX
+        run: |
+          npm install --no-save @babel/parser
+          node <<'NODE'
+          const fs = require('fs');
+          const { parse } = require('@babel/parser');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const matches = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+          const scripts = matches.filter(m => /type=["']text\/babel["']/i.test(m[1]));
+          if (scripts.length !== 1) {
+            console.error('Expected exactly one inline text/babel script; found:', scripts.length);
+            process.exit(1);
+          }
+          try {
+            parse(scripts[0][2], { sourceType: 'script', plugins: ['jsx'] });
+            console.log('PASS: inline React JSX parsed successfully.');
+          } catch (error) {
+            console.error('JSX_PARSE_ERROR:', error.message);
+            console.error('Location:', JSON.stringify(error.loc));
+            process.exit(1);
+          }
+          NODE
