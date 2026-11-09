@@ -1449,7 +1449,7 @@ Civil & Political + Economic & Social rights.` },
         if (!studentSession?.user?.id) return;
         setSelectedProgram(program);
         setProgramSelectionConfirmed(true);
-        if (program === 'ai') setView('home');
+        setView('home');
       };
       const changeStudentProgram = () => {
         setSelectedProgram('');
@@ -1658,6 +1658,8 @@ Civil & Political + Economic & Social rights.` },
       const [adminPassword, setAdminPassword] = useState('');
       const [adminBusy, setAdminBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
+      const [adminSelectedProgram, setAdminSelectedProgram] = useState('');
+      const [adminProgramSubjects, setAdminProgramSubjects] = useState([]);
       const [adminRecords, setAdminRecords] = useState([]);
       const [adminOverview, setAdminOverview] = useState({ students: 0, tasks: 0, activity: [], topLectures: [] });
       const [adminDataBusy, setAdminDataBusy] = useState(false);
@@ -1678,6 +1680,8 @@ Civil & Political + Economic & Social rights.` },
           { key: 'code', label: 'كود المادة', required: true },
           { key: 'name', label: 'اسم المادة بالإنجليزية', required: true },
           { key: 'arabic_name', label: 'اسم المادة بالعربية' },
+          { key: 'icon', label: 'أيقونة المادة', type: 'icon' },
+          { key: 'color', label: 'لون الأيقونة', type: 'color' },
           { key: 'sort_order', label: 'ترتيب الظهور', type: 'number' }
         ],
         lectures: [
@@ -1848,6 +1852,36 @@ Civil & Political + Economic & Social rights.` },
       const [showSplash, setShowSplash] = useState(false);
       const [selectedSubject, setSelectedSubject] = useState(null);
       const [selectedInstructor, setSelectedInstructor] = useState(null);
+      const [databaseSubjects, setDatabaseSubjects] = useState(null);
+      useEffect(() => {
+        let active = true;
+        if (!programSelectionConfirmed || !selectedProgram) {
+          setDatabaseSubjects(null);
+          return () => { active = false; };
+        }
+        const loadProgramSubjects = async () => {
+          if (!supabaseClient || !navigator.onLine) {
+            if (active) setDatabaseSubjects(selectedProgram === 'ai' ? subjectsData : []);
+            return;
+          }
+          const { data, error } = await supabaseClient.from('subjects')
+            .select('*').eq('program', selectedProgram).order('sort_order', { ascending: true });
+          if (!active) return;
+          if (error) {
+            console.warn('تعذر تحميل مواد البرنامج:', error.message);
+            setDatabaseSubjects(selectedProgram === 'ai' ? subjectsData : []);
+            return;
+          }
+          setDatabaseSubjects((data || []).map(row => ({
+            id: row.id, name: row.name, code: row.code,
+            arabicName: row.arabic_name || row.name,
+            color: row.color || 'from-sky-600 to-cyan-700',
+            icon: row.icon || 'BookOpen'
+          })));
+        };
+        loadProgramSubjects();
+        return () => { active = false; };
+      }, [selectedProgram, programSelectionConfirmed]);
       const [selectedGroup, setSelectedGroup] = useState(null);
       const [selectedScheduleDay, setSelectedScheduleDay] = useState(null);
       const [liveSchedule, setLiveSchedule] = useState({ 'جروب 1': scheduleGroup1, 'جروب 2': scheduleGroup2 });
@@ -1986,7 +2020,23 @@ Civil & Political + Economic & Social rights.` },
       const loadAdminRecords = async (table = adminSelectedTable) => {
         if (!supabaseClient || !adminAllowed || !adminSession) return;
         setAdminDataBusy(true);
-        const { data, error } = await supabaseClient.from(table).select('*').limit(150);
+        let query = supabaseClient.from(table).select('*');
+        if (table === 'subjects' || table === 'lectures') {
+          if (!adminSelectedProgram) { setAdminRecords([]); setAdminDataBusy(false); return; }
+          const { data: subjects, error: subjectsError } = await supabaseClient.from('subjects')
+            .select('*').eq('program', adminSelectedProgram).order('sort_order', { ascending: true });
+          if (subjectsError) { setAdminDataBusy(false); showToast('تعذر تحميل مواد البرنامج: ' + subjectsError.message, 'error'); return; }
+          setAdminProgramSubjects(subjects || []);
+          if (table === 'subjects') {
+            setAdminDataBusy(false);
+            setAdminRecords(subjects || []);
+            return;
+          }
+          const codes = (subjects || []).map(subject => subject.code);
+          if (!codes.length) { setAdminDataBusy(false); setAdminRecords([]); return; }
+          query = query.in('subject_code', codes);
+        }
+        const { data, error } = await query.limit(150);
         setAdminDataBusy(false);
         if (error) { showToast('تعذر تحميل البيانات: ' + error.message, 'error'); return; }
         setAdminRecords(data || []);
@@ -2001,6 +2051,7 @@ Civil & Political + Economic & Social rights.` },
           if (value === undefined || value === null || value === '') continue;
           payload[field.key] = field.type === 'number' ? Number(value) : field.type === 'boolean' ? value === 'true' : field.type === 'datetime-local' ? new Date(value).toISOString() : value;
         }
+        if (adminSelectedTable === 'subjects') payload.program = adminSelectedProgram;
         if (adminSelectedTable === 'lectures' && payload.file_url) payload.has_content = true;
         if (['student_tasks','portal_notifications'].includes(adminSelectedTable) && adminEditingId === null) payload.created_by = adminSession.user.id;
         const missingField = adminFieldConfig[adminSelectedTable].find(field => field.required && (payload[field.key] === undefined || payload[field.key] === ''));
@@ -2451,11 +2502,14 @@ Civil & Political + Economic & Social rights.` },
 
       const Subjects = () => {
         const [searchQuery, setSearchQuery] = useState('');
-        const filtecyan = subjectsData.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.arabicName.includes(searchQuery) || s.code.toLowerCase().includes(searchQuery.toLowerCase()));
+        const programSubjects = databaseSubjects ?? (selectedProgram === 'ai' ? subjectsData : []);
+        const filtecyan = programSubjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || (s.arabicName || '').includes(searchQuery) || s.code.toLowerCase().includes(searchQuery.toLowerCase()));
         return (
         <div className="min-h-screen soft-page pb-28">
-          <NavBar title="المواد" onBack={() => setView('home')} />
+          <NavBar title={selectedProgram === 'cyber' ? 'Cyber • المواد' : selectedProgram === 'medical' ? 'Medical • المواد' : 'المواد'} onBack={() => setView('home')} />
           <div className="px-4 pt-4">
+            {databaseSubjects === null && <p className="mb-4 rounded-xl border border-sky-300/15 bg-sky-400/5 p-3 text-center text-xs text-sky-100">جاري تحميل مواد البرنامج...</p>}
+            {databaseSubjects?.length === 0 && <div className="mb-4 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-5 text-center"><div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-400/10 text-sky-200"><Icons.BookOpen className="h-6 w-6" /></div><p className="font-bold text-white">لسه مفيش مواد مضافة للبرنامج</p><p className="mt-2 text-xs leading-6 text-slate-400">المواد والمحاضرات هتظهر هنا أول ما الأدمن يضيفها.</p></div>}
             <div className="relative mb-5">
               <input type="text" placeholder="ابحث عن مادة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 className="soft-control w-full text-white rounded-xl py-3 px-4 pr-11 text-sm" />
@@ -3217,21 +3271,6 @@ Civil & Political + Economic & Social rights.` },
           </div>
         );
       }
-      if (selectedProgram !== 'ai') {
-        const programName = selectedProgram === 'cyber' ? 'Cyber' : 'Medical';
-        return (
-          <div dir="rtl" className="min-h-screen bg-[#061321] px-5 py-10 text-white">
-            <div className="mx-auto flex min-h-[80vh] max-w-xl flex-col items-center justify-center text-center">
-              <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-sky-300/25 bg-sky-400/10 text-5xl">{selectedProgram === 'cyber' ? '🛡️' : '🩺'}</div>
-              <p dir="ltr" className="text-3xl font-black text-sky-200">{programName}</p>
-              <h1 className="mt-4 text-xl font-black">البرنامج قيد التجهيز</h1>
-              <p className="mt-3 text-sm leading-7 text-slate-400">المحتوى الخاص بالبرنامج ده لسه مضافش. هنضيف المواد والمحاضرات قريبًا.</p>
-              <button type="button" onClick={changeStudentProgram} className="mt-8 rounded-xl bg-sky-400 px-7 py-3 text-sm font-black text-slate-950">الرجوع لاختيار البرامج</button>
-            </div>
-          </div>
-        );
-      }
-
       return (
         <>
           {showSplash && (
@@ -3269,7 +3308,7 @@ Civil & Political + Economic & Social rights.` },
           {view === 'campus-map' && <CampusMapView />}
           {view === 'admin' && (
             <div className="min-h-screen bg-[#061321] px-4 py-8">
-              <div className="mx-auto max-w-md">
+              <div className="mx-auto max-w-6xl">
                 <button onClick={() => setView('settings')} className="mb-6 text-sm font-bold text-sky-300">→ العودة للإعدادات</button>
                 <div className="glass rounded-3xl border border-sky-300/20 p-6">
                   <div className="mb-5 text-center">
@@ -3287,7 +3326,34 @@ Civil & Political + Economic & Social rights.` },
                         <p className="font-bold text-emerald-300">تم التحقق من صلاحيات الأدمن</p>
                         <p className="mt-1 break-all text-xs text-slate-300">{adminSession.user?.email}</p>
                       </div>
-                      <section className="mb-4 space-y-3">
+                      <section className="mb-4 rounded-2xl border border-sky-300/20 bg-slate-950/25 p-4 space-y-3">
+                        <div>
+                          <div className="mb-3 flex items-center justify-between gap-3">
+                            <div><h2 className="text-sm font-black text-white">اختار البرنامج اللي هتديره</h2><p className="mt-1 text-[10px] text-slate-400">كل برنامج له مواده ومحاضراته بشكل منفصل</p></div>
+                            {adminSelectedProgram && <span className="rounded-full bg-sky-400/10 px-3 py-1 text-[10px] font-bold text-sky-200">{adminSelectedProgram.toUpperCase()}</span>}
+                          </div>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            {[
+                              {id:'ai',name:'AI',subtitle:'Artificial Intelligence',icon:'Bot'},
+                              {id:'cyber',name:'Cyber',subtitle:'Cybersecurity',icon:'Shield'},
+                              {id:'medical',name:'Medical',subtitle:'Medical Informatics',icon:'HeartPulse'}
+                            ].map(program => {
+                              const ProgramIcon = Icons[program.icon] || Icons.Layers;
+                              return <button key={program.id} type="button" onClick={() => {
+                                setAdminSelectedProgram(program.id);
+                                setAdminSelectedTable('lectures');
+                                setAdminEditingId(null);
+                                setAdminFormData({});
+                                setAdminRecords([]);
+                              }} className={`rounded-2xl border p-4 text-right transition-all ${adminSelectedProgram === program.id ? 'border-sky-300/60 bg-sky-400/15 shadow-lg shadow-sky-950/30' : 'border-sky-300/15 bg-slate-900/60 hover:bg-sky-400/5'}`}>
+                                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-sky-400/10 text-sky-200"><ProgramIcon className="h-6 w-6" /></span>
+                                <span className="block text-base font-black text-white">{program.name}</span>
+                                <span className="mt-1 block text-[10px] text-slate-400">{program.subtitle}</span>
+                                <span className="mt-3 block text-[10px] font-bold text-sky-200">{adminSelectedProgram === program.id ? 'البرنامج المحدد' : 'اختيار البرنامج'}</span>
+                              </button>;
+                            })}
+                          </div>
+                        </div>
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                           {[['ملفات الطلاب المسجلين',adminOverview.students],['التكليفات',adminOverview.tasks]].map(([label,value])=><div key={label} className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3"><div className="text-[10px] text-slate-400">{label}</div><div className="mt-1 text-xl font-black text-sky-200">{value}</div></div>)}
                         </div>
@@ -3297,10 +3363,11 @@ Civil & Political + Economic & Social rights.` },
                           {adminOverview.activity.length ? adminOverview.activity.map(item=><div key={item.id} className="flex items-center justify-between gap-2 border-t border-white/5 py-2 text-[10px]"><span className="text-slate-300">{item.action === 'create' ? 'إضافة' : item.action === 'update' ? 'تعديل' : 'حذف'} • {item.entity}</span><span className="text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</span></div>) : <p className="text-[10px] text-slate-500">لا توجد عمليات مسجلة بعد.</p>}
                         </div>
                       </section>
-                      <div className="space-y-4 text-right">
+                      <div className={`grid grid-cols-1 xl:grid-cols-2 gap-5 text-right items-start ${adminSelectedProgram ? '' : 'pointer-events-none opacity-40'}`}>
+                        <section className="space-y-4 rounded-2xl border border-sky-300/15 bg-slate-950/25 p-4">
                         <div>
                           <label className="mb-2 block text-xs font-bold text-slate-300">اختار القسم اللي عايز تديره</label>
-                          <select value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminEditingId(null); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white">
+                          <select disabled={!adminSelectedProgram} value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminEditingId(null); setAdminFormData({}); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white disabled:opacity-50">
                             {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </div>
@@ -3318,15 +3385,18 @@ Civil & Political + Economic & Social rights.` },
                                 {field.type === 'subject' ? (
                                   <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value, doctor: field.key === 'subject_code' ? '' : current.doctor }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
                                     <option value="">اختار المادة</option>
-                                    {subjectsData.map(subject => <option key={subject.code} value={subject.code}>{subject.arabicName || subject.name}</option>)}
+                                    {adminProgramSubjects.map(subject => <option key={subject.code} value={subject.code}>{subject.arabic_name || subject.name}</option>)}
+                                  </select>
+                                ) : field.type === 'icon' ? (
+                                  <select value={adminFormData[field.key] ?? 'BookOpen'} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    {['BookOpen','Bot','Calendar','Message','Sparkles','Calculator','Zap','Layers','Users','Target','Graduation','Clock','Search','Star'].map(iconName => <option key={iconName} value={iconName}>{iconName}</option>)}
+                                  </select>
+                                ) : field.type === 'color' ? (
+                                  <select value={adminFormData[field.key] ?? 'from-sky-600 to-cyan-700'} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
+                                    {['from-sky-600 to-cyan-700','from-violet-600 to-purple-700','from-blue-600 to-indigo-700','from-cyan-600 to-teal-700','from-emerald-600 to-green-700','from-amber-600 to-orange-700'].map(colorName => <option key={colorName} value={colorName}>{colorName}</option>)}
                                   </select>
                                 ) : field.type === 'instructor' ? (
-                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} disabled={!adminFormData.subject_code} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
-                                    <option value="">اختار الدكتور</option>
-                                    {(instructorsBySubject[adminFormData.subject_code] || []).map(instructor => (
-                                      <option key={instructor.name} value={instructor.name}>{instructor.name}{instructor.note ? ' — ' + instructor.note : ''}</option>
-                                    ))}
-                                  </select>
+                                  <input type="text" value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" placeholder="اكتب اسم الدكتور عند إضافة المحاضرة" />
                                 ) : field.type === 'textarea' ? (
                                   <textarea value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} rows={3} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-2.5 text-sm text-white" />
                                 ) : field.type === 'boolean' ? (
@@ -3345,8 +3415,10 @@ Civil & Political + Economic & Social rights.` },
                               </label>
                             ))}
                           </div>
-                          <button disabled={adminDataBusy || (adminEditingId === null && ['student_profiles'].includes(adminSelectedTable))} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
+                          <button disabled={!adminSelectedProgram || adminDataBusy || (adminEditingId === null && ['student_profiles'].includes(adminSelectedTable))} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
                         </form>
+                        </section>
+                        <section className="space-y-4 rounded-2xl border border-sky-300/15 bg-slate-950/25 p-4">
                         <div className="flex items-center justify-between">
                           <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
                           <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
@@ -3402,6 +3474,7 @@ Civil & Political + Economic & Social rights.` },
                             ))}
                           </div>
                         )}
+                        </section>
                       </div>
                       <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-700 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}</button>
                     </div>
