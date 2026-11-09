@@ -2612,9 +2612,16 @@ Civil & Political + Economic & Social rights.` },
                             const driveId = rawUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?[^#]*id=)([^/?&]+)/)?.[1]
                               || rawUrl.match(/[?&]id=([^&]+)/)?.[1];
                             const isDriveUrl = !!parsedUrl && (parsedUrl.hostname === 'drive.google.com' || parsedUrl.hostname.endsWith('.drive.google.com'));
+                            const isPdfUrl = /\\.pdf(?:$|[?#])/i.test(rawUrl)
+                              || /[?&](?:format|type)=pdf(?:&|$)/i.test(rawUrl);
+                            // Keep Google Drive on its native preview endpoint. Use Google's
+                            // document viewer for other public PDF links to avoid blank native
+                            // PDF iframes on some mobile browsers.
                             const embeddedUrl = driveId && isDriveUrl
                               ? `https://drive.google.com/file/d/${driveId}/preview`
-                              : rawUrl;
+                              : isPdfUrl
+                                ? `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(rawUrl)}`
+                                : rawUrl;
                             window.history.pushState(
                               { universityPortal: true, view: 'lectures', lecturePreview: true },
                               '',
