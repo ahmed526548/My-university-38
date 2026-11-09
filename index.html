@@ -2179,22 +2179,23 @@ Civil & Political + Economic & Social rights.` },
 
       const isCompleted = (code, lecId) => !!completed[`${code}-${lecId}`];
 
+      const currentProgramSubjects = databaseSubjects ?? (selectedProgram === 'ai' ? subjectsData : []);
       const getProgress = (code) => {
-        const lec = allLecturesData[code] || allLecturesData.default;
+        const lec = allLecturesData[code] || (selectedProgram === 'ai' ? allLecturesData.default : []);
         const ready = lec.filter(l => l.hasContent).length;
         const done = lec.filter(l => isCompleted(code, l.id)).length;
-        return { total: lec.length, ready, done, percent: Math.round((ready / lec.length) * 100), donePercent: Math.round((done / Math.max(ready, 1)) * 100) };
+        return { total: lec.length, ready, done, percent: lec.length ? Math.round((ready / lec.length) * 100) : 0, donePercent: Math.round((done / Math.max(ready, 1)) * 100) };
       };
 
       const overallProgress = useMemo(() => {
         let totalReady = 0, totalDone = 0;
-        subjectsData.forEach(s => {
+        currentProgramSubjects.forEach(s => {
           const p = getProgress(s.code);
           totalReady += p.ready;
           totalDone += p.done;
         });
         return { totalReady, totalDone, percent: totalReady ? Math.round((totalDone / totalReady) * 100) : 0 };
-      }, [completed]);
+      }, [completed, currentProgramSubjects]);
 
       const today = getTodayArabic();
       const currentSchedule = selectedGroup === 'جروب 2' ? scheduleGroup2 : scheduleGroup1;
@@ -2502,7 +2503,7 @@ Civil & Political + Economic & Social rights.` },
 
       const Subjects = () => {
         const [searchQuery, setSearchQuery] = useState('');
-        const programSubjects = databaseSubjects ?? (selectedProgram === 'ai' ? subjectsData : []);
+        const programSubjects = currentProgramSubjects;
         const filtecyan = programSubjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || (s.arabicName || '').includes(searchQuery) || s.code.toLowerCase().includes(searchQuery.toLowerCase()));
         return (
         <div className="min-h-screen soft-page pb-28">
@@ -2588,13 +2589,15 @@ Civil & Political + Economic & Social rights.` },
           load();
           return () => { active = false; };
         }, [selectedSubject?.code]);
-        const allSubjectLectures = databaseLectures?.length ? databaseLectures : (allLecturesData[selectedSubject?.code] || allLecturesData.default);
+        const allSubjectLectures = databaseLectures?.length ? databaseLectures : (allLecturesData[selectedSubject?.code] || (selectedProgram === 'ai' ? allLecturesData.default : []));
         const selectedDoctorKey = selectedInstructor ? normalizeDoctorName(selectedInstructor) : '';
         const lectures = selectedInstructor ? allSubjectLectures.filter(lecture => {
           const lectureDoctorKey = normalizeDoctorName(lecture.doctor || '');
           return lectureDoctorKey.includes(selectedDoctorKey) || selectedDoctorKey.includes(lectureDoctorKey);
         }) : [];
-        const instructors = instructorsBySubject[selectedSubject?.code] || [];
+        const instructors = databaseLectures?.length
+          ? [...new Set(databaseLectures.map(lecture => lecture.doctor).filter(Boolean))].map(name => ({ name, note: '' }))
+          : (selectedProgram === 'ai' ? (instructorsBySubject[selectedSubject?.code] || []) : []);
         return (
           <div className="min-h-screen soft-page pb-28">
             <NavBar title="المحاضرات" onBack={() => {
@@ -2610,6 +2613,7 @@ Civil & Political + Economic & Social rights.` },
                 <>
                   <p className="text-gray-400 text-sm mb-4">اختار الدكتور لعرض محاضراته</p>
                   <div className="space-y-3">
+                    {!instructors.length && <div className="rounded-2xl border border-sky-300/20 bg-sky-400/5 p-5 text-center"><div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-400/10 text-sky-200"><Icons.BookOpen className="h-6 w-6" /></div><p className="font-bold text-white">مفيش محاضرات مضافة للمادة دي لسه</p><p className="mt-2 text-xs leading-6 text-slate-400">المحاضرات هتظهر هنا بعد ما الأدمن يضيفها.</p></div>}
                     {instructors.map(instructor => (
                       <button key={instructor.name} type="button" onClick={() => {
                         setSelectedInstructor(instructor.name);
@@ -3090,7 +3094,7 @@ Civil & Political + Economic & Social rights.` },
       // Global Search Overlay
       const SearchOverlay = () => {
         const [query,setQuery]=useState('');
-        const results=useMemo(()=>{if(!query.trim())return[];const q=query.toLowerCase(),found=[];subjectsData.forEach(sub=>(allLecturesData[sub.code]||[]).forEach(lec=>{if(lec.hasContent&&(lec.title.includes(query)||lec.summaryAr.includes(query)||lec.summaryEn.toLowerCase().includes(q)||sub.arabicName.includes(query)))found.push({type:'lecture',subject:sub,lecture:lec});}));return found.slice(0,12);},[query]);
+        const results=useMemo(()=>{if(!query.trim())return[];const q=query.toLowerCase(),found=[];currentProgramSubjects.forEach(sub=>(allLecturesData[sub.code]||[]).forEach(lec=>{if(lec.hasContent&&(lec.title.includes(query)||lec.summaryAr.includes(query)||lec.summaryEn.toLowerCase().includes(q)||(sub.arabicName||'').includes(query)))found.push({type:'lecture',subject:sub,lecture:lec});}));return found.slice(0,12);},[query,currentProgramSubjects]);
         if(!showSearch)return null;
         return (
           <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md animate-fade-in flex flex-col">
