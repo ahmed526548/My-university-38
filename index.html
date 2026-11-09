@@ -1687,6 +1687,12 @@ Civil & Political + Economic & Social rights.` },
         const target = typeof nextView === 'function' ? nextView(viewRef.current) : nextView;
         if (!target || target === viewRef.current) return;
 
+        // A document belongs only to the lecture-list screen. Clear it immediately
+        // whenever the student navigates to another screen, so it cannot reappear.
+        if (target !== 'lectures' && documentPreviewRef.current?.open) {
+          setDocumentPreview({ open: false, title: '', url: '', embedUrl: '', content: '' });
+        }
+
         const stack = viewHistoryRef.current;
         if (!isHandlingPopRef.current && stack.length > 1 && stack[stack.length - 2] === target) {
           window.history.back();
@@ -1754,6 +1760,9 @@ Civil & Political + Economic & Social rights.` },
             if (stack[stack.length - 1] !== previousView) stack.push(previousView);
 
             isHandlingPopRef.current = true;
+            if (previousView !== 'lectures' && documentPreviewRef.current?.open) {
+              setDocumentPreview({ open: false, title: '', url: '', embedUrl: '', content: '' });
+            }
             viewRef.current = previousView;
             setViewState(previousView);
             isHandlingPopRef.current = false;
