@@ -21,9 +21,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>بوابة جامعة بني سويف الأهلية | BSNU Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.4/babel.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -881,18 +881,29 @@
   <div id="root"></div>
 
   <script>
-    // If React/Babel fails before mounting, replace the empty blue screen with a
-    // recoverable message instead of leaving students stuck on a blank page.
+    // Wait for the app to mount before showing a fallback. Ignore failed optional
+    // assets; report only actual startup failures or missing core libraries.
     (() => {
-      const showBootError = () => {
+      let startupError = "";
+      window.addEventListener("error", (event) => {
+        if (event && event.error) startupError = event.message || String(event.error);
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        startupError = event?.reason?.message || String(event?.reason || "Startup promise failed");
+      });
+      window.addEventListener("load", () => setTimeout(() => {
         const root = document.getElementById("root");
         if (!root || root.childElementCount > 0) return;
-        root.innerHTML = '<main dir="rtl" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#061321;color:#eaf6ff;font-family:Arial,sans-serif;text-align:center"><section style="max-width:420px;border:1px solid #38bdf8;border-radius:22px;padding:28px;background:#0c2238"><h1 style="font-size:22px;font-weight:700">تعذر تحميل بوابة الجامعة</h1><p style="margin:14px 0;line-height:1.9;color:#cbd5e1">حصل خطأ أثناء تشغيل الصفحة. حدّث الصفحة، ولو استمرت المشكلة جرّب فتحها بعد مسح بيانات الموقع المؤقتة.</p><button id="portal-retry" style="padding:12px 22px;border-radius:12px;background:#38bdf8;color:#082032;font-weight:700">إعادة تحميل الموقع</button></section></main>';
+        const missing = [];
+        if (!window.React) missing.push("React");
+        if (!window.ReactDOM) missing.push("ReactDOM");
+        if (!window.Babel) missing.push("Babel");
+        const detail = startupError || (missing.length ? "تعذر تحميل المكتبات الأساسية: " + missing.join("، ") : "لم تبدأ واجهة الموقع في الوقت المحدد.");
+        root.innerHTML = '<main dir="rtl" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#061321;color:#eaf6ff;font-family:Arial,sans-serif;text-align:center"><section style="max-width:440px;border:1px solid #38bdf8;border-radius:22px;padding:28px;background:#0c2238"><h1 style="font-size:22px;font-weight:700">تعذر تشغيل بوابة الجامعة</h1><p style="margin:14px 0;line-height:1.9;color:#cbd5e1">حدث خطأ أثناء تحميل ملفات الموقع. جرّب إعادة التحميل بعد لحظات.</p><p id="portal-error-detail" dir="auto" style="margin:12px 0;color:#7dd3fc;font-size:12px;line-height:1.8;overflow-wrap:anywhere"></p><button id="portal-retry" style="padding:12px 22px;border-radius:12px;background:#38bdf8;color:#082032;font-weight:700">إعادة تحميل الموقع</button></section></main>';
+        const detailNode = document.getElementById("portal-error-detail");
+        if (detailNode) detailNode.textContent = detail;
         document.getElementById("portal-retry")?.addEventListener("click", () => location.reload());
-      };
-      window.addEventListener("error", () => setTimeout(showBootError, 0));
-      window.addEventListener("unhandledrejection", () => setTimeout(showBootError, 0));
-      window.addEventListener("load", () => setTimeout(showBootError, 12000));
+      }, 20000));
     })();
   </script>
 
