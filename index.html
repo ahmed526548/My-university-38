@@ -2534,7 +2534,12 @@ Civil & Political + Economic & Social rights.` },
                         <span className="inline-block mt-1 bg-cyan-950/50 text-cyan-400 text-[10px] px-2 py-0.5 rounded">قريباً</span>
                       ) : (
                         <div className="flex flex-wrap gap-2 mt-3">
-                          {lec.fileUrl && <a href={lec.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-lg border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200"><Icons.Eye className="h-3.5 w-3.5" /> فتح المحاضرة</a>}
+                          {lec.fileUrl && <button type="button" onClick={() => {
+                            const rawUrl = String(lec.fileUrl || '').trim();
+                            const driveId = rawUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([^/?&]+)/)?.[1] || rawUrl.match(/[?&]id=([^&]+)/)?.[1];
+                            const embeddedUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : rawUrl;
+                            setDocumentPreview({ open: true, title: lec.title, url: embeddedUrl, content: '' });
+                          }} className="flex items-center gap-1 rounded-lg border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200"><Icons.Eye className="h-3.5 w-3.5" /> عرض المحاضرة</button>}
                           <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryAr, lang: 'ar', lecture: lec })}
                             className="flex items-center gap-1 border border-blue-700/50 text-blue-400 hover:bg-blue-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
                             <Icons.Eye className="w-3.5 h-3.5" /> عربي
@@ -2574,8 +2579,22 @@ Civil & Political + Economic & Social rights.` },
                       <button onClick={() => setDocumentPreview({ open: false, title: '', url: '', content: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
                     </div>
                   </div>
-                  <div className="w-full flex-1 overflow-auto bg-[#0b1c25] p-4 sm:p-6">
-                    <pre dir="auto" className="whitespace-pre-wrap break-words font-cairo text-sm sm:text-base leading-8 text-gray-100">{documentPreview.content || 'المحتوى غير مضاف لهذه المحاضرة بعد.'}</pre>
+                  <div className="w-full flex-1 overflow-hidden bg-[#0b1c25]">
+                    {documentPreview.url ? (
+                      <iframe
+                        title={documentPreview.title || 'عرض المحاضرة'}
+                        src={documentPreview.url}
+                        className="h-full w-full border-0 bg-white"
+                        loading="eager"
+                        allow="autoplay"
+                        allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
+                      />
+                    ) : (
+                      <div className="h-full overflow-auto p-4 sm:p-6">
+                        <pre dir="auto" className="whitespace-pre-wrap break-words font-cairo text-sm sm:text-base leading-8 text-gray-100">{documentPreview.content || 'المحتوى غير متاح لهذه المحاضرة.'}</pre>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
