@@ -1441,6 +1441,11 @@ Civil & Political + Economic & Social rights.` },
       // Require an explicit program choice on every fresh app load.
       const [selectedProgram, setSelectedProgram] = useState('');
       const [programSelectionConfirmed, setProgramSelectionConfirmed] = useState(false);
+      // Refs keep the browser-back handler in sync with the currently selected program.
+      const selectedProgramRef = useRef(selectedProgram);
+      const programSelectionConfirmedRef = useRef(programSelectionConfirmed);
+      selectedProgramRef.current = selectedProgram;
+      programSelectionConfirmedRef.current = programSelectionConfirmed;
       useEffect(() => {
         setSelectedProgram('');
         setProgramSelectionConfirmed(false);
@@ -1836,12 +1841,29 @@ Civil & Political + Economic & Social rights.` },
             return;
           }
 
-          // Keep the root page in place when back is pressed from the home screen.
+          // The final Back from inside a selected program returns to program selection,
+          // instead of allowing the browser/Android WebView to leave the portal.
+          if (programSelectionConfirmedRef.current && selectedProgramRef.current) {
+            setSelectedProgram('');
+            setProgramSelectionConfirmed(false);
+            viewHistoryRef.current = ['home'];
+            viewRef.current = 'home';
+            setViewState('home');
+            window.history.pushState(
+              { universityPortal: true, view: 'home', programSelection: true, portalEntry: true },
+              '',
+              getPortalHistoryUrl('home')
+            );
+            return;
+          }
+
+          // Keep the program-selection/root page inside the portal on further Back presses.
           window.history.pushState(
-            { universityPortal: true, view: 'home', portalEntry: true },
+            { universityPortal: true, view: 'home', programSelection: true, portalEntry: true },
             '',
             getPortalHistoryUrl('home')
           );
+          viewHistoryRef.current = ['home'];
           viewRef.current = 'home';
           setViewState('home');
         };
