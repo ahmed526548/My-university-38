@@ -1724,7 +1724,10 @@ Civil & Political + Economic & Social rights.` },
         const handleBrowserBack = (event) => {
           // Close the lecture viewer first; keep the selected doctor and lecture list intact.
           if (documentPreviewRef.current?.open) {
+            // Closing a lecture file must never change the selected subject or doctor.
             setDocumentPreview({ open: false, title: '', url: '', embedUrl: '', content: '' });
+            viewRef.current = 'lectures';
+            setViewState('lectures');
             return;
           }
           const stack = viewHistoryRef.current;
@@ -2571,7 +2574,14 @@ Civil & Political + Economic & Social rights.` },
                             <Icons.Bot className="w-3.5 h-3.5" /> اشرح لي
                           </button>
                           {lec.externalLinks?.map(link => (
-                            <button key={link.url} onClick={() => setDocumentPreview({ open: true, title: link.label, url: link.url, content: link.content })}
+                            <button key={link.url} onClick={() => {
+                              window.history.pushState(
+                                { universityPortal: true, view: 'lectures', lecturePreview: true },
+                                '',
+                                window.location.pathname + window.location.search + '#app'
+                              );
+                              setDocumentPreview({ open: true, title: link.label, url: link.url, content: link.content });
+                            }}
                               className="flex items-center gap-1 border border-cyan-700/50 text-cyan-300 hover:bg-cyan-900/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold">
                               <Icons.Eye className="w-3.5 h-3.5" /> {link.label}
                             </button>
@@ -2594,7 +2604,7 @@ Civil & Political + Economic & Social rights.` },
                     <h3 className="text-sm font-bold text-cyan-300 truncate">{documentPreview.title}</h3>
                     <div className="flex items-center gap-2 shrink-0">
                       <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-300 border border-cyan-800 rounded-lg px-3 py-2">فتح في تبويب جديد</a>
-                      <button onClick={() => window.history.back()} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
+                      <button onClick={() => window.history.back()} aria-label="العودة إلى محاضرات الدكتور" title="العودة إلى محاضرات الدكتور" className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
                     </div>
                   </div>
                   <div className="w-full flex-1 min-h-0 overflow-hidden bg-[#0b1c25]">
