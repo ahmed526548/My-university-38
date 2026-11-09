@@ -3346,7 +3346,7 @@ Civil & Political + Economic & Social rights.` },
                               return <button key={program.id} type="button" onClick={() => {
                                 setAdminSelectedProgram(program.id);
                                 setAdminProgramSubjects([]);
-                                setAdminSelectedTable('lectures');
+                                setAdminSelectedTable(program.id === 'ai' ? 'lectures' : 'subjects');
                                 setAdminEditingId(null);
                                 setAdminFormData({});
                                 setAdminRecords([]);
@@ -3428,7 +3428,7 @@ Civil & Political + Economic & Social rights.` },
                           <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
                           <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
                         </div>
-                        {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs text-slate-400">مفيش سجلات في القسم ده حاليًا.</p> : (
+                        {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs leading-6 text-slate-400">{adminSelectedTable === 'lectures' && !adminProgramSubjects.length ? 'مفيش مواد للبرنامج ده لسه. افتح قسم المواد الدراسية وأضف المادة الأول، وبعدها تقدر تضيف محاضراتها.' : 'مفيش سجلات في القسم ده حاليًا.'}</p> : (
                           <div className="max-h-[460px] space-y-2 overflow-y-auto">
                             {adminSelectedTable === 'lectures' ? (
                               Object.entries(adminRecords.reduce((groups, record) => {
