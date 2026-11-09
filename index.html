@@ -1722,6 +1722,11 @@ Civil & Political + Economic & Social rights.` },
         }
 
         const handleBrowserBack = (event) => {
+          // Close the lecture viewer first; keep the selected doctor and lecture list intact.
+          if (documentPreviewRef.current?.open) {
+            setDocumentPreview({ open: false, title: '', url: '', embedUrl: '', content: '' });
+            return;
+          }
           const stack = viewHistoryRef.current;
           // Nested schedule navigation: return from a selected day to the days list
           // before leaving the schedule screen itself.
@@ -1819,6 +1824,8 @@ Civil & Political + Economic & Social rights.` },
       });
       const [preview, setPreview] = useState({ open: false, title: '', content: '', lang: 'ar', lecture: null });
       const [documentPreview, setDocumentPreview] = useState({ open: false, title: '', url: '', content: '' });
+      const documentPreviewRef = useRef(documentPreview);
+      documentPreviewRef.current = documentPreview;
       const [chat, setChat] = useState([{
         id: 1, sender: 'bot',
         text: 'أهلاً بك! أنا المساعد الجامعي الذكي 🎓\n\nاسألني عن أي محاضرة أو مفهوم وسأشرحه لك.\n\nجرب: "اشرح أنظمة الأعداد" أو "ما هو Hardware؟"',
@@ -2544,6 +2551,11 @@ Civil & Political + Economic & Social rights.` },
                             const embeddedUrl = driveId && isDriveUrl
                               ? `https://drive.google.com/file/d/${driveId}/preview`
                               : rawUrl;
+                            window.history.pushState(
+                              { universityPortal: true, view: 'lectures', lecturePreview: true },
+                              '',
+                              window.location.pathname + window.location.search + '#app'
+                            );
                             setDocumentPreview({ open: true, title: lec.title, url: rawUrl, embedUrl: embeddedUrl, content: '' });
                           }} className="flex items-center gap-1 rounded-lg border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200"><Icons.Eye className="h-3.5 w-3.5" /> عرض المحاضرة</button>}
                           <button onClick={() => setPreview({ open: true, title: lec.title, content: lec.summaryAr, lang: 'ar', lecture: lec })}
@@ -2582,7 +2594,7 @@ Civil & Political + Economic & Social rights.` },
                     <h3 className="text-sm font-bold text-cyan-300 truncate">{documentPreview.title}</h3>
                     <div className="flex items-center gap-2 shrink-0">
                       <a href={documentPreview.url} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-300 border border-cyan-800 rounded-lg px-3 py-2">فتح في تبويب جديد</a>
-                      <button onClick={() => setDocumentPreview({ open: false, title: '', url: '', content: '' })} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
+                      <button onClick={() => window.history.back()} className="text-gray-300 p-2"><Icons.X className="w-5 h-5" /></button>
                     </div>
                   </div>
                   <div className="w-full flex-1 min-h-0 overflow-hidden bg-[#0b1c25]">
