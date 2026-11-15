@@ -1171,7 +1171,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminSelectedProgram, setAdminSelectedProgram] = useState('');
       const [adminProgramSubjects, setAdminProgramSubjects] = useState([]);
       const [adminRecords, setAdminRecords] = useState([]);
-      const [adminOverview, setAdminOverview] = useState({ students: 0, tasks: 0, activity: [], topLectures: [] });
+      const [adminOverview, setAdminOverview] = useState({ students: 0, tasks: 0, totalVisits: 0, activeStudents: 0, activity: [], topLectures: [] });
       const [adminStudents, setAdminStudents] = useState([]);
       const [adminStudentsOpen, setAdminStudentsOpen] = useState(false);
       const [adminStudentsBusy, setAdminStudentsBusy] = useState(false);
@@ -1641,6 +1641,7 @@ Civil & Political + Economic & Social rights.` },
         const { data, error } = await supabaseClient
           .from('student_profiles')
           .select('user_id,display_name,group_name,created_at,first_seen_at,last_seen_at,visit_count')
+          .order('last_seen_at', { ascending: false, nullsFirst: false })
           .order('created_at', { ascending: false })
           .limit(500);
         setAdminStudentsBusy(false);
@@ -1659,15 +1660,24 @@ Civil & Political + Economic & Social rights.` },
           const result = await query;
           return result.count || 0;
         };
-        const [students, tasks, activityResult, viewsResult] = await Promise.all([
-          countRows('student_profiles'), countRows('student_tasks'),
+        const [statsResult, tasks, activityResult, viewsResult] = await Promise.all([
+          supabaseClient.rpc('get_admin_visit_stats'), countRows('student_tasks'),
           supabaseClient.from('portal_activity_log').select('id,action,entity,created_at').order('created_at',{ascending:false}).limit(8),
           supabaseClient.from('lecture_views').select('lecture_id,lectures(title,subject_code)').limit(2000)
         ]);
+        if (statsResult.error) console.warn('تعذر تحميل إحصائيات الزيارات:', statsResult.error.message);
+        const stats = statsResult.data?.[0] || {};
         const groupedViews = {};
         (viewsResult.data || []).forEach(row => { const key=row.lecture_id; if(!groupedViews[key]) groupedViews[key]={ title:row.lectures?.title || 'محاضرة', subject:row.lectures?.subject_code || '', count:0 }; groupedViews[key].count++; });
         const topLectures = Object.values(groupedViews).sort((a,b)=>b.count-a.count).slice(0,5);
-        setAdminOverview({ students, tasks, activity: activityResult.data || [], topLectures });
+        setAdminOverview({
+          students: Number(stats.student_count || 0),
+          tasks,
+          totalVisits: Number(stats.total_visits || 0),
+          activeStudents: Number(stats.active_students || 0),
+          activity: activityResult.data || [],
+          topLectures
+        });
       };
 
       useEffect(() => {
@@ -2906,10 +2916,18 @@ Civil & Political + Economic & Social rights.` },
                             setAdminStudentsOpen(nextOpen);
                             if (nextOpen) loadAdminStudents();
                           }} className="rounded-xl border border-sky-300/25 bg-sky-400/10 p-3 text-right transition-all hover:bg-sky-400/15 focus:outline-none focus:ring-2 focus:ring-sky-300/50">
-                            <div className="flex items-center justify-between gap-2 text-[10px] text-slate-300"><span>ملفات الطلاب المسجلين</span><Icons.Users className="h-4 w-4 text-sky-200" /></div>
+                            <div className="flex items-center justify-between gap-2 text-[10px] text-slate-300"><span>الطلاب المسجلون</span><Icons.Users className="h-4 w-4 text-sky-200" /></div>
                             <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.students}</div>
-                            <div className="mt-1 text-[9px] font-bold text-sky-300">{adminStudentsOpen ? 'إخفاء الملفات' : 'اضغط لعرض بيانات الطلاب'}</div>
+                            <div className="mt-1 text-[9px] font-bold text-sky-300">{adminStudentsOpen ? 'إخفاء الملفات' : 'عرض سجل الزيارات'}</div>
                           </button>
+                          <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3">
+                            <div className="text-[10px] text-slate-400">إجمالي الزيارات</div>
+                            <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.totalVisits}</div>
+                          </div>
+                          <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3">
+                            <div className="text-[10px] text-slate-400">نشطون آخر 7 أيام</div>
+                            <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.activeStudents}</div>
+                          </div>
                           <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3">
                             <div className="text-[10px] text-slate-400">التكليفات</div>
                             <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.tasks}</div>
@@ -2918,8 +2936,8 @@ Civil & Political + Economic & Social rights.` },
                         {adminStudentsOpen && (
                           <section className="rounded-xl border border-sky-300/20 bg-slate-950/35 p-3">
                             <div className="mb-3 flex items-center justify-between gap-2">
-                              <div><h3 className="text-sm font-black text-white">ملفات الطلاب المسجلين</h3><p className="mt-1 text-[10px] text-slate-400">بيانات الحسابات التي أكملت التسجيل في الموقع</p></div>
-                              <button type="button" onClick={loadAdminStudents} disabled={adminStudentsBusy} className="rounded-lg bg-sky-400/10 px-3 py-2 text-[10px] font-bold text-sky-200 disabled:opacity-50">{adminStudentsBusy ? 'جاري التحديث...' : 'تحديث القائمة'}</button>
+                              <div><h3 className="text-sm font-black text-white">سجل زيارات الطلاب</h3><p className="mt-1 text-[10px] text-slate-400">مرتب حسب أحدث زيارة • يتم التسجيل عند فتح الموقع بحساب طالب</p></div>
+                              <button type="button" onClick={() => { loadAdminStudents(); loadAdminOverview(); }} disabled={adminStudentsBusy} className="rounded-lg bg-sky-400/10 px-3 py-2 text-[10px] font-bold text-sky-200 disabled:opacity-50">{adminStudentsBusy ? 'جاري التحديث...' : 'تحديث القائمة'}</button>
                             </div>
                             {adminStudentsBusy && adminStudents.length === 0 ? (
                               <p className="py-5 text-center text-xs text-slate-400">جاري تحميل بيانات الطلاب...</p>
@@ -2937,8 +2955,8 @@ Civil & Political + Economic & Social rights.` },
                                       <span className="shrink-0 rounded-lg bg-sky-400/10 px-2 py-1 text-[9px] font-bold text-sky-200">{student.visit_count || 0} زيارة</span>
                                     </div>
                                     <div className="mt-3 grid grid-cols-1 gap-1 text-[10px] text-slate-400 sm:grid-cols-2">
-                                      <span>تاريخ التسجيل: {student.created_at ? new Date(student.created_at).toLocaleDateString('ar-EG') : 'غير متاح'}</span>
-                                      <span>آخر دخول: {student.last_seen_at ? new Date(student.last_seen_at).toLocaleString('ar-EG') : 'لم يسجل دخولًا بعد'}</span>
+                                      <span>أول زيارة: {student.first_seen_at ? new Date(student.first_seen_at).toLocaleString('ar-EG') : (student.created_at ? new Date(student.created_at).toLocaleDateString('ar-EG') : 'غير متاح')}</span>
+                                      <span>آخر زيارة: {student.last_seen_at ? new Date(student.last_seen_at).toLocaleString('ar-EG') : 'لم يزر الموقع بعد'}</span>
                                     </div>
                                   </article>
                                 ))}
