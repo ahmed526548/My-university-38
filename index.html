@@ -1517,24 +1517,31 @@ Civil & Political + Economic & Social rights.` },
       const [studentAuthMode, setStudentAuthMode] = useState('signin');
       const [studentAuthMessage, setStudentAuthMessage] = useState('');
 
-      // Require an explicit program choice on every fresh app load.
-      const [selectedProgram, setSelectedProgram] = useState('');
-      const [programSelectionConfirmed, setProgramSelectionConfirmed] = useState(false);
+      // Remember the chosen academic program on this device so returning visitors land on Home.
+      const [selectedProgram, setSelectedProgram] = useState(() => {
+        try {
+          const saved = localStorage.getItem('bsnu-selected-program');
+          return ['ai', 'cyber', 'medical'].includes(saved) ? saved : '';
+        } catch (_) { return ''; }
+      });
+      const [programSelectionConfirmed, setProgramSelectionConfirmed] = useState(() => {
+        try { return ['ai', 'cyber', 'medical'].includes(localStorage.getItem('bsnu-selected-program')); }
+        catch (_) { return false; }
+      });
       // Refs keep the browser-back handler in sync with the currently selected program.
       const selectedProgramRef = useRef(selectedProgram);
       const programSelectionConfirmedRef = useRef(programSelectionConfirmed);
       selectedProgramRef.current = selectedProgram;
       programSelectionConfirmedRef.current = programSelectionConfirmed;
-      useEffect(() => {
-        setSelectedProgram('');
-        setProgramSelectionConfirmed(false);
-      }, [studentSession?.user?.id]);
       const chooseStudentProgram = (program) => {
+        if (!['ai', 'cyber', 'medical'].includes(program)) return;
+        try { localStorage.setItem('bsnu-selected-program', program); } catch (_) {}
         setSelectedProgram(program);
         setProgramSelectionConfirmed(true);
         setView('home');
       };
       const changeStudentProgram = () => {
+        try { localStorage.removeItem('bsnu-selected-program'); } catch (_) {}
         setSelectedProgram('');
         setProgramSelectionConfirmed(false);
       };
