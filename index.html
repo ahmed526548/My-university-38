@@ -875,6 +875,62 @@
     .program-select-screen .program-select-card:hover { border-color:var(--portal-accent)!important; box-shadow:0 20px 54px var(--portal-accent-glow)!important; transform:translateY(-4px); }
     .program-select-screen .program-select-card:focus-visible { outline:2px solid var(--portal-accent)!important; outline-offset:4px; }
 
+
+    /* Clean white + sky-blue public portal theme */
+    :root { color-scheme: light; }
+    html, body, #root { background: #f8fafc !important; }
+    body { color: #1e293b !important; background: #f8fafc !important; }
+    .portal-root:not(.portal-admin-view),
+    .portal-root:not(.portal-admin-view) .soft-page,
+    .portal-root:not(.portal-admin-view) > .min-h-screen {
+      color: #1e293b !important; background: #f8fafc !important;
+    }
+    .portal-root:not(.portal-admin-view) .soft-panel,
+    .portal-root:not(.portal-admin-view) .glass,
+    .portal-root:not(.portal-admin-view) .glass-strong,
+    .portal-root:not(.portal-admin-view) .soft-surface,
+    .portal-root:not(.portal-admin-view) .soft-nav-shell,
+    .portal-root:not(.portal-admin-view) .soft-chat-assistant {
+      color: #1e293b !important; background: rgba(255,255,255,.96) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 8px 28px rgba(15,23,42,.06), inset 0 1px 0 rgba(255,255,255,.9) !important;
+      -webkit-backdrop-filter: blur(18px) saturate(135%) !important; backdrop-filter: blur(18px) saturate(135%) !important;
+    }
+    .portal-root:not(.portal-admin-view) .home-hero {
+      color: #0f172a !important; background: linear-gradient(135deg,#e0f2fe 0%,#f0f9ff 58%,#ffffff 100%) !important;
+      border: 1px solid #bae6fd !important; box-shadow: 0 14px 34px rgba(14,165,233,.10) !important;
+    }
+    .portal-root:not(.portal-admin-view) [class~="text-white"],
+    .portal-root:not(.portal-admin-view) [class~="text-gray-200"],
+    .portal-root:not(.portal-admin-view) [class~="text-slate-50"],
+    .portal-root:not(.portal-admin-view) [class~="text-slate-100"] { color: #1e293b !important; }
+    .portal-root:not(.portal-admin-view) [class~="text-slate-200"] { color: #334155 !important; }
+    .portal-root:not(.portal-admin-view) [class~="text-slate-300"] { color: #475569 !important; }
+    .portal-root:not(.portal-admin-view) [class~="text-slate-400"],
+    .portal-root:not(.portal-admin-view) [class~="text-slate-500"] { color: #64748b !important; }
+    .portal-root:not(.portal-admin-view) [class~="text-sky-100"],
+    .portal-root:not(.portal-admin-view) [class~="text-sky-200"] { color: #0369a1 !important; }
+    .portal-root:not(.portal-admin-view) [class~="text-sky-300"] { color: #0284c7 !important; }
+    .portal-root:not(.portal-admin-view) [class*="bg-slate-950"],
+    .portal-root:not(.portal-admin-view) [class*="bg-slate-900"],
+    .portal-root:not(.portal-admin-view) [class*="bg-[#0a1a24]"],
+    .portal-root:not(.portal-admin-view) [class*="bg-[#0b1b25]"],
+    .portal-root:not(.portal-admin-view) [class*="bg-[#102631]"] { background: #f1f5f9 !important; }
+    .portal-root:not(.portal-admin-view) .soft-control {
+      color: #1e293b !important; background: #ffffff !important; border: 1px solid #cbd5e1 !important;
+    }
+    .portal-root:not(.portal-admin-view) .soft-control::placeholder { color: #94a3b8 !important; }
+    .portal-root:not(.portal-admin-view) .soft-nav-shell {
+      background: rgba(255,255,255,.96) !important; border-color: #dbeafe !important;
+      box-shadow: 0 10px 32px rgba(15,23,42,.12) !important;
+    }
+    .portal-root:not(.portal-admin-view) .soft-nav-item[aria-current="page"] {
+      color: #0369a1 !important; background: transparent !important; box-shadow: none !important;
+    }
+    .portal-root:not(.portal-admin-view) .developer-footer > div { background: #ffffff !important; border-color: #e2e8f0 !important; }
+    .portal-root:not(.portal-admin-view) .soft-chat-user { color: #ffffff !important; background: #0284c7 !important; }
+    .portal-root:not(.portal-admin-view) ::selection { background: #bae6fd; color: #0c4a6e; }
+    @media (min-width: 768px) { .portal-root:not(.portal-admin-view) .soft-nav-shell { max-width: 560px; } }
   </style>
 </head>
 <body>
@@ -1452,7 +1508,6 @@ Civil & Political + Economic & Social rights.` },
         setProgramSelectionConfirmed(false);
       }, [studentSession?.user?.id]);
       const chooseStudentProgram = (program) => {
-        if (!studentSession?.user?.id) return;
         setSelectedProgram(program);
         setProgramSelectionConfirmed(true);
         setView('home');
@@ -3235,22 +3290,24 @@ Civil & Political + Economic & Social rights.` },
       );
       // Persistent glass navigation across the main portal views
       const BottomNav = () => (
-        <div className="fixed bottom-0 inset-x-0 z-40 px-3 pb-2 safe-bottom pointer-events-none">
-          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex max-w-md items-center justify-between gap-2 rounded-2xl px-3 py-2">
+        <div className="fixed inset-x-0 bottom-0 z-40 pointer-events-none px-3 pb-2 safe-bottom">
+          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex w-full max-w-lg items-stretch justify-between gap-1 rounded-[1.35rem] px-2 py-2">
             {[
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
-              { icon: Icons.BookOpen, label: 'المحاضرات', v: 'subjects' },
-              { icon: Icons.Bot, label: 'المساعد', v: 'bot' },
-              { icon: Icons.Calendar, label: 'الجدول', v: 'groups' },
-              { icon: Icons.Layers, label: 'الأدوات', v: 'tools' },
-              
-            ].map(({ icon: I, label, v }) => {
+              { icon: Icons.BookOpen, label: 'المواد', v: 'subjects' },
+              { icon: Icons.Calendar, label: 'الجدول', v: 'schedule' },
+              { icon: Icons.Bot, label: 'المساعد', v: 'bot', featured: true },
+              { icon: Icons.Users, label: 'الجروبات', v: 'groups' }
+            ].map(({ icon: I, label, v, featured }) => {
               const active = view === v || (v === 'subjects' && view === 'lectures');
               return (
-                <button key={v} type="button" aria-current={active ? 'page' : undefined} onClick={() => { if (v === 'groups') { setSelectedGroup(null); setSelectedScheduleDay(null); } setView(v); }}
-                  className={`soft-nav-item flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${active ? 'text-sky-200' : 'text-slate-400 hover:text-sky-100'}`}>
-                  <I className="h-[19px] w-[19px] shrink-0" />
-                  <span className="text-[10px] leading-none font-semibold whitespace-nowrap">{label}</span>
+                <button key={v} type="button" aria-current={active ? 'page' : undefined}
+                  onClick={() => { if (v === 'groups') setSelectedGroup(null); if (v === 'schedule') setSelectedScheduleDay(null); setView(v); }}
+                  className={`soft-nav-item group flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2.5 ${active ? 'text-sky-700' : 'text-slate-500 hover:text-sky-700'}`}>
+                  <span className={`flex h-9 w-10 items-center justify-center rounded-xl transition-all duration-200 ${active ? 'bg-sky-100 text-sky-700 shadow-sm' : featured ? 'bg-sky-50 text-sky-600' : 'bg-transparent'}`}>
+                    <I className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
+                  </span>
+                  <span className={`whitespace-nowrap text-[10px] font-bold leading-none ${active ? 'text-sky-700' : 'text-slate-500'}`}>{label}</span>
                 </button>
               );
             })}
@@ -3261,7 +3318,7 @@ Civil & Political + Economic & Social rights.` },
       if (studentAuthLoading) {
         return <div dir="rtl" className="min-h-screen flex items-center justify-center bg-[#07151d] text-white"><div className="text-center"><div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-sky-400/20 border-t-sky-300"></div><p className="text-sm font-bold text-sky-100">جاري التحقق من حساب الطالب...</p></div></div>;
       }
-      if (studentAuthMode === 'update' || !studentSession?.user || studentSession.user.is_anonymous) {
+      if (studentAuthMode === 'update') {
         const isPasswordMode = ['signin', 'signup', 'update'].includes(studentAuthMode);
         const heading = studentAuthMode === 'signup' ? 'إنشاء حساب طالب' : studentAuthMode === 'forgot' ? 'استعادة كلمة المرور' : studentAuthMode === 'update' ? 'تعيين كلمة مرور جديدة' : 'تسجيل الدخول';
         return (
@@ -3357,7 +3414,7 @@ Civil & Political + Economic & Social rights.` },
               </div>
             </div>
           )}
-          <div dir="rtl" className="portal-root font-cairo min-h-screen soft-page text-gray-200">
+          <div dir="rtl" className={'portal-root font-cairo min-h-screen soft-page text-gray-200 ' + (view === 'admin' ? 'portal-admin-view' : '')}>
           {view === 'home' && <Home />}
           {view === 'subjects' && <Subjects />}
           {view === 'lectures' && <Lectures />}
