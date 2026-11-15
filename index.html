@@ -350,6 +350,28 @@
     @media (prefers-reduced-motion:reduce) {
       *,*::before,*::after { animation-duration:.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important;transition-duration:.01ms !important; }
     }
+
+    .program-select-screen [class~="text-white"] { color:var(--portal-ink) !important; }
+    .program-select-screen [class*="text-sky-"],
+    .program-select-screen [class*="text-cyan-"] { color:var(--portal-accent-strong) !important; }
+    .program-select-screen [class*="text-slate-"] { color:var(--portal-muted) !important; }
+    .splash-screen [class~="text-white"] { color:var(--portal-ink) !important; }
+    .splash-screen [class*="text-sky-"],
+    .splash-screen [class*="text-cyan-"] { color:var(--portal-accent-strong) !important; }
+    .splash-screen [class*="text-slate-"] { color:var(--portal-muted) !important; }
+    .splash-screen [class*="bg-cyan-300/10"] { background:#e0f2fe !important; }
+    .portal-loading-screen [class*="text-sky-"] { color:var(--portal-accent-strong) !important; }
+    .student-auth-screen { color:var(--portal-ink) !important;background:var(--portal-bg) !important; }
+    .student-auth-screen .program-select-backdrop {
+      background:radial-gradient(ellipse at 12% 4%,rgba(56,189,248,.12),transparent 38%),linear-gradient(160deg,#f8fcff,#eff8fd 58%,#f8fafc) !important;
+    }
+    .student-auth-card {
+      color:var(--portal-ink) !important;background:#fff !important;border:1px solid var(--portal-line) !important;
+      box-shadow:0 18px 48px rgba(15,55,85,.10) !important;
+    }
+    .student-auth-screen [class~="text-white"] { color:var(--portal-ink) !important; }
+    .student-auth-screen [class*="text-sky-"] { color:var(--portal-accent-strong) !important; }
+    .student-auth-screen [class*="text-slate-"] { color:var(--portal-muted) !important; }
   </style>
 </head>
 <body>
@@ -2724,10 +2746,10 @@ Civil & Political + Economic & Social rights.` },
         const isPasswordMode = ['signin', 'signup', 'update'].includes(studentAuthMode);
         const heading = studentAuthMode === 'signup' ? 'إنشاء حساب طالب' : studentAuthMode === 'forgot' ? 'استعادة كلمة المرور' : studentAuthMode === 'update' ? 'تعيين كلمة مرور جديدة' : 'تسجيل الدخول';
         return (
-          <div dir="rtl" lang="ar" className="relative isolate min-h-screen flex items-center justify-center overflow-hidden bg-[#061321] px-5 py-10 text-white">
+          <div dir="rtl" lang="ar" className="student-auth-screen relative isolate min-h-screen flex items-center justify-center overflow-hidden px-5 py-10">
             <div className="program-select-backdrop pointer-events-none absolute inset-0 -z-10" />
             <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-400/5 blur-3xl" />
-            <div className="w-full max-w-md rounded-[2rem] border border-sky-300/20 bg-gradient-to-br from-[#142b43]/95 to-[#071627]/95 p-7 text-center shadow-[0_24px_80px_rgba(0,0,0,.42),0_0_55px_rgba(56,189,248,.09)] backdrop-blur-2xl">
+            <div className="student-auth-card w-full max-w-md rounded-[2rem] p-7 text-center">
               <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-300/20 to-cyan-400/5 text-3xl shadow-[0_0_35px_rgba(56,189,248,.14)]">🎓</div>
               <p className="text-xs font-black tracking-[.22em] text-sky-300">BSNU • STUDENT PORTAL</p>
               <h1 className="mt-3 text-2xl font-black">أهلاً بيك في بوابتك الجامعية</h1>
