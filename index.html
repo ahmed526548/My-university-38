@@ -931,6 +931,26 @@
     .portal-root:not(.portal-admin-view) .soft-chat-user { color: #ffffff !important; background: #0284c7 !important; }
     .portal-root:not(.portal-admin-view) ::selection { background: #bae6fd; color: #0c4a6e; }
     @media (min-width: 768px) { .portal-root:not(.portal-admin-view) .soft-nav-shell { max-width: 560px; } }
+    /* Keep the agreed light palette even when an older saved color theme exists. */
+    :root[data-portal-theme] body { color: #1e293b !important; background: #f8fafc !important; }
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view),
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .soft-page,
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) > .min-h-screen {
+      color: #1e293b !important; background: #f8fafc !important;
+    }
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .soft-panel,
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .glass,
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .glass-strong,
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .soft-surface,
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .soft-nav-shell,
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) .soft-chat-assistant {
+      color: #1e293b !important; background: #ffffff !important; border-color: #e2e8f0 !important;
+    }
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) [class~="text-white"],
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) [class~="text-slate-100"] { color: #1e293b !important; }
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) [class~="text-slate-300"] { color: #475569 !important; }
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) [class~="text-slate-400"],
+    :root[data-portal-theme] .portal-root:not(.portal-admin-view) [class~="text-slate-500"] { color: #64748b !important; }
   </style>
 </head>
 <body>
@@ -3316,7 +3336,7 @@ Civil & Political + Economic & Social rights.` },
       );
 
       if (studentAuthLoading) {
-        return <div dir="rtl" className="min-h-screen flex items-center justify-center bg-[#07151d] text-white"><div className="text-center"><div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-sky-400/20 border-t-sky-300"></div><p className="text-sm font-bold text-sky-100">جاري التحقق من حساب الطالب...</p></div></div>;
+        return <div dir="rtl" className="min-h-screen flex items-center justify-center bg-[#07151d] text-white"><div className="text-center"><div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-sky-400/20 border-t-sky-300"></div><p className="text-sm font-bold text-sky-100">جاري تجهيز البوابة...</p></div></div>;
       }
       if (studentAuthMode === 'update') {
         const isPasswordMode = ['signin', 'signup', 'update'].includes(studentAuthMode);
