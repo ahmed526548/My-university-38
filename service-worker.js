@@ -1,9 +1,10 @@
-const CACHE_NAME = "bsnu-portal-v63";
+const CACHE_NAME = "bsnu-portal-v64";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./admin.html",
   "./teacher.html",
+  "./attendance.html",
   "./faculty-admin.html",
   "./manifest.webmanifest",
   "./admin-manifest.webmanifest",
@@ -30,7 +31,9 @@ const CDN_PRECACHE = [
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
   "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+  "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
 ].map((url) => new Request(url, { mode: "no-cors" }));
 
 async function precachePublicLibraries(cache) {
