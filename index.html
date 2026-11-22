@@ -3071,7 +3071,7 @@ Civil & Political + Economic & Social rights.` },
                           event.preventDefault();
                           if (!adminAllowed || !adminSession || resetStudentBusy) return;
                           const code = resetStudentCode.trim();
-                          if (!/^\\d{5,20}$/.test(code)) { showToast("اكتب كود الطالب بالأرقام بشكل صحيح", "error"); return; }
+                          if (!/^\d{5,20}$/.test(code)) { showToast("اكتب كود الطالب بالأرقام بشكل صحيح", "error"); return; }
                           setResetStudentBusy(true); setResetStudentCredential(null);
                           try {
                             const { data, error } = await supabaseClient.functions.invoke("admin-reset-student-password", { body: { student_code: code } });
