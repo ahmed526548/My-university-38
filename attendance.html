@@ -20,8 +20,9 @@
   <div id="scanArea" class="hidden">
    <div class="scanbox"><div id="reader"></div></div>
    <div class="actions"><button class="btn" id="startScan">تشغيل الكاميرا</button><button class="btn ghost" id="stopScan">إيقاف الكاميرا</button></div>
-   <div class="field"><label for="manualQr">لو الكاميرا مش متاحة، الصق رابط QR هنا</label><input id="manualQr" type="url" placeholder="الصق رابط الحضور الذي تم مسحه"></div>
-   <div class="actions"><button class="btn" id="submitManual">تأكيد التسجيل</button></div>
+   <div class="field"><label for="manualCode">أو اكتب كود الحضور اليدوي المكوّن من 6 أرقام</label><input id="manualCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="مثال: 123456"></div>
+   <div class="actions"><button class="btn" id="submitManualCode">تسجيل بالكود</button></div>
+   <details style="margin-top:12px"><summary style="cursor:pointer;color:#0369a1;font-size:12px;font-weight:800">إدخال رابط QR يدويًا (اختياري)</summary><div class="field"><label for="manualQr">الصق رابط الحضور هنا</label><input id="manualQr" type="url" placeholder="الصق رابط الحضور"></div><div class="actions"><button class="btn ghost" id="submitManualQr">تأكيد الرابط</button></div></details>
   </div>
   <div id="resultMessage" class="message"></div>
   <div class="stats"><div class="stat"><strong id="attendanceCount">—</strong><span>محاضرات حضرتها</span></div><div class="stat"><strong id="lastAttendance">—</strong><span>آخر تسجيل حضور</span></div></div>
@@ -38,15 +39,17 @@ function parseQr(value){
  try{const u=new URL(String(value).trim());if(u.origin!==location.origin||!u.pathname.endsWith('/attendance.html'))throw new Error();const session=u.searchParams.get('session'),token=u.searchParams.get('token');if(!session||!token)throw new Error();return {session,token}}catch(_){throw new Error('الرابط غير صحيح. امسح رمز QR الظاهر على شاشة الدكتور حاليًا.')}
 }
 async function stopScanner(){if(scanner&&scannerRunning){try{await scanner.stop();await scanner.clear()}catch(_){}scannerRunning=false}}
-async function recordAttendance(value){
+async function recordAttendance(value,mode='qr'){
  if(!currentUser||currentUser.is_anonymous){showMessage($('resultMessage'),'سجّل الدخول بحساب الطالب أولًا، ثم أعد مسح الرمز.','error');return}
- let parsed;try{parsed=parseQr(value)}catch(e){showMessage($('resultMessage'),e.message,'error');return}
- await stopScanner();showMessage($('resultMessage'),'جاري التحقق من الرمز وتسجيل حضورك...','info');
- const {data,error}=await db.rpc('student_checkin_attendance',{p_session_id:parsed.session,p_token:parsed.token});
+ let rpcName,args;
+ if(mode==='code'){const code=String(value||'').trim();if(!/^[0-9]{6}$/.test(code)){showMessage($('resultMessage'),'اكتب كود الحضور المكوّن من 6 أرقام.','error');return}rpcName='student_checkin_attendance_code';args={p_code:code};}
+ else{let parsed;try{parsed=parseQr(value)}catch(e){showMessage($('resultMessage'),e.message,'error');return}rpcName='student_checkin_attendance';args={p_session_id:parsed.session,p_token:parsed.token};}
+ await stopScanner();showMessage($('resultMessage'),'جاري التحقق وتسجيل حضورك...','info');
+ const {data,error}=await db.rpc(rpcName,args);
  if(error){showMessage($('resultMessage'),error.message||'تعذر تسجيل الحضور. امسح الرمز الحالي وحاول مرة أخرى.','error');return}
  const row=Array.isArray(data)?data[0]:data;
  showMessage($('resultMessage'),'تم تسجيل حضورك بنجاح في '+(row?.session_title||'المحاضرة')+' • المادة: '+(row?.subject_code||'')+' • '+(row?.attended_at?new Date(row.attended_at).toLocaleTimeString('ar-EG'):'الآن'),'ok');
- $('manualQr').value='';await loadHistory();
+ $('manualQr').value='';$('manualCode').value='';await loadHistory();
 }
 async function startScanner(){
  if(scannerRunning)return;if(!window.Html5Qrcode){showMessage($('resultMessage'),'تعذر تحميل قارئ QR. استخدم لصق الرابط أو حدّث الصفحة.','error');return}
@@ -59,7 +62,7 @@ async function loadHistory(){
  const rows=Array.isArray(data)?data:[];$('attendanceCount').textContent=rows.length;$('lastAttendance').textContent=rows.length?new Date(rows[0].attended_at).toLocaleDateString('ar-EG'):'—';
  $('history').innerHTML=rows.length?rows.map(r=>'<article class="item"><div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><b>'+String(r.session_title||'محاضرة').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</b><p>'+String(r.subject_code||'')+' • '+String(r.group_name||'')+'</p><p>'+new Date(r.attended_at).toLocaleString('ar-EG')+'</p></div><span class="pill">حضور مسجل</span></div></article>').join(''):'<p class="muted">لسه مفيش سجلات حضور في حسابك.</p>';
 }
-$('startScan').onclick=startScanner;$('stopScan').onclick=stopScanner;$('submitManual').onclick=()=>recordAttendance($('manualQr').value);$('refreshHistory').onclick=loadHistory;
+$('startScan').onclick=startScanner;$('stopScan').onclick=stopScanner;$('submitManualCode').onclick=()=>recordAttendance($('manualCode').value,'code');$('submitManualQr').onclick=()=>recordAttendance($('manualQr').value,'qr');$('refreshHistory').onclick=loadHistory;
 (async()=>{
  const {data,error}=await db.auth.getSession();currentUser=data?.session?.user||null;
  if(error||!currentUser||currentUser.is_anonymous){showMessage($('identityMessage'),'لازم تدخل بحساب الطالب أولًا. افتح بوابة الطالب وسجّل الدخول، ثم ارجع هنا.','error');$('identityMessage').innerHTML='لازم تدخل بحساب الطالب أولًا. <a href="./index.html?view=student#app" style="font-weight:900;color:#0369a1">افتح بوابة الطالب</a>.';return}
