@@ -47,8 +47,9 @@
   <button class="tab" data-tab="announcements">📢 الإعلانات</button>
   <button class="tab" data-tab="notifications">🔔 الإشعارات</button>
   <button class="tab" data-tab="academic">🎓 السجل الأكاديمي</button>
+  <button class="tab" data-tab="analytics">📊 الإحصائيات</button>
  </nav>
- <div class="grid">
+ <div class="grid" id="workspaceGrid">
   <section class="panel">
    <h2 id="formTitle">إضافة محاضرة جديدة</h2>
    <form id="contentForm" novalidate>
@@ -59,6 +60,16 @@
   </section>
   <section class="panel"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2 id="listTitle">محتواي المنشور</h2><button id="refresh" class="btn ghost">تحديث</button></div><div id="records"><div class="empty">جاري تحميل المحتوى...</div></div></section>
  </div>
+ <section id="analyticsPanel" class="hidden" style="margin-top:16px">
+  <div class="panel">
+   <div class="itemtop" style="align-items:center"><div><h2>لوحة مؤشرات المادة</h2><p class="hint">إحصائيات الدرجات والكويزات الخاصة بالمواد المصرّح لك بها فقط.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn ghost" id="exportAcademicCsv">تصدير الدرجات CSV</button><button type="button" class="btn secondary" id="refreshAnalytics">تحديث الإحصائيات</button></div></div>
+   <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(145px,1fr));margin-top:16px">
+    <div class="stat"><strong id="anStudentCount">—</strong><span>طلاب لديهم درجات</span></div><div class="stat"><strong id="anRecordCount">—</strong><span>تقييمات مسجلة</span></div><div class="stat"><strong id="anAverage">—</strong><span>متوسط النسبة</span></div><div class="stat"><strong id="anQuizAttempts">—</strong><span>محاولات الكويزات</span></div>
+   </div>
+   <div class="grid" style="margin-top:16px"><section class="panel"><h2>متوسط الدرجات حسب المادة</h2><div id="subjectAnalytics"><div class="empty">جاري التحميل...</div></div></section><section class="panel"><h2>ملخص الكويزات</h2><div id="quizAnalytics"><div class="empty">جاري التحميل...</div></div></section></div>
+   <section class="panel" style="margin-top:16px"><h2>أحدث الدرجات المسجلة</h2><div id="recentAcademicRows"><div class="empty">جاري التحميل...</div></div></section><div id="analyticsMessage" class="message"></div>
+  </div>
+ </section>
  <section id="quizResultsPanel" class="panel hidden" style="margin-top:16px"><div class="itemtop"><div><h2 id="quizResultsTitle">نتائج الكويز</h2><p id="quizResultsSummary" class="hint"></p></div><button type="button" class="btn ghost" id="closeQuizResults">إغلاق</button></div><div id="quizResultsBody"><div class="empty">اختار كويز لعرض نتائجه.</div></div></section>
  <p class="hint" style="text-align:center;margin-top:24px">كل دكتور يقدر يدير المحتوى اللي نشره بنفسه فقط. صلاحيات الإدارة محمية من قاعدة البيانات.</p>
 </div>
@@ -210,6 +221,28 @@ $('contentForm').onsubmit=async e=>{
   message($('formMessage'),err.message||'تعذر نشر المحتوى. حاول مرة أخرى.',true);
  }finally{$('saveBtn').disabled=false}
 };
+function pct(value){return Math.max(0,Math.min(100,Number(value)||0))}
+function exportAcademicCsv(){
+ const rows=window.__facultyAcademicRows||[];if(!rows.length){alert('لا توجد درجات لتصديرها حتى الآن.');return}
+ const columns=['اسم الطالب','كود الطالب','كود المادة','اسم التقييم','نوع التقييم','الدرجة','النهاية العظمى','النسبة %','الفصل الدراسي','تاريخ التسجيل'];
+ const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const body=rows.map(r=>[r.student_name,r.student_code,r.subject_code,r.assessment_name,r.assessment_type,r.grade,r.max_grade,((Number(r.grade)/Number(r.max_grade))*100).toFixed(2),r.term,r.created_at?new Date(r.created_at).toLocaleDateString('ar-EG'):''].map(quote).join(','));
+ const csv='\\uFEFF'+[columns.map(quote).join(','),...body].join('\\r\\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='academic-records-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+async function loadAnalytics(){
+ $('workspaceGrid').classList.add('hidden');$('analyticsPanel').classList.remove('hidden');$('quizResultsPanel').classList.add('hidden');$('analyticsMessage').className='message';
+ $('subjectAnalytics').innerHTML='<div class="empty">جاري التحميل...</div>';$('quizAnalytics').innerHTML='<div class="empty">جاري التحميل...</div>';$('recentAcademicRows').innerHTML='<div class="empty">جاري التحميل...</div>';
+ const [gradesRes,quizzesRes]=await Promise.all([db.from('academic_records').select('student_name,student_code,subject_code,assessment_name,assessment_type,grade,max_grade,term,created_at').eq('created_by',user.id).order('created_at',{ascending:false}).limit(500),db.from('student_tasks').select('id,title,subject_code').eq('created_by',user.id).eq('kind','quiz').order('created_at',{ascending:false}).limit(20)]);
+ if(gradesRes.error||quizzesRes.error){message($('analyticsMessage'),'تعذر تحميل الإحصائيات: '+(gradesRes.error||quizzesRes.error).message,true);return}
+ const grades=gradesRes.data||[],quizzes=quizzesRes.data||[];window.__facultyAcademicRows=grades;const students=new Set(grades.map(x=>x.student_code).filter(Boolean));const average=grades.length?grades.reduce((s,r)=>s+(Number(r.grade)/Math.max(1,Number(r.max_grade)))*100,0)/grades.length:0;
+ $('anStudentCount').textContent=students.size;$('anRecordCount').textContent=grades.length;$('anAverage').textContent=grades.length?average.toFixed(1)+'%':'—';
+ const groups={};grades.forEach(r=>{const k=r.subject_code||'غير محدد';if(!groups[k])groups[k]={sum:0,count:0};groups[k].sum+=(Number(r.grade)/Math.max(1,Number(r.max_grade)))*100;groups[k].count++});
+ const entries=Object.entries(groups).sort((a,b)=>(b[1].sum/b[1].count)-(a[1].sum/a[1].count));
+ $('subjectAnalytics').innerHTML=entries.length?entries.map(([code,v])=>{const p=pct(v.sum/v.count);return '<div class="item"><div class="itemtop"><b>'+escapeHtml(code)+'</b><strong>'+p.toFixed(1)+'%</strong></div><div style="height:9px;background:#e5eef5;border-radius:20px;overflow:hidden;margin-top:9px"><div style="height:100%;width:'+p+'%;background:linear-gradient(90deg,#38bdf8,#0369a1);border-radius:20px"></div></div><p>'+v.count+' تقييم</p></div>'}).join(''):'<div class="empty">لسه مفيش درجات مسجلة.</div>';
+ $('recentAcademicRows').innerHTML=grades.length?grades.slice(0,12).map(r=>'<div class="item"><div class="itemtop"><div><b>'+escapeHtml(r.student_name||'طالب')+'</b><p>'+escapeHtml(r.student_code||'')+' • '+escapeHtml(r.subject_code||'')+' • '+escapeHtml(r.assessment_name||'')+'</p></div><strong style="color:#0369a1;white-space:nowrap">'+Number(r.grade)+' / '+Number(r.max_grade)+'</strong></div></div>').join(''):'<div class="empty">لا توجد درجات لعرضها.</div>';
+ let attempts=0,quizLines=[];for(const quiz of quizzes){const {data,error}=await db.rpc('faculty_get_quiz_results',{p_task_id:quiz.id});if(error){quizLines.push('<div class="item"><b>'+escapeHtml(quiz.title)+'</b><p>تعذر تحميل النتائج لهذا الكويز.</p></div>');continue}const arr=Array.isArray(data)?data:[];attempts+=arr.length;const avg=arr.length?arr.reduce((s,a)=>s+(Number(a.score||0)/Math.max(1,Number(a.max_score||0)))*100,0)/arr.length:0;quizLines.push('<div class="item"><div class="itemtop"><b>'+escapeHtml(quiz.title)+'</b><span class="pill">'+arr.length+' تسليم</span></div><p>'+(arr.length?'متوسط الدرجات: '+avg.toFixed(1)+'%':'لم يتم التسليم بعد')+'</p></div>')}
+ $('anQuizAttempts').textContent=attempts;$('quizAnalytics').innerHTML=quizLines.length?quizLines.join(''):'<div class="empty">لا توجد كويزات منشورة من حسابك.</div>';$('exportAcademicCsv').disabled=!grades.length;
+}
 async function showQuizResults(taskId,title){
  const panel=$('quizResultsPanel');panel.classList.remove('hidden');$('quizResultsTitle').textContent='نتائج: '+(title||'الكويز');$('quizResultsSummary').textContent='جاري تحميل محاولات الطلاب...';$('quizResultsBody').innerHTML='<div class="empty">جاري تحميل النتائج...</div>';panel.scrollIntoView({behavior:'smooth',block:'start'});
  const {data,error}=await db.rpc('faculty_get_quiz_results',{p_task_id:taskId});
@@ -233,8 +266,8 @@ $('records').onclick=async e=>{
  const {error}=await db.from(configs[activeTab].table).delete().eq('id',id).eq('created_by',user.id);
  if(error){alert(error.message);return}await loadRecords()
 };
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));renderForm();loadRecords()});
-$('refresh').onclick=loadRecords;$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));if(activeTab==='analytics'){loadAnalytics();return}$('analyticsPanel').classList.add('hidden');$('workspaceGrid').classList.remove('hidden');renderForm();loadRecords()});
+$('refresh').onclick=loadRecords;$('refreshAnalytics').onclick=loadAnalytics;$('exportAcademicCsv').onclick=exportAcademicCsv;$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
 init();
 </script>
 </body></html>
