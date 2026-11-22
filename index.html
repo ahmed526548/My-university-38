@@ -3081,7 +3081,7 @@ Civil & Political + Economic & Social rights.` },
                           } catch (error) { showToast(error?.message || "تعذر إعادة تعيين كلمة المرور", "error"); }
                           finally { setResetStudentBusy(false); }
                         }} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
-                          <input value={resetStudentCode} onChange={e => setResetStudentCode(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm text-white" dir="ltr" required />
+                          <input value={resetStudentCode} onChange={e => setResetStudentCode(e.target.value.replace(/[٠-٩۰-۹]/g, ch => String("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹".indexOf(ch) % 10)).replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm text-white" dir="ltr" required />
                           <button disabled={resetStudentBusy} className="rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{resetStudentBusy ? "جاري التعيين..." : "إعادة تعيين كلمة المرور"}</button>
                         </form>
                         {resetStudentCredential && <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 space-y-2">
