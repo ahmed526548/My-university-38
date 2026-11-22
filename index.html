@@ -2140,6 +2140,7 @@ Civil & Political + Economic & Social rights.` },
       const Lectures = () => {
         const [databaseLectures, setDatabaseLectures] = useState(null);
         const [lectureLoadError, setLectureLoadError] = useState('');
+        const [lectureRefreshKey, setLectureRefreshKey] = useState(0);
         useEffect(() => {
           let active = true;
           const subjectCode = selectedSubject?.code;
@@ -2184,7 +2185,7 @@ Civil & Political + Economic & Social rights.` },
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lectures', filter: `subject_code=eq.${subjectCode}` }, load)
             .subscribe();
           return () => { active = false; supabaseClient.removeChannel(channel); };
-        }, [selectedSubject?.code]);
+        }, [selectedSubject?.code, lectureRefreshKey]);
         const allSubjectLectures = databaseLectures !== null ? databaseLectures : (allLecturesData[selectedSubject?.code] || (selectedProgram === 'ai' ? allLecturesData.default : []));
         const selectedDoctorKey = selectedInstructor ? normalizeDoctorName(selectedInstructor) : '';
         const lectures = selectedInstructor ? allSubjectLectures.filter(lecture => {
@@ -2209,7 +2210,7 @@ Civil & Political + Economic & Social rights.` },
                 <>
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <p className="text-gray-400 text-sm">اختار الدكتور لعرض محاضراته</p>
-                    <button type="button" onClick={() => { setDatabaseLectures(null); setLectureLoadError(''); }} className="rounded-lg border border-sky-300/20 px-3 py-2 text-[11px] font-bold text-sky-200">تحديث المحاضرات</button>
+                    <button type="button" onClick={() => { setDatabaseLectures(null); setLectureLoadError(''); setLectureRefreshKey(value => value + 1); }} className="rounded-lg border border-sky-300/20 px-3 py-2 text-[11px] font-bold text-sky-200">تحديث المحاضرات</button>
                   </div>
                   {lectureLoadError && <p className="mb-3 rounded-xl border border-amber-300/20 bg-amber-400/5 p-3 text-xs text-amber-200">{lectureLoadError}</p>}
                   <div className="space-y-3">
