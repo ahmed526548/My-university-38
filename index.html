@@ -1199,6 +1199,9 @@ Civil & Political + Economic & Social rights.` },
       const [adminEmail, setAdminEmail] = useState('');
       const [adminPassword, setAdminPassword] = useState('');
       const [adminBusy, setAdminBusy] = useState(false);
+      const [adminRecovery, setAdminRecovery] = useState(false);
+      const [adminNewPassword, setAdminNewPassword] = useState('');
+      const [adminResetBusy, setAdminResetBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
       const [adminSelectedProgram, setAdminSelectedProgram] = useState('');
       const [adminProgramSubjects, setAdminProgramSubjects] = useState([]);
@@ -1584,6 +1587,8 @@ Civil & Political + Economic & Social rights.` },
         const { data: authListener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
           if (!active) return;
           setAdminSession(session || null);
+          if (event === 'PASSWORD_RECOVERY') setAdminRecovery(true);
+          if (event === 'SIGNED_IN' && !adminRecovery) setAdminRecovery(false);
           if (!session) setAdminAllowed(false);
         });
         return () => { active = false; authListener?.subscription?.unsubscribe(); };
@@ -1614,6 +1619,45 @@ Civil & Political + Economic & Social rights.` },
         } catch (error) {
           showToast(error?.message || 'فشل تسجيل الدخول، راجع البيانات', 'error');
         } finally { setAdminBusy(false); }
+      };
+
+      const handleAdminPasswordReset = async () => {
+        if (!supabaseClient) { showToast('خدمة تسجيل الدخول غير متاحة', 'error'); return; }
+        const email = adminEmail.trim();
+        if (!email) { showToast('اكتب البريد الإلكتروني للأدمن أولاً', 'error'); return; }
+        setAdminResetBusy(true);
+        try {
+          const redirectUrl = new URL(window.location.href);
+          redirectUrl.searchParams.set('view', 'admin');
+          redirectUrl.hash = 'app';
+          const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl.toString() });
+          if (error) throw error;
+          showToast('لو البريد مسجل، هتوصلك رسالة استعادة كلمة المرور. راجع الوارد والرسائل غير المرغوب فيها.');
+        } catch (error) {
+          showToast(error?.message || 'تعذر إرسال رسالة الاستعادة', 'error');
+        } finally { setAdminResetBusy(false); }
+      };
+
+      const handleAdminPasswordUpdate = async (event) => {
+        event.preventDefault();
+        if (adminNewPassword.length < 10) { showToast('كلمة المرور لازم تكون 10 أحرف على الأقل', 'error'); return; }
+        setAdminResetBusy(true);
+        try {
+          const { error } = await supabaseClient.auth.updateUser({ password: adminNewPassword });
+          if (error) throw error;
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          const userId = sessionData?.session?.user?.id;
+          if (!userId) throw new Error('تم تحديث كلمة المرور، لكن تعذر التحقق من جلسة الأدمن. سجل الدخول من جديد.');
+          const { data: adminRow, error: adminError } = await supabaseClient.from('portal_admins').select('user_id').eq('user_id', userId).maybeSingle();
+          if (adminError) throw adminError;
+          if (!adminRow) throw new Error('الحساب لا يمتلك صلاحية الأدمن.');
+          setAdminSession(sessionData.session);
+          setAdminAllowed(true);
+          setAdminRecovery(false);
+          setAdminNewPassword('');
+          showToast('تم تغيير كلمة مرور الأدمن بنجاح');
+        } catch (error) { showToast(error?.message || 'تعذر تحديث كلمة المرور', 'error'); }
+        finally { setAdminResetBusy(false); }
       };
 
       const handleAdminLogout = async () => {
@@ -3197,6 +3241,13 @@ Civil & Political + Economic & Social rights.` },
                       </section>
                       <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-800 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? "جاري تسجيل الخروج..." : "تسجيل الخروج"}</button>
                     </div>
+                  ) : adminRecovery ? (
+                    <form onSubmit={handleAdminPasswordUpdate} className="space-y-3">
+                      <p className="rounded-xl bg-sky-50 p-3 text-sm leading-6 text-sky-800">تم التحقق من رابط الاستعادة. اكتب كلمة مرور جديدة لحساب الأدمن.</p>
+                      <label className="block text-xs font-bold text-slate-600">كلمة المرور الجديدة</label>
+                      <input type="password" required minLength={10} autoComplete="new-password" value={adminNewPassword} onChange={e => setAdminNewPassword(e.target.value)} placeholder="10 أحرف على الأقل" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
+                      <button type="submit" disabled={adminResetBusy} className="w-full rounded-xl bg-sky-600 py-3 text-sm font-black text-white disabled:opacity-50">{adminResetBusy ? "جاري الحفظ..." : "حفظ كلمة المرور الجديدة"}</button>
+                    </form>
                   ) : (
                     <form onSubmit={handleAdminLogin} className="space-y-3">
                       <label className="block text-xs font-bold text-slate-600">البريد الإلكتروني للأدمن</label>
@@ -3204,6 +3255,7 @@ Civil & Political + Economic & Social rights.` },
                       <label className="block text-xs font-bold text-slate-600">كلمة المرور</label>
                       <input type="password" required autoComplete="current-password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="••••••••" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
                       <button type="submit" disabled={adminBusy} className="mt-2 w-full rounded-xl bg-sky-600 py-3 text-sm font-black text-white disabled:opacity-50">{adminBusy ? "جاري التحقق..." : "تسجيل الدخول"}</button>
+                      <button type="button" onClick={handleAdminPasswordReset} disabled={adminResetBusy} className="w-full py-2 text-sm font-bold text-sky-700 underline disabled:opacity-50">{adminResetBusy ? "جاري إرسال رابط الاستعادة..." : "نسيت كلمة المرور؟ إرسال رابط على الإيميل"}</button>
                     </form>
                   )}
                 </section>
