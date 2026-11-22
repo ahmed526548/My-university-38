@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#eff8ff"><title>تسجيل الحضور | بوابة الجامعة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root{--bg:#f2f9ff;--card:#fff;--ink:#142d45;--muted:#6b8094;--line:#dceaf5;--blue:#0284c7;--blue2:#0369a1;--soft:#e7f5ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0,#dff3ff 0,transparent 30%),var(--bg);font-family:Cairo,sans-serif;color:var(--ink)}button,input{font:inherit}.wrap{max-width:780px;margin:auto;padding:22px 14px 60px}.top,.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 16px 40px #17487010}.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;gap:10px}.brand{display:flex;align-items:center;gap:11px}.mark{height:44px;width:44px;border-radius:14px;background:linear-gradient(135deg,#0ea5e9,#0369a1);display:grid;place-items:center;color:#fff;font-size:22px}.brand small{display:block;color:var(--muted);font-size:10px;font-weight:800}.brand b{font-size:15px}.btn{border:0;border-radius:12px;padding:10px 15px;font-weight:800;background:var(--blue);color:white;text-decoration:none;display:inline-flex;justify-content:center;align-items:center}.btn.ghost{background:#eff6fb;color:#31536d}.panel{margin-top:16px;padding:20px}.panel h1{font-size:23px;margin:0 0 5px}.muted{color:var(--muted);font-size:12px;line-height:1.8}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px}.stat{background:#f3faff;border:1px solid var(--line);border-radius:14px;padding:13px}.stat strong{display:block;font-size:24px;color:var(--blue2)}.stat span{font-size:11px;color:var(--muted);font-weight:700}.scanbox{background:#f8fcff;border:1px dashed #9bcce8;border-radius:16px;padding:12px;margin-top:15px;overflow:hidden}#reader{width:100%;max-width:420px;margin:auto}#reader video{border-radius:12px}.field{display:flex;flex-direction:column;gap:6px;margin-top:12px}.field label{font-size:12px;font-weight:800}.field input{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fbfdff;width:100%}.message{display:none;margin-top:12px;padding:12px;border-radius:12px;font-size:12px;line-height:1.8}.message.show{display:block}.message.ok{background:#ecfdf5;color:#047857}.message.error{background:#fff1f2;color:#9f1239}.message.info{background:#eff8ff;color:#075985}.item{padding:12px;border:1px solid var(--line);border-radius:14px;margin-top:9px;background:#fbfdff}.item b{font-size:13px}.item p{font-size:11px;color:var(--muted);margin:4px 0}.pill{font-size:10px;border-radius:30px;background:var(--soft);color:var(--blue2);padding:4px 9px;font-weight:900}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.hidden{display:none!important}@media(max-width:520px){.wrap{padding:12px 10px 40px}.panel{padding:15px}.top{padding:11px}.brand b{font-size:13px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+ <header class="top"><div class="brand"><div class="mark">📷</div><div><small>BSNU • STUDENT ATTENDANCE</small><b>تسجيل الحضور الذكي</b></div></div><a class="btn ghost" href="./index.html?view=student#app">بوابة الطالب</a></header>
+ <section class="panel">
+  <h1>امسح رمز المحاضرة</h1><p class="muted">سجّل الدخول بحساب الطالب، ثم وجّه الكاميرا إلى رمز QR الظاهر على شاشة الدكتور. كل طالب يمكنه تسجيل حضوره مرة واحدة فقط في الجلسة.</p>
+  <div id="identityMessage" class="message info">جاري التحقق من حسابك...</div>
+  <div id="scanArea" class="hidden">
+   <div class="scanbox"><div id="reader"></div></div>
+   <div class="actions"><button class="btn" id="startScan">تشغيل الكاميرا</button><button class="btn ghost" id="stopScan">إيقاف الكاميرا</button></div>
+   <div class="field"><label for="manualQr">لو الكاميرا مش متاحة، الصق رابط QR هنا</label><input id="manualQr" type="url" placeholder="الصق رابط الحضور الذي تم مسحه"></div>
+   <div class="actions"><button class="btn" id="submitManual">تأكيد التسجيل</button></div>
+  </div>
+  <div id="resultMessage" class="message"></div>
+  <div class="stats"><div class="stat"><strong id="attendanceCount">—</strong><span>محاضرات حضرتها</span></div><div class="stat"><strong id="lastAttendance">—</strong><span>آخر تسجيل حضور</span></div></div>
+ </section>
+ <section class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="font-size:17px;margin:0">سجل حضورك</h2><button class="btn ghost" id="refreshHistory">تحديث</button></div><div id="history"><p class="muted">جاري تحميل سجل الحضور...</p></div></section>
+</main>
+<script>
+const SUPABASE_URL='https://azlplcbphvaiexmyfdbp.supabase.co';
+const SUPABASE_KEY='sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+const $=id=>document.getElementById(id);let scanner=null,scannerRunning=false,currentUser=null;
+function showMessage(el,text,type='info'){el.textContent=text;el.className='message show '+type}
+function parseQr(value){
+ try{const u=new URL(String(value).trim());if(u.origin!==location.origin||!u.pathname.endsWith('/attendance.html'))throw new Error();const session=u.searchParams.get('session'),token=u.searchParams.get('token');if(!session||!token)throw new Error();return {session,token}}catch(_){throw new Error('الرابط غير صحيح. امسح رمز QR الظاهر على شاشة الدكتور حاليًا.')}
+}
+async function stopScanner(){if(scanner&&scannerRunning){try{await scanner.stop();await scanner.clear()}catch(_){}scannerRunning=false}}
+async function recordAttendance(value){
+ if(!currentUser||currentUser.is_anonymous){showMessage($('resultMessage'),'سجّل الدخول بحساب الطالب أولًا، ثم أعد مسح الرمز.','error');return}
+ let parsed;try{parsed=parseQr(value)}catch(e){showMessage($('resultMessage'),e.message,'error');return}
+ await stopScanner();showMessage($('resultMessage'),'جاري التحقق من الرمز وتسجيل حضورك...','info');
+ const {data,error}=await db.rpc('student_checkin_attendance',{p_session_id:parsed.session,p_token:parsed.token});
+ if(error){showMessage($('resultMessage'),error.message||'تعذر تسجيل الحضور. امسح الرمز الحالي وحاول مرة أخرى.','error');return}
+ const row=Array.isArray(data)?data[0]:data;
+ showMessage($('resultMessage'),'تم تسجيل حضورك بنجاح في '+(row?.session_title||'المحاضرة')+' • المادة: '+(row?.subject_code||'')+' • '+(row?.attended_at?new Date(row.attended_at).toLocaleTimeString('ar-EG'):'الآن'),'ok');
+ $('manualQr').value='';await loadHistory();
+}
+async function startScanner(){
+ if(scannerRunning)return;if(!window.Html5Qrcode){showMessage($('resultMessage'),'تعذر تحميل قارئ QR. استخدم لصق الرابط أو حدّث الصفحة.','error');return}
+ try{scanner=new Html5Qrcode('reader');await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:250}},async decoded=>{await recordAttendance(decoded)},()=>{});scannerRunning=true;showMessage($('resultMessage'),'وجّه الكاميرا إلى رمز QR الظاهر على السبورة.','info')}
+ catch(e){showMessage($('resultMessage'),'لم نتمكن من تشغيل الكاميرا. تأكد من السماح باستخدام الكاميرا وفتح الموقع عبر HTTPS. يمكنك لصق رابط QR يدويًا.','error')}
+}
+async function loadHistory(){
+ const {data,error}=await db.rpc('student_my_attendance');
+ if(error){$('history').innerHTML='<p class="muted">تعذر تحميل السجل: '+error.message+'</p>';return}
+ const rows=Array.isArray(data)?data:[];$('attendanceCount').textContent=rows.length;$('lastAttendance').textContent=rows.length?new Date(rows[0].attended_at).toLocaleDateString('ar-EG'):'—';
+ $('history').innerHTML=rows.length?rows.map(r=>'<article class="item"><div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><b>'+String(r.session_title||'محاضرة').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</b><p>'+String(r.subject_code||'')+' • '+String(r.group_name||'')+'</p><p>'+new Date(r.attended_at).toLocaleString('ar-EG')+'</p></div><span class="pill">حضور مسجل</span></div></article>').join(''):'<p class="muted">لسه مفيش سجلات حضور في حسابك.</p>';
+}
+$('startScan').onclick=startScanner;$('stopScan').onclick=stopScanner;$('submitManual').onclick=()=>recordAttendance($('manualQr').value);$('refreshHistory').onclick=loadHistory;
+(async()=>{
+ const {data,error}=await db.auth.getSession();currentUser=data?.session?.user||null;
+ if(error||!currentUser||currentUser.is_anonymous){showMessage($('identityMessage'),'لازم تدخل بحساب الطالب أولًا. افتح بوابة الطالب وسجّل الدخول، ثم ارجع هنا.','error');$('identityMessage').innerHTML='لازم تدخل بحساب الطالب أولًا. <a href="./index.html?view=student#app" style="font-weight:900;color:#0369a1">افتح بوابة الطالب</a>.';return}
+ showMessage($('identityMessage'),'تم التحقق من جلسة الدخول. امسح رمز المحاضرة لتسجيل حضورك.','ok');$('scanArea').classList.remove('hidden');await loadHistory();
+ const params=new URLSearchParams(location.search);if(params.has('session')&&params.has('token'))await recordAttendance(location.href);
+})();
+window.addEventListener('pagehide',stopScanner);
+</script>
+</body></html>
