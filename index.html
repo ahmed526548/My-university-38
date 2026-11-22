@@ -1199,7 +1199,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminEmail, setAdminEmail] = useState('');
       const [adminPassword, setAdminPassword] = useState('');
       const [adminBusy, setAdminBusy] = useState(false);
-      const [adminRecovery, setAdminRecovery] = useState(false);
+      const [adminRecovery, setAdminRecovery] = useState(() => new URLSearchParams(window.location.search).get('recovery') === '1');
       const [adminNewPassword, setAdminNewPassword] = useState('');
       const [adminResetBusy, setAdminResetBusy] = useState(false);
       const [adminSelectedTable, setAdminSelectedTable] = useState('lectures');
@@ -1629,6 +1629,7 @@ Civil & Political + Economic & Social rights.` },
         try {
           const redirectUrl = new URL(window.location.href);
           redirectUrl.searchParams.set('view', 'admin');
+          redirectUrl.searchParams.set('recovery', '1');
           redirectUrl.hash = 'app';
           const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl.toString() });
           if (error) throw error;
@@ -1655,6 +1656,7 @@ Civil & Political + Economic & Social rights.` },
           setAdminAllowed(true);
           setAdminRecovery(false);
           setAdminNewPassword('');
+          try { const cleanUrl = new URL(window.location.href); cleanUrl.searchParams.delete('recovery'); cleanUrl.searchParams.delete('code'); window.history.replaceState({}, document.title, cleanUrl.toString()); } catch (_) {}
           showToast('تم تغيير كلمة مرور الأدمن بنجاح');
         } catch (error) { showToast(error?.message || 'تعذر تحديث كلمة المرور', 'error'); }
         finally { setAdminResetBusy(false); }
@@ -3147,6 +3149,13 @@ Civil & Political + Economic & Social rights.` },
                   </div>
                   {!supabaseClient ? (
                     <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">خدمة تسجيل الدخول غير متاحة حاليًا.</p>
+                  ) : adminRecovery ? (
+                    <form onSubmit={handleAdminPasswordUpdate} className="space-y-3">
+                      <p className="rounded-xl bg-sky-50 p-3 text-sm leading-6 text-sky-800">تم فتح رابط استعادة كلمة المرور. اكتب كلمة مرور جديدة لحساب الأدمن.</p>
+                      <label className="block text-xs font-bold text-slate-600">كلمة المرور الجديدة</label>
+                      <input type="password" required minLength={10} autoComplete="new-password" value={adminNewPassword} onChange={e => setAdminNewPassword(e.target.value)} placeholder="10 أحرف على الأقل" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
+                      <button type="submit" disabled={adminResetBusy} className="w-full rounded-xl bg-sky-600 py-3 text-sm font-black text-white disabled:opacity-50">{adminResetBusy ? "جاري الحفظ..." : "حفظ كلمة المرور الجديدة"}</button>
+                    </form>
                   ) : adminChecking ? (
                     <p className="py-6 text-center text-sm text-slate-500">جاري التحقق من جلسة الأدمن...</p>
                   ) : adminAllowed && adminSession ? (
@@ -3241,13 +3250,6 @@ Civil & Political + Economic & Social rights.` },
                       </section>
                       <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-800 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? "جاري تسجيل الخروج..." : "تسجيل الخروج"}</button>
                     </div>
-                  ) : adminRecovery ? (
-                    <form onSubmit={handleAdminPasswordUpdate} className="space-y-3">
-                      <p className="rounded-xl bg-sky-50 p-3 text-sm leading-6 text-sky-800">تم التحقق من رابط الاستعادة. اكتب كلمة مرور جديدة لحساب الأدمن.</p>
-                      <label className="block text-xs font-bold text-slate-600">كلمة المرور الجديدة</label>
-                      <input type="password" required minLength={10} autoComplete="new-password" value={adminNewPassword} onChange={e => setAdminNewPassword(e.target.value)} placeholder="10 أحرف على الأقل" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
-                      <button type="submit" disabled={adminResetBusy} className="w-full rounded-xl bg-sky-600 py-3 text-sm font-black text-white disabled:opacity-50">{adminResetBusy ? "جاري الحفظ..." : "حفظ كلمة المرور الجديدة"}</button>
-                    </form>
                   ) : (
                     <form onSubmit={handleAdminLogin} className="space-y-3">
                       <label className="block text-xs font-bold text-slate-600">البريد الإلكتروني للأدمن</label>
