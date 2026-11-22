@@ -26,3 +26,28 @@ The frontend integration requires the Supabase project URL and publishable/anon 
 - Use Supabase Auth, a unique password, and the `portal_admins` allowlist.
 - Never put a service-role key or AI provider key in `index.html`.
 - Public users can read published lectures, schedule and announcements. Only allowlisted admins can write.
+
+
+## 4. Faculty portal (new)
+
+The faculty portal is available at:
+- `teacher.html` — faculty sign-in and publishing workspace.
+- `faculty-admin.html` — admin-only setup for faculty email addresses.
+
+The database now includes:
+- `faculty_directory`: the approved list of instructors and their subject codes.
+- `faculty_private`: admin-only approved university email addresses.
+- `faculty_accounts`: the Auth user linked to each instructor.
+
+### Activate an instructor
+
+1. Sign in to the main admin dashboard with the existing portal admin account.
+2. Open **إدارة حسابات الدكاترة** or visit `faculty-admin.html`.
+3. Select an instructor and save their official email address.
+4. Send the instructor the `teacher.html` link.
+5. The instructor selects their name, enters the approved email, chooses a password, and activates the account.
+6. If email confirmation is enabled in Supabase Auth, they must confirm the email before signing in.
+
+The database trigger only links a faculty account when the signup email matches the email approved by an administrator for that exact instructor. Teachers can publish lectures (including PDF uploads), assignments, exams, quizzes, announcements, and notifications. Row Level Security restricts each teacher to managing their own posts; published content is visible in the student portal.
+
+Do not share passwords in chat or store them in this repository. Each instructor should create and keep their own password private.
