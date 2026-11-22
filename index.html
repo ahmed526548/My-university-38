@@ -1055,6 +1055,10 @@ Civil & Political + Economic & Social rights.` },
               }
             }
             setStudentSession(restoredSession);
+            if (restoredSession?.user?.user_metadata?.must_change_password) {
+              setStudentAuthMode('update');
+              setStudentAuthMessage('يجب تغيير كلمة المرور المؤقتة قبل استخدام البوابة.');
+            }
             setStudentAuthLoading(false);
           } catch (error) {
             if (!active) return;
@@ -1152,6 +1156,8 @@ Civil & Political + Economic & Social rights.` },
             if (studentPassword.length < 10) throw new Error('كلمة المرور الجديدة لازم تكون 10 أحرف على الأقل.');
             const { error } = await supabaseClient.auth.updateUser({ password: studentPassword, data: { must_change_password: false } });
             if (error) throw error;
+            const { data: marked, error: markError } = await supabaseClient.rpc('student_mark_password_changed');
+            if (markError || marked !== true) throw new Error('تم تحديث كلمة المرور لكن تعذر تأكيد حالة الحساب. تواصل مع الإدارة.');
             await supabaseClient.auth.signOut({ scope: 'local' });
             setStudentSession(null); setStudentPassword(''); setStudentAuthMode('signin');
             setStudentAuthMessage('تم تحديث كلمة المرور. سجّل الدخول مرة أخرى.');
