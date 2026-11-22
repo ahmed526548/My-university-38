@@ -1584,7 +1584,7 @@ Civil & Political + Economic & Social rights.` },
         };
         restoreAdminSession();
         if (!supabaseClient) return () => { active = false; };
-        const { data: authListener } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+        const { data: authListener } = supabaseClient.auth.onAuthStateChange((event, session) => {
           if (!active) return;
           setAdminSession(session || null);
           if (event === 'PASSWORD_RECOVERY') setAdminRecovery(true);
