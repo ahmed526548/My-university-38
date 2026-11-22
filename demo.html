@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0284c7"><title>بوابة الطالب التجريبية | BSNU</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{font-family:Cairo,sans-serif;color:#17324a;background:#f3f8fc}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 0%,#dff4ff 0,transparent 34%),linear-gradient(145deg,#f8fcff,#edf6fb)}button,input{font:inherit}.wrap{max-width:1040px;margin:auto;padding:28px 18px 48px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:30px}.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#0ea5e9,#0369a1);color:white;display:grid;place-items:center;font-size:23px;box-shadow:0 9px 22px #0284c733}.brand b{font-size:17px}.brand small{display:block;color:#6b8296;font-size:11px}.pill{margin-right:auto;background:#fff1d6;color:#9a5b00;padding:7px 12px;border-radius:30px;font-size:11px;font-weight:900;border:1px solid #f7dba8}.panel{background:#fff;border:1px solid #dceaf3;border-radius:25px;box-shadow:0 18px 55px #1e4e6a12}.login{max-width:450px;margin:6vh auto;padding:30px}.eyebrow{color:#0284c7;font-size:11px;font-weight:900;letter-spacing:.04em}.login h1{font-size:25px;margin:8px 0}.muted{color:#70869a;font-size:13px;line-height:1.9}.field{margin-top:20px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:8px}.field input{width:100%;border:1px solid #cfe0eb;border-radius:13px;padding:13px 14px;outline:0;background:#fbfdff;direction:ltr;text-align:left}.field input:focus{border-color:#38aee5;box-shadow:0 0 0 3px #0ea5e91a}.primary{width:100%;border:0;border-radius:13px;padding:13px;margin-top:22px;color:#fff;background:linear-gradient(120deg,#0ea5e9,#0369a1);font-weight:900;cursor:pointer}.primary:disabled{opacity:.6;cursor:wait}.error{margin-top:14px;color:#b42318;background:#fff1f0;border:1px solid #ffd1cd;padding:10px;border-radius:12px;font-size:12px}.hint{margin-top:17px;padding:12px;border-radius:13px;background:#f0f9ff;border:1px solid #d5effc;color:#45677d;font-size:11px;line-height:1.9}.dash{display:none}.hero{padding:25px;background:linear-gradient(120deg,#e1f5ff,#f7fcff);border:1px solid #cbeafa;border-radius:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.hero h1{margin:4px 0;font-size:25px}.hero p{margin:0;color:#688095;font-size:12px}.logout{border:1px solid #b9dced;background:#fff;color:#0369a1;border-radius:12px;padding:9px 15px;font-weight:900;cursor:pointer}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:17px 0}.stat{padding:18px}.stat small{color:#7b91a4;font-size:11px}.stat strong{display:block;font-size:19px;margin-top:5px}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:15px}.section{padding:20px}.section h2{font-size:15px;margin:0 0 14px}.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #edf2f6}.item:last-child{border:0}.item b{font-size:12px}.item small{display:block;color:#8296a7;font-size:10px}.tag{font-size:10px;padding:5px 9px;border-radius:20px;background:#e9f7ff;color:#0369a1;font-weight:900}.notice{padding:13px;border-radius:13px;background:#fff8e8;color:#8a5b11;font-size:11px;line-height:1.9;margin-top:16px}.foot{text-align:center;color:#91a3b2;font-size:10px;margin-top:24px}@media(max-width:680px){.stats{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.login{margin-top:3vh;padding:23px}.hero h1{font-size:21px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="brand"><div class="logo">🎓</div><div><b>بوابة جامعة بني سويف الأهلية</b><small>BSNU • Student Demo Portal</small></div><span class="pill">وضع تجريبي</span></header>
+<section id="login" class="panel login">
+<div class="eyebrow">DEMO ACCESS</div><h1>تسجيل دخول الطلاب التجريبي</h1><p class="muted">استخدم كودًا تجريبيًا من القائمة المخصصة. الحسابات دي منفصلة تمامًا عن حسابات الطلاب الحقيقية.</p>
+<form id="loginForm">
+<div class="field"><label for="code">الكود التجريبي</label><input id="code" autocomplete="username" placeholder="DEMO-G1-001" required maxlength="12"></div>
+<div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور التجريبية" required></div>
+<button class="primary" id="submit" type="submit">دخول للبوابة التجريبية</button><div id="error" class="error" hidden></div>
+</form>
+<div class="hint">كل الحسابات التجريبية تستخدم كلمة المرور المتفق عليها. الأكواد التجريبية تبدأ بـ <b dir="ltr">DEMO-G1</b> أو <b dir="ltr">DEMO-G2</b>، من 001 حتى 065 و001 حتى 083 على الترتيب.</div>
+</section>
+<section id="dashboard" class="dash">
+<div class="hero"><div><span class="eyebrow">STUDENT DASHBOARD • DEMO</span><h1>أهلاً بيك في البوابة التجريبية</h1><p id="accountMeta">حساب تجريبي • قراءة فقط</p></div><button class="logout" id="logout">تسجيل الخروج</button></div>
+<div class="stats">
+<article class="panel stat"><small>الحالة</small><strong>حساب تجريبي</strong></article>
+<article class="panel stat"><small>المجموعة</small><strong id="groupValue">Group 1</strong></article>
+<article class="panel stat"><small>المعدل التراكمي</small><strong>—</strong></article>
+</div>
+<div class="grid">
+<article class="panel section"><h2>📚 المقررات الدراسية (عرض توضيحي)</h2>
+<div class="item"><div><b>مقدمة في الذكاء الاصطناعي</b><small>Artificial Intelligence</small></div><span class="tag">تجريبي</span></div>
+<div class="item"><div><b>أساسيات البرمجة</b><small>Programming Fundamentals</small></div><span class="tag">تجريبي</span></div>
+<div class="item"><div><b>رياضيات الحاسب</b><small>Computer Mathematics</small></div><span class="tag">تجريبي</span></div>
+<div class="item"><div><b>قواعد البيانات</b><small>Database Systems</small></div><span class="tag">تجريبي</span></div>
+</article>
+<article class="panel section"><h2>🗓️ الجدول والإعلانات</h2>
+<div class="item"><div><b>المحاضرات</b><small>مكان مخصص لجدول المحاضرات</small></div><span class="tag">عرض فقط</span></div>
+<div class="item"><div><b>التكليفات والاختبارات</b><small>مكان مخصص للمهام</small></div><span class="tag">عرض فقط</span></div>
+<div class="item"><div><b>الحضور والغياب</b><small>لا توجد سجلات حقيقية</small></div><span class="tag">غير متاح</span></div>
+<div class="item"><div><b>السجل الأكاديمي</b><small>لا توجد درجات فعلية</small></div><span class="tag">غير متاح</span></div>
+</article>
+</div>
+<div class="notice"><b>تنبيه مهم:</b> دي واجهة منفصلة للعرض والتجربة فقط. مفيش اتصال بملفات الطلاب أو درجاتهم أو حضورهم أو حساباتهم الحقيقية، ومفيش أي تعديلات بتتسجل على النظام الأكاديمي.</div>
+</section>
+<footer class="foot">© 2026 • بوابة تعليمية تجريبية • جميع الحسابات والبيانات المعروضة تجريبية</footer>
+</main>
+<script>
+const SUPABASE_URL = "https://azlplcbphvaiexmyfdbp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs";
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const $ = (id) => document.getElementById(id);
+function showAccount(account){
+  $("accountMeta").textContent = account.account_code + " • " + account.group_name + " • قراءة فقط";
+  $("groupValue").textContent = account.group_name;
+  $("login").style.display = "none";
+  $("dashboard").style.display = "block";
+}
+$("loginForm").addEventListener("submit", async (event)=>{
+  event.preventDefault(); $("error").hidden = true; $("submit").disabled = true; $("submit").textContent = "جاري التحقق...";
+  try{
+    const {data,error} = await client.functions.invoke("demo-student-login",{body:{account_code:$("code").value.trim().toUpperCase(),password:$("password").value}});
+    if(error || !data?.ok || !data?.account?.demo) throw new Error(data?.error || error?.message || "تعذر تسجيل الدخول.");
+    showAccount(data.account); $("password").value = "";
+  }catch(err){ $("error").textContent = err.message || "تعذر تسجيل الدخول."; $("error").hidden = false; }
+  finally{$("submit").disabled=false;$("submit").textContent="دخول للبوابة التجريبية";}
+});
+$("logout").addEventListener("click",()=>{$("dashboard").style.display="none";$("login").style.display="block";$("code").value="";$("password").value="";});
+</script></body></html>
