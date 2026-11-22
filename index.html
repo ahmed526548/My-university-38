@@ -2139,31 +2139,35 @@ Civil & Political + Economic & Social rights.` },
 
       const Lectures = () => {
         const [databaseLectures, setDatabaseLectures] = useState(null);
+        const [lectureLoadError, setLectureLoadError] = useState('');
         useEffect(() => {
           let active = true;
+          const subjectCode = selectedSubject?.code;
+          if (!subjectCode) { setDatabaseLectures([]); return () => { active = false; }; }
+          const cacheKey = `bsnu-offline-lectures-${subjectCode}`;
+          let cachedLectures = null;
+          try {
+            const saved = localStorage.getItem(cacheKey);
+            if (saved) {
+              cachedLectures = JSON.parse(saved);
+              if (active) setDatabaseLectures(cachedLectures);
+            } else if (active) setDatabaseLectures(null);
+          } catch (cacheError) {
+            console.warn('تعذر قراءة المحاضرات المحفوظة:', cacheError);
+          }
           const load = async () => {
-            const subjectCode = selectedSubject?.code;
-            if (!subjectCode) { setDatabaseLectures(null); return; }
-            const cacheKey = `bsnu-offline-lectures-${subjectCode}`;
-            let cachedLectures = null;
-            try {
-              const saved = localStorage.getItem(cacheKey);
-              if (saved) {
-                cachedLectures = JSON.parse(saved);
-                if (active) setDatabaseLectures(cachedLectures);
-              } else if (active) setDatabaseLectures(null);
-            } catch (cacheError) {
-              console.warn('تعذر قراءة المحاضرات المحفوظة:', cacheError);
-            }
-            // Supabase needs internet. If offline, keep the last saved copy on this device.
             if (!supabaseClient || !navigator.onLine) return;
-            const { data, error } = await supabaseClient.from('lectures').select('*').eq('subject_code', subjectCode).order('sort_order', { ascending: true });
+            const { data, error } = await supabaseClient.from('lectures').select('*')
+              .eq('subject_code', subjectCode).eq('published', true)
+              .order('created_at', { ascending: false }).limit(200);
             if (!active) return;
             if (error) {
               console.warn('تعذر تحديث المحاضرات من قاعدة البيانات:', error);
-              if (cachedLectures === null) setDatabaseLectures(null);
+              setLectureLoadError('تعذر تحميل المحاضرات من الخادم. تحقق من اتصال الإنترنت ثم اضغط تحديث.');
+              if (cachedLectures === null) setDatabaseLectures([]);
               return;
             }
+            setLectureLoadError('');
             const normalizedLectures = (data || []).map(row => ({
               id: row.id, title: row.title, doctor: row.doctor || 'غير محدد', duration: row.duration || '',
               summaryAr: row.summary_ar || '', summaryEn: row.summary_en || '', hasContent: !!row.file_url || !!row.has_content,
@@ -2175,15 +2179,19 @@ Civil & Political + Economic & Social rights.` },
             }
           };
           load();
-          return () => { active = false; };
+          if (!supabaseClient) return () => { active = false; };
+          const channel = supabaseClient.channel(`student-lectures-${subjectCode}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'lectures', filter: `subject_code=eq.${subjectCode}` }, load)
+            .subscribe();
+          return () => { active = false; supabaseClient.removeChannel(channel); };
         }, [selectedSubject?.code]);
-        const allSubjectLectures = databaseLectures?.length ? databaseLectures : (allLecturesData[selectedSubject?.code] || (selectedProgram === 'ai' ? allLecturesData.default : []));
+        const allSubjectLectures = databaseLectures !== null ? databaseLectures : (allLecturesData[selectedSubject?.code] || (selectedProgram === 'ai' ? allLecturesData.default : []));
         const selectedDoctorKey = selectedInstructor ? normalizeDoctorName(selectedInstructor) : '';
         const lectures = selectedInstructor ? allSubjectLectures.filter(lecture => {
           const lectureDoctorKey = normalizeDoctorName(lecture.doctor || '');
           return lectureDoctorKey.includes(selectedDoctorKey) || selectedDoctorKey.includes(lectureDoctorKey);
         }) : [];
-        const instructors = databaseLectures?.length
+        const instructors = databaseLectures !== null
           ? [...new Set(databaseLectures.map(lecture => lecture.doctor).filter(Boolean))].map(name => ({ name, note: '' }))
           : (selectedProgram === 'ai' ? (instructorsBySubject[selectedSubject?.code] || []) : []);
         return (
@@ -2199,7 +2207,11 @@ Civil & Political + Economic & Social rights.` },
               <h2 className="text-xl font-bold text-white mb-1">{selectedSubject?.arabicName}</h2>
               {!selectedInstructor ? (
                 <>
-                  <p className="text-gray-400 text-sm mb-4">اختار الدكتور لعرض محاضراته</p>
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <p className="text-gray-400 text-sm">اختار الدكتور لعرض محاضراته</p>
+                    <button type="button" onClick={() => { setDatabaseLectures(null); setLectureLoadError(''); }} className="rounded-lg border border-sky-300/20 px-3 py-2 text-[11px] font-bold text-sky-200">تحديث المحاضرات</button>
+                  </div>
+                  {lectureLoadError && <p className="mb-3 rounded-xl border border-amber-300/20 bg-amber-400/5 p-3 text-xs text-amber-200">{lectureLoadError}</p>}
                   <div className="space-y-3">
                     {!instructors.length && <div className="rounded-2xl border border-sky-300/20 bg-sky-400/5 p-5 text-center"><div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-400/10 text-sky-200"><Icons.BookOpen className="h-6 w-6" /></div><p className="font-bold text-white">مفيش محاضرات مضافة للمادة دي لسه</p><p className="mt-2 text-xs leading-6 text-slate-400">المحاضرات هتظهر هنا بعد ما الأدمن يضيفها.</p></div>}
                     {instructors.map(instructor => (
@@ -2231,8 +2243,9 @@ Civil & Political + Economic & Social rights.` },
                     </div>
                     <button type="button" onClick={() => setSelectedInstructor(null)} className="text-xs font-bold text-sky-300 underline">تغيير الدكتور</button>
                   </div>
+                  {lectureLoadError && <p className="mb-3 rounded-xl border border-amber-300/20 bg-amber-400/5 p-3 text-xs text-amber-200">{lectureLoadError}</p>}
                   {lectures.length === 0 ? (
-                    <div className="glass rounded-2xl p-6 text-center text-sm text-slate-400">لا توجد محاضرات مضافة لهذا الدكتور حاليًا.</div>
+                    <div className="glass rounded-2xl p-6 text-center text-sm text-slate-400">لا توجد محاضرات مضافة لهذا الدكتور حاليًا. اسحب للتحديث أو ارجع واضغط «تحديث المحاضرات».</div>
                   ) : <div className="space-y-3">
                 {lectures.map(lec => {
                   const done = isCompleted(selectedSubject?.code, lec.id);
