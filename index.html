@@ -3037,27 +3037,29 @@ Civil & Political + Economic & Social rights.` },
           {view === 'notifications' && <NotificationsView />}
           {view === 'campus-map' && <CampusMapView />}
           {view === 'admin' && (
-            <div className="min-h-screen bg-[#061321] px-4 py-8">
-              <div className="mx-auto max-w-6xl">
-                <div className="glass rounded-3xl border border-sky-300/20 p-6">
+            <div className="min-h-screen bg-slate-50 px-4 py-8">
+              <div className="mx-auto max-w-4xl space-y-5">
+                <section className="rounded-3xl border border-sky-200 bg-white p-6 shadow-sm">
                   <div className="mb-5 text-center">
-                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-400/10 text-sky-300"><Icons.User className="h-7 w-7" /></div>
-                    <h1 className="text-xl font-black text-white">لوحة تحكم الأدمن</h1>
-                    <p className="mt-1 text-xs text-slate-400">تسجيل دخول آمن عبر Supabase</p>
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-3xl">🛡️</div>
+                    <h1 className="text-2xl font-black text-slate-800">مركز إدارة الحسابات</h1>
+                    <p className="mt-1 text-sm text-slate-500">إدارة حسابات الطلاب وهيئة التدريس فقط</p>
                   </div>
                   {!supabaseClient ? (
-                    <p className="rounded-xl bg-red-500/10 p-3 text-sm text-red-300">خدمة تسجيل الدخول غير متاحة حاليًا.</p>
+                    <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">خدمة تسجيل الدخول غير متاحة حاليًا.</p>
                   ) : adminChecking ? (
-                    <p className="py-6 text-center text-sm text-slate-300">جاري التحقق من الجلسة...</p>
+                    <p className="py-6 text-center text-sm text-slate-500">جاري التحقق من جلسة الأدمن...</p>
                   ) : adminAllowed && adminSession ? (
                     <div className="space-y-4">
-                      <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-center">
-                        <p className="font-bold text-emerald-300">تم التحقق من صلاحيات الأدمن</p>
-                        <p className="mt-1 break-all text-xs text-slate-300">{adminSession.user?.email}</p>
+                      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
+                        <p className="font-bold text-emerald-800">تم التحقق من صلاحيات الأدمن</p>
+                        <p className="mt-1 break-all text-xs text-slate-600">{adminSession.user?.email}</p>
                       </div>
-                      <a href="./faculty-admin.html" className="block rounded-xl border border-sky-300/25 bg-sky-400/10 px-4 py-3 text-center text-sm font-black text-sky-100 hover:bg-sky-400/15">👨‍🏫 إدارة حسابات الدكاترة</a>
-                      <section className="rounded-2xl border border-emerald-300/20 bg-emerald-400/5 p-4 text-right space-y-3">
-                        <div><h2 className="text-sm font-black text-white">🎓 إنشاء حساب طالب</h2><p className="mt-1 text-xs leading-6 text-slate-400">أنشئ حسابًا لطالب واحد باستخدام كوده. كلمة المرور المؤقتة تظهر مرة واحدة فقط.</p></div>
+                      <a href="./faculty-admin.html" className="flex items-center justify-between rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-900 hover:bg-sky-100">
+                        <span><b className="block text-base">👨‍🏫 إدارة حسابات الدكاترة</b><small className="text-xs text-slate-600">إضافة بيانات الدخول وتحديث حساب الدكتور</small></span><span className="text-xl">←</span>
+                      </a>
+                      <section className="space-y-3 rounded-2xl border border-emerald-200 bg-white p-4">
+                        <div><h2 className="font-black text-slate-800">🎓 إنشاء حساب طالب</h2><p className="mt-1 text-xs leading-6 text-slate-500">اكتب كود الطالب المسجل في كشف الجامعة. كلمة المرور المؤقتة تظهر مرة واحدة.</p></div>
                         <form onSubmit={async (event) => {
                           event.preventDefault();
                           if (!adminAllowed || !adminSession || adminStudentBusy) return;
@@ -3069,21 +3071,21 @@ Civil & Political + Economic & Social rights.` },
                             if (error || !data?.ok) throw new Error(data?.error || error?.message || "تعذر إنشاء الحساب");
                             setCreatedStudentCredential({ code, name: data.student?.full_name || "", group: data.student?.group_name || "", password: data.temporary_password });
                             setAdminStudentCode(""); showToast("تم إنشاء حساب الطالب");
-                          } catch (error) { showToast(error?.message || "تعذر إنشاء حساب الطالب", "error"); }
+                          } catch (error) { showToast(error?.message || "تعذر إنشاء الحساب", "error"); }
                           finally { setAdminStudentBusy(false); }
                         }} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
-                          <input value={adminStudentCode} onChange={e => setAdminStudentCode(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm text-white" dir="ltr" required />
-                          <button disabled={adminStudentBusy} className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminStudentBusy ? "جاري الإنشاء..." : "إنشاء الحساب"}</button>
+                          <input value={adminStudentCode} onChange={e => setAdminStudentCode(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm" dir="ltr" required />
+                          <button disabled={adminStudentBusy} className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white disabled:opacity-50">{adminStudentBusy ? "جاري الإنشاء..." : "إنشاء الحساب"}</button>
                         </form>
-                        {createdStudentCredential && <div className="rounded-xl border border-emerald-300/20 bg-emerald-400/10 p-3 space-y-2">
-                          <p className="text-sm font-black text-emerald-200">تم إنشاء الحساب: {createdStudentCredential.name}</p>
-                          <p className="text-xs text-slate-300">الكود: <b dir="ltr">{createdStudentCredential.code}</b> • {createdStudentCredential.group}</p>
-                          <div className="flex flex-wrap items-center gap-2"><code dir="ltr" className="flex-1 rounded-lg bg-slate-950 px-3 py-2 text-sm text-white">{createdStudentCredential.password}</code><button type="button" onClick={() => { navigator.clipboard?.writeText(createdStudentCredential.password); showToast("تم نسخ كلمة المرور"); }} className="rounded-lg bg-sky-400 px-3 py-2 text-xs font-black text-slate-950">نسخ كلمة المرور</button></div>
-                          <p className="text-[10px] leading-5 text-amber-200">احفظ كلمة المرور وسلّمها للطالب بأمان. لن تظهر مرة أخرى بعد مغادرة الصفحة.</p>
+                        {createdStudentCredential && <div className="space-y-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                          <p className="text-sm font-black text-emerald-900">تم إنشاء الحساب: {createdStudentCredential.name}</p>
+                          <p className="text-xs text-slate-600">الكود: <b dir="ltr">{createdStudentCredential.code}</b> • {createdStudentCredential.group}</p>
+                          <div className="flex flex-wrap items-center gap-2"><code dir="ltr" className="flex-1 rounded-lg bg-white px-3 py-2 text-sm text-slate-800">{createdStudentCredential.password}</code><button type="button" onClick={() => { navigator.clipboard?.writeText(createdStudentCredential.password); showToast("تم نسخ كلمة المرور"); }} className="rounded-lg bg-sky-600 px-3 py-2 text-xs font-black text-white">نسخ كلمة المرور</button></div>
+                          <p className="text-[10px] leading-5 text-amber-800">احفظ كلمة المرور وسلّمها للطالب بأمان. لن تظهر مرة أخرى بعد مغادرة الصفحة.</p>
                         </div>}
                       </section>
-                      <section className="mb-4 rounded-2xl border border-amber-300/20 bg-amber-400/5 p-4 text-right space-y-3">
-                        <div><h2 className="text-sm font-black text-white">🔐 إعادة تعيين كلمة مرور طالب</h2><p className="mt-1 text-xs leading-6 text-slate-400">لو كلمة المرور المؤقتة ضاعت، اكتب كود الطالب لتوليد كلمة مرور جديدة. سيُطلب من الطالب تغييرها عند أول دخول.</p></div>
+                      <section className="space-y-3 rounded-2xl border border-amber-200 bg-white p-4">
+                        <div><h2 className="font-black text-slate-800">🔐 إعادة تعيين كلمة مرور طالب</h2><p className="mt-1 text-xs leading-6 text-slate-500">لو كلمة المرور ضاعت، اكتب كود الطالب لتوليد كلمة مرور مؤقتة جديدة.</p></div>
                         <form onSubmit={async (event) => {
                           event.preventDefault();
                           if (!adminAllowed || !adminSession || resetStudentBusy) return;
@@ -3098,243 +3100,32 @@ Civil & Political + Economic & Social rights.` },
                           } catch (error) { showToast(error?.message || "تعذر إعادة تعيين كلمة المرور", "error"); }
                           finally { setResetStudentBusy(false); }
                         }} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
-                          <input value={resetStudentCode} onChange={e => setResetStudentCode(e.target.value.replace(/[٠-٩۰-۹]/g, ch => String("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹".indexOf(ch) % 10)).replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm text-white" dir="ltr" required />
-                          <button disabled={resetStudentBusy} className="rounded-xl bg-amber-300 px-5 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{resetStudentBusy ? "جاري التعيين..." : "إعادة تعيين كلمة المرور"}</button>
+                          <input value={resetStudentCode} onChange={e => setResetStudentCode(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm" dir="ltr" required />
+                          <button disabled={resetStudentBusy} className="rounded-xl bg-amber-500 px-5 py-3 text-sm font-black text-white disabled:opacity-50">{resetStudentBusy ? "جاري التعيين..." : "إعادة تعيين كلمة المرور"}</button>
                         </form>
-                        {resetStudentCredential && <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 space-y-2">
-                          <p className="text-sm font-black text-amber-100">كلمة مرور جديدة للطالب: {resetStudentCredential.name}</p>
-                          <p className="text-xs text-slate-300">الكود: <b dir="ltr">{resetStudentCredential.code}</b> • {resetStudentCredential.group}</p>
-                          <div className="flex flex-wrap items-center gap-2"><code dir="ltr" className="flex-1 rounded-lg bg-slate-950 px-3 py-2 text-sm text-white">{resetStudentCredential.password}</code><button type="button" onClick={() => { navigator.clipboard?.writeText(resetStudentCredential.password); showToast("تم نسخ كلمة المرور الجديدة"); }} className="rounded-lg bg-sky-400 px-3 py-2 text-xs font-black text-slate-950">نسخ كلمة المرور</button></div>
-                          <p className="text-[10px] leading-5 text-amber-100">اعطِ كلمة المرور الجديدة للطالب بأمان. ستظهر هنا مرة واحدة فقط، وسيُطلب منه تغييرها عند تسجيل الدخول.</p>
+                        {resetStudentCredential && <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                          <p className="text-sm font-black text-amber-900">كلمة مرور جديدة للطالب: {resetStudentCredential.name}</p>
+                          <p className="text-xs text-slate-600">الكود: <b dir="ltr">{resetStudentCredential.code}</b> • {resetStudentCredential.group}</p>
+                          <div className="flex flex-wrap items-center gap-2"><code dir="ltr" className="flex-1 rounded-lg bg-white px-3 py-2 text-sm text-slate-800">{resetStudentCredential.password}</code><button type="button" onClick={() => { navigator.clipboard?.writeText(resetStudentCredential.password); showToast("تم نسخ كلمة المرور"); }} className="rounded-lg bg-sky-600 px-3 py-2 text-xs font-black text-white">نسخ كلمة المرور</button></div>
+                          <p className="text-[10px] leading-5 text-amber-800">يجب على الطالب تغييرها عند أول دخول.</p>
                         </div>}
                       </section>
-                      <section className="mb-4 rounded-2xl border border-sky-300/20 bg-slate-950/25 p-4 space-y-3">
-                        <div>
-                          <div className="mb-3 flex items-center justify-between gap-3">
-                            <div><h2 className="text-sm font-black text-white">اختار البرنامج اللي هتديره</h2><p className="mt-1 text-[10px] text-slate-400">كل برنامج له مواده ومحاضراته بشكل منفصل</p></div>
-                            {adminSelectedProgram && <span className="rounded-full bg-sky-400/10 px-3 py-1 text-[10px] font-bold text-sky-200">{adminSelectedProgram.toUpperCase()}</span>}
-                          </div>
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            {[
-                              {id:'ai',name:'AI',subtitle:'Artificial Intelligence',icon:'Bot'},
-                              {id:'cyber',name:'Cyber',subtitle:'Cybersecurity',icon:'Zap'},
-                              {id:'medical',name:'Medical',subtitle:'Medical Informatics',icon:'BookOpen'}
-                            ].map(program => {
-                              const ProgramIcon = Icons[program.icon] || Icons.Layers;
-                              return <button key={program.id} type="button" onClick={() => {
-                                setAdminSelectedProgram(program.id);
-                                setAdminProgramSubjects([]);
-                                setAdminSelectedTable(program.id === 'ai' ? 'lectures' : 'subjects');
-                                setAdminEditingId(null);
-                                setAdminFormData({});
-                                setAdminRecords([]);
-                              }} className={`rounded-2xl border p-4 text-right transition-all ${adminSelectedProgram === program.id ? 'border-sky-300/60 bg-sky-400/15 shadow-lg shadow-sky-950/30' : 'border-sky-300/15 bg-slate-900/60 hover:bg-sky-400/5'}`}>
-                                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-sky-400/10 text-sky-200"><ProgramIcon className="h-6 w-6" /></span>
-                                <span className="block text-base font-black text-white">{program.name}</span>
-                                <span className="mt-1 block text-[10px] text-slate-400">{program.subtitle}</span>
-                                <span className="mt-3 block text-[10px] font-bold text-sky-200">{adminSelectedProgram === program.id ? 'البرنامج المحدد' : 'اختيار البرنامج'}</span>
-                              </button>;
-                            })}
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          <button type="button" onClick={() => {
-                            const nextOpen = !adminStudentsOpen;
-                            setAdminStudentsOpen(nextOpen);
-                            if (nextOpen) loadAdminStudents();
-                          }} className="rounded-xl border border-sky-300/25 bg-sky-400/10 p-3 text-right transition-all hover:bg-sky-400/15 focus:outline-none focus:ring-2 focus:ring-sky-300/50">
-                            <div className="flex items-center justify-between gap-2 text-[10px] text-slate-300"><span>الطلاب المسجلون</span><Icons.Users className="h-4 w-4 text-sky-200" /></div>
-                            <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.students}</div>
-                            <div className="mt-1 text-[9px] font-bold text-sky-300">{adminStudentsOpen ? 'إخفاء الملفات' : 'عرض سجل الزيارات'}</div>
-                          </button>
-                          <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3">
-                            <div className="text-[10px] text-slate-400">إجمالي الزيارات</div>
-                            <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.totalVisits}</div>
-                          </div>
-                          <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3">
-                            <div className="text-[10px] text-slate-400">نشطون آخر 7 أيام</div>
-                            <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.activeStudents}</div>
-                          </div>
-                          <div className="rounded-xl border border-sky-300/15 bg-sky-400/5 p-3">
-                            <div className="text-[10px] text-slate-400">التكليفات</div>
-                            <div className="mt-1 text-xl font-black text-sky-200">{adminOverview.tasks}</div>
-                          </div>
-                        </div>
-                        {adminStudentsOpen && (
-                          <section className="rounded-xl border border-sky-300/20 bg-slate-950/35 p-3">
-                            <div className="mb-3 flex items-center justify-between gap-2">
-                              <div><h3 className="text-sm font-black text-white">سجل زيارات الطلاب</h3><p className="mt-1 text-[10px] text-slate-400">مرتب حسب أحدث زيارة • يتم التسجيل عند فتح الموقع بحساب طالب</p></div>
-                              <button type="button" onClick={() => { loadAdminStudents(); loadAdminOverview(); }} disabled={adminStudentsBusy} className="rounded-lg bg-sky-400/10 px-3 py-2 text-[10px] font-bold text-sky-200 disabled:opacity-50">{adminStudentsBusy ? 'جاري التحديث...' : 'تحديث القائمة'}</button>
-                            </div>
-                            {adminStudentsBusy && adminStudents.length === 0 ? (
-                              <p className="py-5 text-center text-xs text-slate-400">جاري تحميل بيانات الطلاب...</p>
-                            ) : adminStudents.length === 0 ? (
-                              <p className="rounded-lg border border-slate-700 p-4 text-center text-xs text-slate-400">لا توجد حسابات طلاب مسجلة حاليًا.</p>
-                            ) : (
-                              <div className="max-h-80 space-y-2 overflow-y-auto">
-                                {adminStudents.map((student) => (
-                                  <article key={student.user_id} className="rounded-xl border border-sky-300/15 bg-slate-900/75 p-3">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="min-w-0">
-                                        <p className="break-words text-sm font-extrabold text-white">{student.display_name || 'طالب بدون اسم'}</p>
-                                        <p className="mt-1 break-all text-[10px] text-slate-500">{student.email || 'البريد الإلكتروني سيظهر بعد الزيارة القادمة'}</p>
-                                        <p className="mt-1 text-[10px] text-slate-400">{student.group_name || 'لم يحدد الجروب'}</p>
-                                      </div>
-                                      <span className="shrink-0 rounded-lg bg-sky-400/10 px-2 py-1 text-[9px] font-bold text-sky-200">{student.visit_count || 0} زيارة</span>
-                                    </div>
-                                    <div className="mt-3 grid grid-cols-1 gap-1 text-[10px] text-slate-400 sm:grid-cols-2">
-                                      <span>أول زيارة: {student.first_seen_at ? new Date(student.first_seen_at).toLocaleString('ar-EG') : (student.created_at ? new Date(student.created_at).toLocaleDateString('ar-EG') : 'غير متاح')}</span>
-                                      <span>آخر زيارة: {student.last_seen_at ? new Date(student.last_seen_at).toLocaleString('ar-EG') : 'لم يزر الموقع بعد'}</span>
-                                    </div>
-                                  </article>
-                                ))}
-                              </div>
-                            )}
-                          </section>
-                        )}
-                        <div className="rounded-xl border border-sky-300/15 bg-slate-950/30 p-3">
-                          <div className="mb-2 flex items-center justify-between"><b className="text-xs text-white">سجل النشاط الإداري</b><button type="button" onClick={loadAdminOverview} className="text-[10px] text-sky-300">تحديث</button></div>
-                          {adminOverview.topLectures.length ? <div className="mb-3 border-b border-white/5 pb-3">{adminOverview.topLectures.map((item,index)=><div key={index} className="flex items-center justify-between gap-2 py-1.5 text-[10px]"><span className="truncate text-slate-300">{item.title} {item.subject ? '• '+item.subject : ''}</span><b className="text-sky-200">{item.count} مشاهدة</b></div>)}</div> : <p className="mb-2 text-[10px] text-slate-500">ستظهر أكثر المحاضرات مشاهدة بعد تفاعل الطلاب معها.</p>}
-                          {adminOverview.activity.length ? adminOverview.activity.map(item=><div key={item.id} className="flex items-center justify-between gap-2 border-t border-white/5 py-2 text-[10px]"><span className="text-slate-300">{item.action === 'create' ? 'إضافة' : item.action === 'update' ? 'تعديل' : 'حذف'} • {item.entity}</span><span className="text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</span></div>) : <p className="text-[10px] text-slate-500">لا توجد عمليات مسجلة بعد.</p>}
-                        </div>
+                      <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="flex items-center justify-between gap-2"><div><h2 className="font-black text-slate-800">👥 الطلاب الذين استخدموا البوابة</h2><p className="mt-1 text-xs text-slate-500">سجل الزيارات المسجل للطلاب</p></div><button type="button" onClick={loadAdminStudents} disabled={adminStudentsBusy} className="rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-800">{adminStudentsBusy ? "جاري التحميل..." : "تحديث القائمة"}</button></div>
+                        {adminStudents.length ? <div className="max-h-72 space-y-2 overflow-y-auto">{adminStudents.map(student => <article key={student.user_id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><b className="text-sm text-slate-800">{student.display_name || "طالب بدون اسم"}</b><p className="mt-1 text-xs text-slate-500">{student.group_name || "لم يحدد الجروب"} • {student.visit_count || 0} زيارة</p><p className="text-[10px] text-slate-400">{student.email || "لا يوجد بريد مسجل"}</p></article>)}</div> : <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">اضغط تحديث القائمة لعرض الطلاب الذين زاروا البوابة.</p>}
                       </section>
-                      <div className={`grid grid-cols-1 xl:grid-cols-2 gap-5 text-right items-start ${adminSelectedProgram ? '' : 'pointer-events-none opacity-40'}`}>
-                        <section className="space-y-4 rounded-2xl border border-sky-300/15 bg-slate-950/25 p-4">
-                        <div>
-                          <label className="mb-2 block text-xs font-bold text-slate-300">اختار القسم اللي عايز تديره</label>
-                          <select disabled={!adminSelectedProgram} value={adminSelectedTable} onChange={e => { setAdminSelectedTable(e.target.value); setAdminEditingId(null); setAdminFormData({}); }} className="w-full rounded-xl border border-sky-300/20 bg-slate-900 px-3 py-3 text-sm text-white disabled:opacity-50">
-                            {adminTableOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-                          </select>
-                        </div>
-                        <form onSubmit={saveAdminRecord} className="space-y-3 rounded-2xl border border-sky-300/20 bg-sky-400/5 p-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-sm font-extrabold text-white">{adminEditingId !== null ? 'تعديل البيانات' : 'إضافة سجل جديد'}</h3>
-                            {adminEditingId !== null && <button type="button" onClick={() => { setAdminEditingId(null); setAdminFormData({}); }} className="text-xs text-slate-300 underline">إلغاء التعديل</button>}
-                          </div>
-                          <p className="text-[11px] leading-5 text-slate-400">املأ الخانات التالية، وسيتم حفظ البيانات مباشرة في قاعدة البيانات.</p>
-                          {adminEditingId === null && [].includes(adminSelectedTable) && <p className="rounded-lg bg-amber-400/10 p-2 text-[10px] leading-5 text-amber-200">هذا القسم يُنشأ تلقائيًا من تفاعل الطلاب. اختار سجلًا من القائمة لتعديله أو مراجعته.</p>}
-                          <div className="grid grid-cols-1 gap-3">
-                            {adminFieldConfig[adminSelectedTable].map(field => (
-                              <label key={field.key} className="block text-xs font-bold text-slate-300">
-                                <span className="mb-1.5 block">{field.label}{field.required ? ' *' : ''}</span>
-                                {field.type === 'subject' ? (
-                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value, doctor: field.key === 'subject_code' ? '' : current.doctor }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
-                                    <option value="">اختار المادة</option>
-                                    {adminProgramSubjects.map(subject => <option key={subject.code} value={subject.code}>{subject.arabic_name || subject.name}</option>)}
-                                  </select>
-                                ) : field.type === 'icon' ? (
-                                  <select value={adminFormData[field.key] ?? 'BookOpen'} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
-                                    {['BookOpen','Bot','Calendar','Message','Sparkles','Calculator','Zap','Layers','Users','Target','Graduation','Clock','Search','Star'].map(iconName => <option key={iconName} value={iconName}>{iconName}</option>)}
-                                  </select>
-                                ) : field.type === 'color' ? (
-                                  <select value={adminFormData[field.key] ?? 'from-sky-600 to-cyan-700'} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
-                                    {['from-sky-600 to-cyan-700','from-violet-600 to-purple-700','from-blue-600 to-indigo-700','from-cyan-600 to-teal-700','from-emerald-600 to-green-700','from-amber-600 to-orange-700'].map(colorName => <option key={colorName} value={colorName}>{colorName}</option>)}
-                                  </select>
-                                ) : field.type === 'instructor' ? (
-                                  <input type="text" value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" placeholder="اكتب اسم الدكتور عند إضافة المحاضرة" />
-                                ) : field.type === 'textarea' ? (
-                                  <textarea value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} rows={3} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-2.5 text-sm text-white" />
-                                ) : field.type === 'boolean' ? (
-                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
-                                    <option value="">اختار الحالة</option>
-                                    <option value="true">نعم</option>
-                                    <option value="false">لا</option>
-                                  </select>
-                                ) : ['taskkind','notificationkind','reportstatus'].includes(field.type) ? (
-                                  <select value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white">
-                                    {(field.type === 'taskkind' ? [['assignment','تكليف'],['exam','امتحان']] : field.type === 'reportstatus' ? [['open','مفتوح'],['reviewed','تمت المراجعة'],['dismissed','مرفوض']] : [['info','معلومات'],['warning','تحذير'],['success','نجاح'],['exam','امتحان'],['schedule','جدول']]).map(([value,label]) => <option key={value} value={value}>{label}</option>)}
-                                  </select>
-                                ) : (
-                                  <input type={field.type === 'number' ? 'number' : field.type === 'url' ? 'url' : field.type === 'datetime-local' ? 'datetime-local' : 'text'} value={adminFormData[field.key] ?? ''} onChange={e => setAdminFormData(current => ({ ...current, [field.key]: e.target.value }))} required={!!field.required} disabled={field.type === 'readonly'} placeholder={field.type === 'url' ? 'https://...' : ''} className="soft-control w-full rounded-xl px-3 py-3 text-sm text-white" dir={field.key.includes('url') || field.key.includes('code') ? 'ltr' : 'auto'} />
-                                )}
-                              </label>
-                            ))}
-                          </div>
-                          <button disabled={!adminSelectedProgram || adminDataBusy || (adminEditingId === null && ['student_profiles'].includes(adminSelectedTable))} type="submit" className="w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminDataBusy ? 'جاري الحفظ...' : adminEditingId !== null ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات'}</button>
-                        </form>
-                        </section>
-                        <section className="space-y-4 rounded-2xl border border-sky-300/15 bg-slate-950/25 p-4">
-                        <div className="flex items-center justify-between">
-                          <div><h3 className="text-sm font-extrabold text-white">{adminSelectedTable === 'lectures' ? 'المحاضرات حسب المادة' : 'السجلات الحالية'} ({adminRecords.length})</h3>{adminSelectedTable === 'lectures' && <p className="mt-1 text-[10px] text-slate-400">افتح أي مادة لعرض محاضراتها وتعديلها أو حذفها</p>}</div>
-                          <button onClick={() => loadAdminRecords()} disabled={adminDataBusy} className="text-xs font-bold text-sky-300 underline">تحديث</button>
-                        </div>
-                        {adminDataBusy && adminRecords.length === 0 ? <p className="py-5 text-center text-xs text-slate-400">جاري تحميل البيانات...</p> : adminRecords.length === 0 ? <p className="rounded-xl border border-slate-700 p-4 text-center text-xs leading-6 text-slate-400">{adminSelectedTable === 'lectures' && !adminProgramSubjects.length ? 'مفيش مواد للبرنامج ده لسه. افتح قسم المواد الدراسية وأضف المادة الأول، وبعدها تقدر تضيف محاضراتها.' : 'مفيش سجلات في القسم ده حاليًا.'}</p> : (
-                          <div className="max-h-[460px] space-y-2 overflow-y-auto">
-                            {adminSelectedTable === 'lectures' ? (
-                              Object.entries(adminRecords.reduce((groups, record) => {
-                                const code = record.subject_code || 'بدون مادة';
-                                (groups[code] ||= []).push(record);
-                                return groups;
-                              }, {})).map(([code, records]) => {
-                                const subject = adminProgramSubjects.find(item => item.code === code);
-                                const SubjectIcon = Icons[subject?.icon] || Icons.BookOpen;
-                                return (
-                                  <details key={code} className="overflow-hidden rounded-xl border border-sky-300/20 bg-slate-900/80">
-                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3">
-                                      <span className="flex min-w-0 items-center gap-3">
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/10 text-sky-300"><SubjectIcon className="h-5 w-5" /></span>
-                                        <span className="min-w-0">
-                                          <span className="block truncate text-sm font-extrabold text-white">{subject?.arabic_name || subject?.name || code}</span>
-                                          <span className="mt-1 block text-[10px] text-slate-400">{code} • {records.length} محاضرة</span>
-                                        </span>
-                                      </span>
-                                      <Icons.ChevronDown className="h-4 w-4 shrink-0 text-sky-300" />
-                                    </summary>
-                                    <div className="space-y-2 border-t border-slate-700 p-3">
-                                      {records.map((record, index) => (
-                                        <div key={record.id ?? index} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
-                                          <p className="text-sm font-bold leading-6 text-white">{record.title || 'محاضرة بدون عنوان'}</p>
-                                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-400">
-                                            {record.doctor && <span>{record.doctor}</span>}
-                                            {record.duration && <span>{record.duration}</span>}
-                                          </div>
-                                          <div className="mt-3 flex gap-2">
-                                            <button onClick={() => editAdminRecord(record)} className="flex-1 rounded-lg bg-sky-400/10 py-2 text-xs font-bold text-sky-200">تعديل</button>
-                                            <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="flex-1 rounded-lg bg-red-400/10 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </details>
-                                );
-                              })
-                            ) : adminSelectedTable === 'subjects' ? adminRecords.map((record, index) => {
-                              const SubjectIcon = Icons[record.icon] || Icons.BookOpen;
-                              return (
-                                <div key={record.id ?? index} className="flex items-center gap-3 rounded-xl border border-sky-300/15 bg-slate-900/80 p-3">
-                                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${record.color || 'from-sky-600 to-cyan-700'} text-white`}><SubjectIcon className="h-5 w-5" /></span>
-                                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-extrabold text-white">{record.name}</p><p className="mt-1 text-[10px] text-slate-400">{record.code}</p></div>
-                                  <div className="flex shrink-0 gap-2">
-                                    <button onClick={() => editAdminRecord(record)} className="rounded-lg bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-200">تعديل</button>
-                                    <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="rounded-lg bg-red-400/10 px-3 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
-                                  </div>
-                                </div>
-                              );
-                            }) : adminRecords.map((record, index) => (
-                              <div key={record.id ?? index} className="rounded-xl border border-slate-700 bg-slate-900/80 p-3">
-                                <pre dir="ltr" className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-left text-[10px] leading-5 text-slate-300">{JSON.stringify(record, null, 2)}</pre>
-                                <div className="mt-3 flex gap-2">
-                                  <button onClick={() => editAdminRecord(record)} className="flex-1 rounded-lg bg-sky-400/10 py-2 text-xs font-bold text-sky-200">تعديل</button>
-                                  <button onClick={() => deleteAdminRecord(record)} disabled={adminDataBusy} className="flex-1 rounded-lg bg-red-400/10 py-2 text-xs font-bold text-red-200 disabled:opacity-50">حذف</button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        </section>
-                      </div>
-                      <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-700 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}</button>
+                      <button disabled={adminBusy} onClick={handleAdminLogout} className="w-full rounded-xl bg-slate-800 py-3 text-sm font-bold text-white disabled:opacity-50">{adminBusy ? "جاري تسجيل الخروج..." : "تسجيل الخروج"}</button>
                     </div>
                   ) : (
                     <form onSubmit={handleAdminLogin} className="space-y-3">
-                      <label className="block text-xs font-bold text-slate-300">البريد الإلكتروني</label>
-                      <input type="email" required autoComplete="username" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} placeholder="admin@example.com" className="soft-control w-full rounded-xl px-4 py-3 text-sm text-white" dir="ltr" />
-                      <label className="block text-xs font-bold text-slate-300">كلمة المرور</label>
-                      <input type="password" required autoComplete="current-password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="••••••••" className="soft-control w-full rounded-xl px-4 py-3 text-sm text-white" dir="ltr" />
-                      <button type="submit" disabled={adminBusy} className="mt-2 w-full rounded-xl bg-sky-500 py-3 text-sm font-black text-slate-950 disabled:opacity-50">{adminBusy ? 'جاري التحقق...' : 'تسجيل الدخول'}</button>
+                      <label className="block text-xs font-bold text-slate-600">البريد الإلكتروني للأدمن</label>
+                      <input type="email" required autoComplete="username" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} placeholder="admin@example.com" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
+                      <label className="block text-xs font-bold text-slate-600">كلمة المرور</label>
+                      <input type="password" required autoComplete="current-password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="••••••••" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
+                      <button type="submit" disabled={adminBusy} className="mt-2 w-full rounded-xl bg-sky-600 py-3 text-sm font-black text-white disabled:opacity-50">{adminBusy ? "جاري التحقق..." : "تسجيل الدخول"}</button>
                     </form>
                   )}
-                </div>
+                </section>
               </div>
             </div>
           )}
