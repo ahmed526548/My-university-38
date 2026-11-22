@@ -49,7 +49,7 @@
  <div class="grid">
   <section class="panel">
    <h2 id="formTitle">إضافة محاضرة جديدة</h2>
-   <form id="contentForm">
+   <form id="contentForm" novalidate>
     <div id="fields" class="formgrid"></div>
     <button class="btn" id="saveBtn" style="width:100%;margin-top:16px">نشر المحتوى للطلاب</button>
     <div id="formMessage" class="message"></div>
@@ -111,6 +111,9 @@ async function loadRecords(){const c=configs[activeTab];const {data,error}=await
 $('contentForm').onsubmit=async e=>{
  e.preventDefault();
  const formElement=e.currentTarget,c=configs[activeTab],form=new FormData(formElement),row={created_by:user.id,published:true};
+ message($('formMessage'),'جاري التحقق من البيانات وتجهيز النشر...');
+ const missing=c.fields().find(f=>f.required&&!String(form.get(f.key)||'').trim());
+ if(missing){message($('formMessage'),'من فضلك أكمل حقل: '+missing.label,true);const input=formElement.elements.namedItem(missing.key);if(input)input.focus();return}
  if(activeTab!=='lectures')row.doctor_name=currentFaculty.full_name;
  for(const f of c.fields()){if(f.type==='file')continue;const value=form.get(f.key);if(value!==null&&value!=='')row[f.key]=value}
  $('saveBtn').disabled=true;
@@ -133,10 +136,11 @@ $('contentForm').onsubmit=async e=>{
    if(row.due_at)row.due_at=new Date(row.due_at).toISOString();
    if(row.content_mode==='file'){
     const file=form.get('task_file');
-    if(!file||!file.size)throw new Error('ارفع ملف الكويز أو الامتحان أولاً.');
+    if(!file||!file.size)throw new Error('اختار ملف الكويز أو الامتحان قبل النشر.');
     if(file.size>25*1024*1024)throw new Error('حجم الملف أكبر من 25 ميجابايت.');
     const extension=(file.name.split('.').pop()||'pdf').toLowerCase().replace(/[^a-z0-9]/g,'')||'pdf';
     const path=user.id+'/tasks/'+Date.now()+'-'+Math.random().toString(36).slice(2,10)+'.'+extension;
+    message($('formMessage'),'جاري رفع ملف التقييم...');
     const {error:uploadError}=await db.storage.from('lecture-files').upload(path,file,{upsert:false});
     if(uploadError)throw uploadError;
     row.attachment_url=db.storage.from('lecture-files').getPublicUrl(path).data.publicUrl;
@@ -145,22 +149,25 @@ $('contentForm').onsubmit=async e=>{
     const questionRows=[...document.querySelectorAll('#questionList .item')];
     if(!questionRows.length)throw new Error('أضف سؤالًا واحدًا على الأقل.');
     row.quiz_questions=questionRows.map((q,i)=>{
-     const text=q.querySelector('.question-text').value.trim(),type=q.querySelector('.question-type').value;
+     const questionText=q.querySelector('.question-text').value.trim(),type=q.querySelector('.question-type').value;
      const choices=q.querySelector('.question-choices').value.split('\n').map(x=>x.trim()).filter(Boolean);
      const marks=Number(q.querySelector('.question-marks').value)||1;
-     if(!text)throw new Error('اكتب نص السؤال رقم '+(i+1));
+     if(!questionText)throw new Error('اكتب نص السؤال رقم '+(i+1));
      if(type==='mcq'&&choices.length<2)throw new Error('أضف اختيارين على الأقل للسؤال رقم '+(i+1));
-     return {text,type,choices,marks};
+     return {text:questionText,type,choices,marks};
     });
     row.attachment_url=null;row.attachment_name=null;
    }
   }
+  message($('formMessage'),'جاري حفظ المحتوى ونشره للطلاب...');
   const {data:savedRecord,error}=await db.from(c.table).insert(row).select('id').single();
   if(error)throw error;
   if(!savedRecord?.id)throw new Error('لم يؤكد الخادم حفظ المحتوى. حدّث الصفحة وتحقق من السجل قبل إعادة النشر.');
-  formElement.reset();renderForm();message($('formMessage'),'تم الحفظ والتأكيد من قاعدة البيانات. المحتوى منشور للطلاب الآن.');await loadRecords();
- }catch(err){message($('formMessage'),err.message||'تعذر حفظ المحتوى.',true)}
- finally{$('saveBtn').disabled=false}
+  formElement.reset();renderForm();message($('formMessage'),'تم النشر بنجاح! المحتوى أصبح متاحًا للطلاب.');await loadRecords();
+ }catch(err){
+  console.error('Faculty publish error:',err);
+  message($('formMessage'),err.message||'تعذر نشر المحتوى. حاول مرة أخرى.',true);
+ }finally{$('saveBtn').disabled=false}
 };
 $('records').onclick=async e=>{const id=e.target.dataset.delete;if(!id)return;if(!confirm('متأكد إنك عايز تحذف المحتوى ده؟'))return;const {error}=await db.from(configs[activeTab].table).delete().eq('id',id).eq('created_by',user.id);if(error){alert(error.message);return}await loadRecords()};
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));renderForm();loadRecords()});
