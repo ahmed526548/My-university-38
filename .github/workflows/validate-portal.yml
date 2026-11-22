@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "teacher.html"
+      - "faculty-admin.html"
+      - "service-worker.js"
       - ".github/workflows/validate-portal.yml"
   workflow_dispatch:
 
@@ -32,8 +35,19 @@ jobs:
           try {
             parse(scripts[0][2], { sourceType: 'script', plugins: ['jsx'] });
             console.log('PASS: inline React JSX parsed successfully.');
+            for (const file of ['teacher.html', 'faculty-admin.html']) {
+              const page = fs.readFileSync(file, 'utf8');
+              const blocks = [...page.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
+                .filter(match => match[2].trim().length > 0);
+              if (!blocks.length) throw new Error('No inline JavaScript found in ' + file);
+              for (const block of blocks) parse(block[2], { sourceType: 'script' });
+              console.log('PASS: inline JavaScript parsed in ' + file);
+            }
+            const sw = fs.readFileSync('service-worker.js', 'utf8');
+            parse(sw, { sourceType: 'script' });
+            console.log('PASS: service worker JavaScript parsed successfully.');
           } catch (error) {
-            console.error('JSX_PARSE_ERROR:', error.message);
+            console.error('PORTAL_PARSE_ERROR:', error.message);
             console.error('Location:', JSON.stringify(error.loc));
             process.exit(1);
           }
