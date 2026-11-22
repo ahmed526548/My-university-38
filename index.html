@@ -958,7 +958,12 @@ Civil & Political + Economic & Social rights.` },
         document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
         document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
       }, [darkMode]);
-      const [entryRole, setEntryRole] = useState('');
+      // Allow a direct student sign-in URL (?view=student) so students do not need to pass through the role chooser.
+      const initialEntryRole = (() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('view') === 'student' || params.get('role') === 'student' ? 'student' : '';
+      })();
+      const [entryRole, setEntryRole] = useState(initialEntryRole);
       const [studentSession, setStudentSession] = useState(null);
       const [studentAuthLoading, setStudentAuthLoading] = useState(true);
       const [studentAuthBusy, setStudentAuthBusy] = useState(false);
@@ -2936,7 +2941,8 @@ Civil & Political + Economic & Social rights.` },
               {studentAuthMode === 'signin' && <p className="mt-4 text-xs text-slate-400">لو نسيت كلمة المرور، تواصل مع إدارة المنصة لإعادة تعيينها.</p>}
               {studentAuthMessage && <p role="status" className="mt-4 rounded-xl border border-sky-300/20 bg-sky-400/10 px-3 py-2 text-xs leading-6 text-sky-100">{studentAuthMessage}</p>}
               {studentAuthError && <p role="alert" className="mt-4 rounded-xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs leading-6 text-red-200">{studentAuthError}</p>}
-              <p className="mt-5 text-[10px] font-bold text-slate-500">بوابة جامعة بني سويف الأهلية • تسجيل دخول آمن</p>
+              <button type="button" onClick={() => { setEntryRole(''); setStudentAuthError(''); setStudentAuthMessage(''); setStudentEmail(''); setStudentPassword(''); }} className="mt-5 w-full rounded-xl border border-sky-300/20 py-2.5 text-xs font-bold text-sky-200 hover:bg-sky-400/10">العودة لاختيار نوع الحساب</button>
+              <p className="mt-4 text-[10px] font-bold text-slate-500">بوابة جامعة بني سويف الأهلية • تسجيل دخول آمن</p>
             </div>
           </div>
         );
