@@ -472,7 +472,7 @@
     const STUDENT_SESSION_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     const studentSessionKey = (userId) => `bsnu_student_session_started:${userId}`;
     const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
     }) || null;
 
     // ==================== ICONS (Expanded & Improved) ====================
