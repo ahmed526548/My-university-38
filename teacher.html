@@ -146,7 +146,7 @@ $('contentForm').onsubmit=async e=>{
     if(!questionRows.length)throw new Error('أضف سؤالًا واحدًا على الأقل.');
     row.quiz_questions=questionRows.map((q,i)=>{
      const text=q.querySelector('.question-text').value.trim(),type=q.querySelector('.question-type').value;
-     const choices=q.querySelector('.question-choices').value.split('\\n').map(x=>x.trim()).filter(Boolean);
+     const choices=q.querySelector('.question-choices').value.split('\n').map(x=>x.trim()).filter(Boolean);
      const marks=Number(q.querySelector('.question-marks').value)||1;
      if(!text)throw new Error('اكتب نص السؤال رقم '+(i+1));
      if(type==='mcq'&&choices.length<2)throw new Error('أضف اختيارين على الأقل للسؤال رقم '+(i+1));
@@ -158,7 +158,7 @@ $('contentForm').onsubmit=async e=>{
   const {data:savedRecord,error}=await db.from(c.table).insert(row).select('id').single();
   if(error)throw error;
   if(!savedRecord?.id)throw new Error('لم يؤكد الخادم حفظ المحتوى. حدّث الصفحة وتحقق من السجل قبل إعادة النشر.');
-  formElement.reset();message($('formMessage'),'تم الحفظ والتأكيد من قاعدة البيانات. المحتوى منشور للطلاب الآن.');await loadRecords();
+  formElement.reset();renderForm();message($('formMessage'),'تم الحفظ والتأكيد من قاعدة البيانات. المحتوى منشور للطلاب الآن.');await loadRecords();
  }catch(err){message($('formMessage'),err.message||'تعذر حفظ المحتوى.',true)}
  finally{$('saveBtn').disabled=false}
 };
