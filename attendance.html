@@ -18,6 +18,14 @@
   <h1>امسح رمز المحاضرة</h1><p class="muted">سجّل الدخول بحساب الطالب، ثم وجّه الكاميرا إلى رمز QR الظاهر على شاشة الدكتور. كل طالب يمكنه تسجيل حضوره مرة واحدة فقط في الجلسة.</p>
   <div id="identityMessage" class="message info">جاري التحقق من حسابك...</div>
   <div id="scanArea" class="hidden">
+   <section style="border:1px solid #cbe7f8;background:linear-gradient(135deg,#f0f9ff,#fff);border-radius:18px;padding:14px;margin:12px 0">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:24px">🔐</span><div><b style="font-size:14px">الحضور بالبصمة أو Face ID</b><p class="muted" style="margin:2px 0">استخدم بصمة الجهاز أو Face ID أو رمز قفل الجهاز للتحقق من هويتك.</p></div></div>
+    <button class="btn" id="enrollBiometric" type="button" style="width:100%">تفعيل البصمة على هذا الجهاز</button>
+    <div class="field"><label for="biometricSession">اختار المحاضرة النشطة</label><select id="biometricSession" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)"><option value="">جاري تحميل المحاضرات...</option></select></div>
+    <button class="btn" id="submitBiometric" type="button" style="width:100%;background:#075985">تحقق وسجّل الحضور بالبصمة</button>
+    <div id="biometricMessage" class="message" style="margin-top:9px"></div>
+    <p class="muted" style="font-size:10px;margin:8px 0 0">قد يطلب جهازك البصمة أو Face ID أو رمز قفل الجهاز. لا يتم إرسال بياناتك الحيوية إلى الموقع.</p>
+   </section>
    <div class="scanbox"><div id="reader"></div></div>
    <div class="actions"><button class="btn" id="startScan">تشغيل الكاميرا</button><button class="btn ghost" id="stopScan">إيقاف الكاميرا</button></div>
    <div class="field"><label for="manualCode">أو اكتب كود الحضور اليدوي المكوّن من 6 أرقام</label><input id="manualCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="مثال: 123456"></div>
@@ -34,6 +42,49 @@ const SUPABASE_URL='https://azlplcbphvaiexmyfdbp.supabase.co';
 const SUPABASE_KEY='sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const $=id=>document.getElementById(id);let scanner=null,scannerRunning=false,currentUser=null;
+const biometricBrowserReady = import('https://esm.sh/@simplewebauthn/browser@13.3.2')
+ .then(mod=>{window.__portalWebAuthn={startRegistration:mod.startRegistration,startAuthentication:mod.startAuthentication};return window.__portalWebAuthn;})
+ .catch(()=>null);
+async function biometricRequest(action,extra={}){
+ const {data,error}=await db.functions.invoke('biometric-attendance',{body:{action,...extra}});
+ if(error) throw new Error(error.message||'تعذر الاتصال بخدمة التحقق.');
+ if(data?.error) throw new Error(data.error);
+ return data;
+}
+async function enrollBiometric(){
+ const msg=$('biometricMessage');showMessage(msg,'جاري تجهيز التسجيل الآمن على جهازك...','info');
+ try{
+  const browser=await biometricBrowserReady;if(!browser)throw new Error('تعذر تحميل مكوّن التحقق. حدّث الصفحة وحاول مرة أخرى.');
+  const init=await biometricRequest('registration-options');
+  const response=await browser.startRegistration({optionsJSON:init.options});
+  const verified=await biometricRequest('registration-verify',{challengeId:init.challengeId,response});
+  showMessage(msg,verified.message||'تم تفعيل وسيلة الدخول على هذا الجهاز.','ok');
+ }catch(e){showMessage(msg,e?.name==='NotAllowedError'?'تم إلغاء العملية أو لم يكتمل التحقق على الجهاز.':(e.message||'تعذر تفعيل البصمة.'),'error')}
+}
+async function loadBiometricSessions(){
+ const select=$('biometricSession');if(!select)return;
+ select.innerHTML='<option value="">جاري تحميل المحاضرات...</option>';
+ try{
+  const data=await biometricRequest('active-sessions');
+  const sessions=data.sessions||[];
+  select.innerHTML=sessions.length?'<option value="">اختار المحاضرة</option>'+sessions.map(s=>'<option value="'+String(s.id).replace(/"/g,'')+'">'+String(s.title||'محاضرة')+' • '+String(s.subject_code||'')+'</option>').join(''):'<option value="">لا توجد محاضرات نشطة لحسابك</option>';
+ }catch(e){select.innerHTML='<option value="">تعذر تحميل المحاضرات</option>';showMessage($('biometricMessage'),e.message,'error')}
+}
+async function submitBiometricAttendance(){
+ const msg=$('biometricMessage');const sessionId=$('biometricSession')?.value;
+ if(!sessionId){showMessage(msg,'اختار المحاضرة النشطة أولاً.','error');return}
+ showMessage(msg,'جاري التحقق من وسيلة الدخول وتسجيل الحضور...','info');
+ try{
+  const browser=await biometricBrowserReady;if(!browser)throw new Error('تعذر تحميل مكوّن التحقق. حدّث الصفحة.');
+  const init=await biometricRequest('authentication-options',{sessionId});
+  const response=await browser.startAuthentication({optionsJSON:init.options});
+  const result=await biometricRequest('authentication-verify',{challengeId:init.challengeId,response});
+  const row=result.attendance||{};
+  showMessage(msg,'تم تسجيل حضورك بنجاح بالبصمة في '+(row.session_title||'المحاضرة')+' • '+(row.subject_code||'')+' • '+new Date(row.attended_at||Date.now()).toLocaleTimeString('ar-EG'),'ok');
+  await loadHistory();
+ }catch(e){showMessage(msg,e?.name==='NotAllowedError'?'لم يكتمل التحقق على الجهاز أو تم إلغاء العملية.':(e.message||'تعذر تسجيل الحضور.'),'error')}
+}
+
 function showMessage(el,text,type='info'){el.textContent=text;el.className='message show '+type}
 function parseQr(value){
  try{const u=new URL(String(value).trim());if(u.origin!==location.origin||!u.pathname.endsWith('/attendance.html'))throw new Error();const session=u.searchParams.get('session'),token=u.searchParams.get('token');if(!session||!token)throw new Error();return {session,token}}catch(_){throw new Error('الرابط غير صحيح. امسح رمز QR الظاهر على شاشة الدكتور حاليًا.')}
@@ -62,11 +113,12 @@ async function loadHistory(){
  const rows=Array.isArray(data)?data:[];$('attendanceCount').textContent=rows.length;$('lastAttendance').textContent=rows.length?new Date(rows[0].attended_at).toLocaleDateString('ar-EG'):'—';
  $('history').innerHTML=rows.length?rows.map(r=>'<article class="item"><div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><b>'+String(r.session_title||'محاضرة').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</b><p>'+String(r.subject_code||'')+' • '+String(r.group_name||'')+'</p><p>'+new Date(r.attended_at).toLocaleString('ar-EG')+'</p></div><span class="pill">'+(r.is_demo?'حضور تجريبي':'حضور مسجل')+'</span></div></article>').join(''):'<p class="muted">لسه مفيش سجلات حضور في حسابك.</p>';
 }
+$('enrollBiometric').onclick=enrollBiometric;$('submitBiometric').onclick=submitBiometricAttendance;
 $('startScan').onclick=startScanner;$('stopScan').onclick=stopScanner;$('submitManualCode').onclick=()=>recordAttendance($('manualCode').value,'code');$('submitManualQr').onclick=()=>recordAttendance($('manualQr').value,'qr');$('refreshHistory').onclick=loadHistory;
 (async()=>{
  const {data,error}=await db.auth.getSession();currentUser=data?.session?.user||null;
  if(error||!currentUser||currentUser.is_anonymous){showMessage($('identityMessage'),'لازم تدخل بحساب الطالب أولًا. افتح بوابة الطالب وسجّل الدخول، ثم ارجع هنا.','error');$('identityMessage').innerHTML='لازم تدخل بحساب الطالب أولًا. <a href="./index.html?view=student#app" style="font-weight:900;color:#0369a1">افتح بوابة الطالب</a>.';return}
- showMessage($('identityMessage'),'تم التحقق من جلسة الدخول. امسح رمز المحاضرة لتسجيل حضورك.','ok');$('scanArea').classList.remove('hidden');await loadHistory();
+ showMessage($('identityMessage'),'تم التحقق من جلسة الدخول. يمكنك التسجيل بالبصمة أو QR أو الكود اليدوي.','ok');$('scanArea').classList.remove('hidden');await loadHistory();await loadBiometricSessions();
  const params=new URLSearchParams(location.search);if(params.has('session')&&params.has('token'))await recordAttendance(location.href);
 })();
 window.addEventListener('pagehide',stopScanner);
