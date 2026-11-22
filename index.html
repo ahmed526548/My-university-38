@@ -1481,6 +1481,25 @@ Civil & Political + Economic & Social rights.` },
           .subscribe();
         return () => { active = false; supabaseClient.removeChannel(channel); };
       }, [notificationUserKey]);
+      const [homeTasks, setHomeTasks] = useState([]);
+      useEffect(() => {
+        let active = true;
+        const loadHomeTasks = async () => {
+          if (!supabaseClient) return;
+          const { data, error } = await supabaseClient.from('student_tasks')
+            .select('id,title,kind,due_at,subject_code,group_name,doctor_name')
+            .eq('published', true).order('due_at', { ascending: true }).limit(50);
+          if (!active) return;
+          if (error) { console.warn('تعذر تحميل ملخص المهام:', error.message); return; }
+          setHomeTasks((data || []).filter(task => !task.group_name || (selectedGroup && task.group_name === selectedGroup)));
+        };
+        loadHomeTasks();
+        const channel = supabaseClient?.channel('student-home-tasks')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'student_tasks' }, loadHomeTasks)
+          .subscribe();
+        return () => { active = false; if (channel) supabaseClient.removeChannel(channel); };
+      }, [selectedGroup]);
+
       const notificationItems = portalNotifications.filter(item => !item.target_group || item.target_group === selectedGroup);
       const unreadNotificationCount = notificationItems.filter(item => !readNotificationIds.includes(String(item.id))).length;
       const markNotificationsRead = () => {
@@ -2197,7 +2216,39 @@ Civil & Political + Economic & Social rights.` },
               </div>
             </section>
 
+            <section className="mt-7">
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div><p className="premium-kicker">YOUR OVERVIEW</p><h3 className="mt-1 text-base font-black sm:text-lg">ملخصك الدراسي</h3></div>
+                <span className="text-[10px] text-slate-500">{today} • نظرة سريعة</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <button type="button" onClick={() => setView('subjects')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{currentProgramSubjects.length}</span><span className="mt-1 block text-xs text-slate-500">مواد دراسية</span></button>
+                <button type="button" onClick={() => setView('subjects')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{overallProgress.totalDone}<small className="text-xs text-slate-400"> / {overallProgress.totalReady}</small></span><span className="mt-1 block text-xs text-slate-500">محاضرات مكتملة</span></button>
+                <button type="button" onClick={() => setView('tasks')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{homeTasks.filter(task => task.due_at && new Date(task.due_at).getTime() >= Date.now()).length}</span><span className="mt-1 block text-xs text-slate-500">مواعيد قادمة</span></button>
+                <button type="button" onClick={() => setView('notifications')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{unreadNotificationCount}</span><span className="mt-1 block text-xs text-slate-500">إشعارات غير مقروءة</span></button>
+              </div>
+            </section>
 
+            <section className="mt-7 grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">TODAY SCHEDULE</p><h3 className="mt-1 font-black">جدول محاضرات اليوم</h3></div><button type="button" onClick={() => setView('groups')} className="text-xs font-bold text-sky-700">عرض الجدول ←</button></div>
+                {!selectedGroup ? <div className="rounded-xl bg-sky-50 p-4 text-center"><p className="text-sm font-bold text-slate-700">اختار جروبك لعرض جدولك اليومي</p><div className="mt-3 flex gap-2">{['جروب 1','جروب 2'].map(group => <button key={group} type="button" onClick={() => setSelectedGroup(group)} className="flex-1 rounded-lg bg-sky-600 px-3 py-2 text-xs font-black text-white">{group}</button>)}</div></div> : <div className="space-y-2">{((liveSchedule[selectedGroup] || []).find(day => day.day === today)?.slots || []).flatMap(slot => slot.items.map(item => ({...item,time:slot.time}))).slice(0,3).map((item,index) => <div key={index} className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><span className="min-w-[76px] rounded-lg bg-sky-100 px-2 py-2 text-center text-[10px] font-black text-sky-800" dir="ltr">{item.time}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{item.subject}</p><p className="mt-1 truncate text-[10px] text-slate-500">{item.doctor || 'بدون محاضر'} • {item.hall || 'لم تحدد القاعة'}</p></div></div>)}{!(liveSchedule[selectedGroup] || []).find(day => day.day === today)?.slots?.length && <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">مفيش محاضرات مسجلة لجروبك النهارده.</p>}</div>}
+              </div>
+              <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">UPCOMING</p><h3 className="mt-1 font-black">أقرب الامتحانات والتكليفات</h3></div><button type="button" onClick={() => setView('tasks')} className="text-xs font-bold text-sky-700">كل المهام ←</button></div>
+                <div className="space-y-2">{homeTasks.filter(task => task.due_at && new Date(task.due_at).getTime() >= Date.now()).sort((a,b) => new Date(a.due_at)-new Date(b.due_at)).slice(0,3).map(task => <button type="button" key={task.id} onClick={() => setView('tasks')} className="flex w-full items-center gap-3 rounded-xl bg-slate-50 p-3 text-right"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">📝</span><span className="min-w-0 flex-1"><b className="block truncate text-sm">{task.title}</b><small className="mt-1 block text-[10px] text-slate-500">{task.kind === 'exam' ? 'امتحان' : task.kind === 'quiz' ? 'كويز' : 'تكليف'} • {new Date(task.due_at).toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'})}</small></span></button>)}{!homeTasks.some(task => task.due_at && new Date(task.due_at).getTime() >= Date.now()) && <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">مفيش مواعيد قادمة منشورة حاليًا.</p>}</div>
+              </div>
+            </section>
+
+            <section className="mt-7 premium-panel rounded-2xl p-4 sm:p-5">
+              <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">LATEST UPDATES</p><h3 className="mt-1 font-black">آخر إعلانات الجامعة</h3></div><button type="button" onClick={() => setView('announcements')} className="text-xs font-bold text-sky-700">كل الإعلانات ←</button></div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{announcements.slice(0,2).map(item => <button type="button" key={item.id} onClick={() => setView('announcements')} className="rounded-xl bg-slate-50 p-3 text-right"><b className="block text-sm">{item.title}</b><p className="mt-1 line-clamp-2 text-xs leading-6 text-slate-500">{item.body}</p></button>)}{!announcements.length && <p className="text-xs text-slate-500">لا توجد إعلانات منشورة حاليًا.</p>}</div>
+            </section>
+
+            <section className="mt-4 grid grid-cols-2 gap-3">
+              <button type="button" onClick={() => setView('academic-record')} className="premium-secondary-cta flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-black">🎓 السجل الأكاديمي</button>
+              <button type="button" onClick={() => { window.location.href = './attendance.html'; }} className="premium-secondary-cta flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-black">▦ تسجيل الحضور</button>
+            </section>
 
           </div>
         </div>
