@@ -86,7 +86,7 @@
  </section>
  <section id="attendancePanel" class="hidden" style="margin-top:16px">
   <div class="panel">
-   <div class="itemtop"><div><h2>تسجيل الحضور بالـ QR المتجدد</h2><p class="hint">ابدأ جلسة للمحاضرة واعرض الرمز على السبورة. الرمز يتغير تلقائيًا كل 15 ثانية وصلاحيته قصيرة.</p></div><span class="pill">QR LIVE</span></div>
+   <div class="itemtop"><div><h2>تسجيل الحضور بالـ QR الثابت</h2><p class="hint">الرمز يفضل ثابت طول الجلسة، ومش بيتغير إلا لما تضغط «تغيير الرمز الآن».</p></div><span class="pill">QR ثابت</span></div>
    <form id="attendanceStartForm" class="formgrid" style="margin-top:14px">
     <div class="field"><label>المادة</label><select id="attendanceSubject" required></select></div>
     <div class="field"><label>اسم المحاضرة</label><input id="attendanceTitle" required maxlength="120" placeholder="مثال: محاضرة الأسبوع الثالث"></div>
@@ -96,10 +96,10 @@
     <div class="field full"><div id="attendanceStartMessage" class="message"></div></div>
    </form>
    <div id="liveAttendance" class="hidden" style="margin-top:18px">
-    <div class="notice"><b id="liveAttendanceTitle">جلسة حضور</b><br><span id="liveAttendanceMeta"></span><br>الرمز يتجدد تلقائيًا. اطلب من الطلاب مسح الرمز الظاهر الآن فقط.</div>
+    <div class="notice"><b id="liveAttendanceTitle">جلسة حضور</b><br><span id="liveAttendanceMeta"></span><br>اعرض الرمز أو الكود اليدوي للطلاب. يظل الاثنان صالحين حتى نهاية الجلسة.</div>
     <div style="display:grid;place-items:center;background:white;border:2px solid #bae6fd;border-radius:20px;padding:18px;margin:14px auto;max-width:390px">
      <div id="attendanceQrCode" style="min-height:260px;display:grid;place-items:center"></div>
-     <strong id="attendanceQrCountdown" style="color:#0369a1;margin-top:10px">جاري تجهيز الرمز...</strong>
+     <strong id="attendanceQrCountdown" style="color:#047857;margin-top:10px">الرمز ثابت حتى نهاية الجلسة</strong><div style="margin-top:14px;text-align:center;background:#eff8ff;border:1px solid #bae6fd;border-radius:14px;padding:12px;width:100%"><div style="font-size:12px;color:#31536d;font-weight:800">كود الحضور اليدوي (6 أرقام)</div><strong id="attendanceManualCode" dir="ltr" style="display:block;font-size:34px;letter-spacing:8px;color:#075985;margin-top:4px">------</strong><small style="color:#64748b">الطالب يكتبه في صفحة الحضور بدل الكاميرا</small></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button type="button" class="btn secondary" id="refreshAttendanceQr">تغيير الرمز الآن</button><button type="button" class="btn ghost" id="endAttendanceBtn">إنهاء تسجيل الحضور</button></div>
    </div>
@@ -297,8 +297,8 @@ async function loadAnalytics(){
  let attempts=0,quizLines=[];for(const quiz of quizzes){const {data,error}=await db.rpc('faculty_get_quiz_results',{p_task_id:quiz.id});if(error){quizLines.push('<div class="item"><b>'+escapeHtml(quiz.title)+'</b><p>تعذر تحميل النتائج لهذا الكويز.</p></div>');continue}const arr=Array.isArray(data)?data:[];attempts+=arr.length;const avg=arr.length?arr.reduce((s,a)=>s+(Number(a.score||0)/Math.max(1,Number(a.max_score||0)))*100,0)/arr.length:0;quizLines.push('<div class="item"><div class="itemtop"><b>'+escapeHtml(quiz.title)+'</b><span class="pill">'+arr.length+' تسليم</span></div><p>'+(arr.length?'متوسط الدرجات: '+avg.toFixed(1)+'%':'لم يتم التسليم بعد')+'</p></div>')}
  $('anQuizAttempts').textContent=attempts;$('quizAnalytics').innerHTML=quizLines.length?quizLines.join(''):'<div class="empty">لا توجد كويزات منشورة من حسابك.</div>';$('exportAcademicCsv').disabled=!grades.length;
 }
-let activeAttendanceSession=null,attendanceRotateTimer=null,attendanceCountdownTimer=null,attendanceTokenExpiresAt=null;
-function stopAttendanceTimers(){if(attendanceRotateTimer)clearInterval(attendanceRotateTimer);if(attendanceCountdownTimer)clearInterval(attendanceCountdownTimer);attendanceRotateTimer=null;attendanceCountdownTimer=null}
+let activeAttendanceSession=null;
+function stopAttendanceTimers(){}
 function renderAttendanceQr(token){
  const url=new URL('./attendance.html',location.href);url.searchParams.set('session',activeAttendanceSession.id);url.searchParams.set('token',token);
  $('attendanceQrCode').innerHTML='';
@@ -307,14 +307,15 @@ function renderAttendanceQr(token){
 }
 async function rotateAttendanceQr(){
  if(!activeAttendanceSession)return;
- const {data,error}=await db.rpc('faculty_rotate_attendance_token',{p_session_id:activeAttendanceSession.id});
- if(error){$('attendanceQrCountdown').textContent='تعذر تغيير الرمز: '+error.message;stopAttendanceTimers();return}
- const row=Array.isArray(data)?data[0]:data;if(!row?.qr_token){$('attendanceQrCountdown').textContent='تعذر إنشاء رمز جديد.';stopAttendanceTimers();return}
- attendanceTokenExpiresAt=new Date(row.token_expires_at).getTime();renderAttendanceQr(row.qr_token);
-}
-function startAttendanceCountdown(){
- if(attendanceCountdownTimer)clearInterval(attendanceCountdownTimer);
- attendanceCountdownTimer=setInterval(()=>{const left=Math.max(0,Math.ceil((attendanceTokenExpiresAt-Date.now())/1000));$('attendanceQrCountdown').textContent=left?'يتغير الرمز تلقائيًا • صلاحية الرمز الحالي: '+left+' ثانية':'جاري تغيير الرمز...'},500);
+ const button=$('refreshAttendanceQr');button.disabled=true;
+ try{
+  const {data,error}=await db.rpc('faculty_rotate_attendance_token',{p_session_id:activeAttendanceSession.id});
+  if(error)throw error;
+  const row=Array.isArray(data)?data[0]:data;if(!row?.qr_token)throw new Error('لم يتم إنشاء رمز جديد.');
+  renderAttendanceQr(row.qr_token);
+  $('attendanceQrCountdown').textContent='تم تغيير الرمز يدويًا. سيظل ثابتًا حتى نهاية الجلسة.';
+ }catch(e){$('attendanceQrCountdown').textContent='تعذر تغيير الرمز: '+e.message}
+ finally{button.disabled=false}
 }
 async function loadAttendancePanel(){
  $('workspaceGrid').classList.add('hidden');$('analyticsPanel').classList.add('hidden');$('quizResultsPanel').classList.add('hidden');$('attendancePanel').classList.remove('hidden');
@@ -344,13 +345,18 @@ $('attendanceStartForm').onsubmit=async e=>{
  try{
   const {data,error}=await db.rpc('faculty_start_attendance',{p_subject_code:$('attendanceSubject').value,p_title:$('attendanceTitle').value.trim(),p_group_name:$('attendanceGroup').value.trim()||null,p_duration_minutes:Number($('attendanceDuration').value)});
   if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row?.session_id||!row?.qr_token)throw new Error('لم يتم استلام رمز الحضور من الخادم.');
-  stopAttendanceTimers();activeAttendanceSession={id:row.session_id};attendanceTokenExpiresAt=new Date(row.token_expires_at).getTime();
+  activeAttendanceSession={id:row.session_id};
   $('liveAttendance').classList.remove('hidden');$('liveAttendanceTitle').textContent=$('attendanceTitle').value.trim();$('liveAttendanceMeta').textContent=$('attendanceSubject').selectedOptions[0]?.textContent+' • '+($('attendanceGroup').value.trim()||'كل المجموعات')+' • ينتهي '+new Date(row.ends_at).toLocaleTimeString('ar-EG');
-  renderAttendanceQr(row.qr_token);startAttendanceCountdown();attendanceRotateTimer=setInterval(rotateAttendanceQr,15000);message($('attendanceStartMessage'),'بدأت جلسة الحضور. اعرض رمز QR على السبورة الآن.');await loadAttendanceSessions();
+  renderAttendanceQr(row.qr_token);
+  const codeResult=await db.rpc('faculty_create_attendance_code',{p_session_id:row.session_id});
+  if(codeResult.error)throw codeResult.error;
+  $('attendanceManualCode').textContent=String(codeResult.data||'').padStart(6,'0');
+  $('attendanceQrCountdown').textContent='الرمز ثابت حتى نهاية الجلسة. لن يتغير تلقائيًا.';
+  message($('attendanceStartMessage'),'بدأت جلسة الحضور. الـQR والكود اليدوي جاهزين للطلاب.');await loadAttendanceSessions();
  }catch(err){message($('attendanceStartMessage'),err.message||'تعذر بدء الجلسة.',true)}finally{$('startAttendanceBtn').disabled=false}
 };
 $('refreshAttendanceQr').onclick=rotateAttendanceQr;
-$('endAttendanceBtn').onclick=async()=>{if(!activeAttendanceSession||!confirm('إنهاء جلسة الحضور الآن؟'))return;const {error}=await db.rpc('faculty_end_attendance',{p_session_id:activeAttendanceSession.id});if(error){alert(error.message);return}stopAttendanceTimers();activeAttendanceSession=null;$('liveAttendance').classList.add('hidden');await loadAttendanceSessions()};
+$('endAttendanceBtn').onclick=async()=>{if(!activeAttendanceSession||!confirm('إنهاء جلسة الحضور الآن؟'))return;const {error}=await db.rpc('faculty_end_attendance',{p_session_id:activeAttendanceSession.id});if(error){alert(error.message);return}activeAttendanceSession=null;$('liveAttendance').classList.add('hidden');await loadAttendanceSessions()};
 $('reloadAttendanceSessions').onclick=loadAttendanceSessions;
 $('attendanceSessionsList').onclick=async e=>{const report=e.target.closest('[data-attendance-report]');if(report){await showAttendanceReport(report.dataset.attendanceReport);return}const end=e.target.closest('[data-attendance-end]');if(end&&confirm('إنهاء جلسة الحضور؟')){const {error}=await db.rpc('faculty_end_attendance',{p_session_id:end.dataset.attendanceEnd});if(error)alert(error.message);await loadAttendanceSessions()}};
 async function showQuizResults(taskId,title){
