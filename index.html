@@ -2115,10 +2115,11 @@ Civil & Political + Economic & Social rights.` },
                 <div><p className="premium-kicker">QUICK ACCESS</p><h3 className="mt-1 text-base font-black text-white sm:text-lg">ابدأ من هنا</h3></div>
                 <span className="text-[10px] text-slate-500">اختصاراتك الأساسية</span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                 {[
                   { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', desc: 'المواد والملخصات والشرح', v: 'subjects', number: '01' },
                   { icon: Icons.Note, label: 'الامتحانات والكويزات', desc: 'التكليفات ومواعيد التسليم', v: 'tasks', number: '02' },
+                  { icon: Icons.Graduation, label: 'السجل الأكاديمي', desc: 'درجاتك ونتائج الكويزات', v: 'academic-record', number: '06' },
                   { icon: Icons.Bell, label: 'إعلانات الدكاترة', desc: 'آخر أخبار وتنبيهات المواد', v: 'announcements', number: '03' },
                   { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', number: '04' },
                   { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: 'groups', number: '05' },
@@ -2672,6 +2673,58 @@ Civil & Political + Economic & Social rights.` },
         </div>
       );
 
+      const AcademicRecordView = () => {
+        const [records, setRecords] = useState([]);
+        const [quizResults, setQuizResults] = useState([]);
+        const [busy, setBusy] = useState(true);
+        const [errorText, setErrorText] = useState('');
+        useEffect(() => {
+          let alive = true;
+          const load = async () => {
+            if (!supabaseClient || !studentSession?.user?.id) { if (alive) setBusy(false); return; }
+            setBusy(true); setErrorText('');
+            const [gradeResponse, quizResponse] = await Promise.all([
+              supabaseClient.from('academic_records').select('id,student_code,student_name,subject_code,assessment_name,assessment_type,grade,max_grade,term,notes,created_at').order('created_at', { ascending: false }),
+              supabaseClient.rpc('get_my_quiz_results')
+            ]);
+            if (!alive) return;
+            if (gradeResponse.error || quizResponse.error) setErrorText(gradeResponse.error?.message || quizResponse.error?.message || 'تعذر تحميل السجل الأكاديمي.');
+            setRecords(gradeResponse.data || []);
+            setQuizResults(quizResponse.data || []);
+            setBusy(false);
+          };
+          load();
+          return () => { alive = false; };
+        }, [studentSession?.user?.id]);
+        const items = [
+          ...records.map(r => ({ id: 'grade-' + r.id, title: r.assessment_name, subject: r.subject_code, type: ({quiz:'كويز',exam:'امتحان',assignment:'تكليف',midterm:'ميدتيرم',final:'نهائي',participation:'مشاركة',other:'تقييم'}[r.assessment_type] || 'تقييم'), score: Number(r.grade), max: Number(r.max_grade), date: r.created_at, term: r.term, notes: r.notes })),
+          ...quizResults.map((r,i) => ({ id: 'quiz-' + r.task_id + '-' + r.submitted_at + '-' + i, title: r.title || 'كويز', subject: r.subject_code || 'عام', type: 'كويز إلكتروني', score: Number(r.score), max: Number(r.max_score), date: r.submitted_at, term: 'نتيجة تلقائية', notes: '' }))
+        ].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+        const total = items.reduce((sum,item)=>sum+item.score,0);
+        const maxTotal = items.reduce((sum,item)=>sum+item.max,0);
+        const percent = maxTotal ? Math.round(total / maxTotal * 100) : 0;
+        return <div className="min-h-screen soft-page pb-28">
+          <NavBar title="السجل الأكاديمي" onBack={() => setView('home')} />
+          <div className="mx-auto max-w-3xl space-y-4 px-4 pt-4">
+            <section className="rounded-2xl border border-sky-300/20 bg-gradient-to-br from-sky-50 to-white p-5 text-slate-800">
+              <div className="flex items-center justify-between gap-3"><div><p className="text-xs font-bold text-sky-700">ملفك الدراسي</p><h2 className="mt-1 text-xl font-black">درجاتك ونتائجك</h2><p className="mt-1 text-[11px] text-slate-500">الدرجات المعتمدة من الدكتور ونتائج الكويزات المسلّمة</p></div><span className="text-3xl">🎓</span></div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <div className="rounded-xl bg-white/90 p-3 text-center"><b className="block text-lg">{items.length}</b><span className="text-[10px] text-slate-500">تقييم مسجل</span></div>
+                <div className="rounded-xl bg-white/90 p-3 text-center"><b className="block text-lg">{total.toFixed(1)}</b><span className="text-[10px] text-slate-500">درجات محصلة</span></div>
+                <div className="rounded-xl bg-white/90 p-3 text-center"><b className="block text-lg">{maxTotal ? percent + '%' : '—'}</b><span className="text-[10px] text-slate-500">نسبة الدرجات</span></div>
+              </div>
+            </section>
+            {errorText && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">تعذر تحميل بعض النتائج: {errorText}</p>}
+            {busy ? <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500">جاري تحميل سجلك الأكاديمي...</div> : items.length ? <section className="space-y-3">
+              {items.map(item => <article key={item.id} className="soft-panel rounded-2xl p-4">
+                <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><b className="text-sm text-white">{item.title}</b><span className="rounded-full bg-sky-400/10 px-2 py-1 text-[9px] font-bold text-sky-200">{item.type}</span></div><p className="mt-1 text-xs text-slate-400">{item.subject} • {item.term}</p><p className="mt-1 text-[10px] text-slate-500">{item.date ? new Date(item.date).toLocaleString('ar-EG') : '—'}</p></div><strong className="shrink-0 text-lg font-black text-sky-300">{item.score} <span className="text-xs text-slate-500">/ {item.max}</span></strong></div>
+                {item.notes && <p className="mt-3 border-t border-slate-200/10 pt-2 text-xs leading-6 text-slate-300">{item.notes}</p>}
+              </article>)}
+            </section> : <div className="rounded-2xl border border-dashed border-sky-300/30 bg-sky-400/5 p-8 text-center"><div className="text-3xl">📘</div><b className="mt-3 block text-sm text-white">لسه مفيش درجات في سجلك</b><p className="mt-2 text-xs leading-6 text-slate-400">نتائج الكويزات هتظهر بعد التسليم، والدرجات التانية هتظهر لما الدكتور يسجلها.</p></div>}
+          </div>
+        </div>;
+      };
+
       const AnnouncementsView = () => (
         <div className="min-h-screen bg-[#030c13] pb-8">
           <NavBar title="الإعلانات" onBack={() => setView('home')} />
@@ -2860,6 +2913,7 @@ Civil & Political + Economic & Social rights.` },
               {[
                 { icon: Icons.Timer, label: 'مؤقت المذاكرة', desc: 'حدد وقت تركيزك وراحتك', view: 'timer' },
                 { icon: Icons.Calculator, label: 'حساب المعدل GPA', desc: 'احسب معدلك الدراسي', view: 'gpa' },
+                { icon: Icons.Graduation, label: 'السجل الأكاديمي', desc: 'درجاتك ونتائجك الفعلية', view: 'academic-record' },
                 { icon: Icons.Note, label: 'ملاحظاتي', desc: 'اكتب واحفظ ملاحظاتك', view: 'notes' },
                 { icon: Icons.Bell, label: 'الإعلانات', desc: 'آخر إعلانات الجامعة', view: 'announcements' },
                 { icon: Icons.Calendar, label: 'التكليفات والامتحانات', desc: 'تابع مواعيدك المهمة', view: 'tasks' },
@@ -3032,6 +3086,7 @@ Civil & Political + Economic & Social rights.` },
           {view === 'notes' && <NotesView />}
           {view === 'timer' && <TimerView />}
           {view === 'gpa' && <GPAView />}
+          {view === 'academic-record' && <AcademicRecordView />}
           {view === 'announcements' && <AnnouncementsView />}
           {view === 'tasks' && <TasksView />}
           {view === 'notifications' && <NotificationsView />}
