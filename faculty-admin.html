@@ -14,7 +14,7 @@
 </section></main>
 <script>
 const URL='https://azlplcbphvaiexmyfdbp.supabase.co',KEY='sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
-const db=window.supabase.createClient(URL,KEY,{auth:{storageKey:'bsnu-faculty-admin-auth',persistSession:true,autoRefreshToken:true}});
+const db=window.supabase?.createClient ? window.supabase.createClient(URL,KEY,{auth:{storageKey:'bsnu-faculty-admin-auth',persistSession:true,autoRefreshToken:true}}) : null;
 const $=id=>document.getElementById(id);let faculty=[],accounts=[];
 function msg(el,t,bad=false){el.textContent=t;el.className='msg show '+(bad?'bad':'ok')}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -24,5 +24,5 @@ async function load(){const [f,a,p]=await Promise.all([db.from('faculty_director
 $('faculty').onchange=()=>{const x=window.privateRows?.find(p=>p.faculty_id===$('faculty').value);$('facultyEmail').value=x?.login_email||'';const linked=accounts.some(a=>a.faculty_id===$('faculty').value);$('accountStatus').textContent=linked?'الحساب مفعّل':'لم يتم إنشاء الحساب';$('facultyEmail').disabled=linked};
 $('facultyForm').onsubmit=async e=>{e.preventDefault();const id=$('faculty').value,email=$('facultyEmail').value.trim().toLowerCase();if(!id)return;const linked=accounts.some(a=>a.faculty_id===id);if(linked){msg($('dashMsg'),'الحساب مفعل بالفعل. تغيير البريد يحتاج تحديث حساب Auth من لوحة Supabase.',true);return}const {error}=await db.from('faculty_private').upsert({faculty_id:id,login_email:email},{onConflict:'faculty_id'});if(error){msg($('dashMsg'),error.message,true);return}msg($('dashMsg'),'تم اعتماد البريد. الدكتور يقدر الآن ينشئ حسابه من بوابة الدكتور.');await load();$('faculty').value=id;$('faculty').dispatchEvent(new Event('change'))};
 $('loginForm').onsubmit=async e=>{e.preventDefault();$('loginForm').querySelector('button').disabled=true;try{const {data,error}=await db.auth.signInWithPassword({email:$('adminEmail').value.trim(),password:$('adminPassword').value});if(error){msg($('loginMsg'),'فشل تسجيل الدخول: '+error.message,true);return}await verifyAdmin(data.user)}catch(err){msg($('loginMsg'),'حصل خطأ غير متوقع: '+(err?.message||'حاول مرة أخرى'),true)}finally{$('loginForm').querySelector('button').disabled=false}};
-$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};start();
+$('logout').onclick=async()=>{if(db)await db.auth.signOut();location.reload()};if(!db){$('login').classList.remove('hidden');msg($('loginMsg'),'مكتبة الاتصال بقاعدة البيانات لم يتم تحميلها. افحص اتصال الإنترنت أو جرّب فتح الصفحة في نافذة خاصة، ثم أعد المحاولة.',true);$('loginForm').querySelector('button').disabled=true}else{start();}
 </script></body></html>
