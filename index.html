@@ -1757,8 +1757,8 @@ Civil & Political + Economic & Social rights.` },
       };
 
       useEffect(() => {
-        if (view === 'admin' && adminAllowed && adminSession) { loadAdminRecords(adminSelectedTable); loadAdminOverview(); }
-      }, [view, adminAllowed, adminSession, adminSelectedTable, adminSelectedProgram]);
+        if (view === 'admin' && adminAllowed && adminSession) loadAdminStudents();
+      }, [view, adminAllowed, adminSession]);
 
       // Skip the decorative splash so the portal is usable immediately.
 
