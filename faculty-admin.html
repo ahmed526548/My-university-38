@@ -13,8 +13,8 @@
 <h2 style="font-size:17px;margin:25px 0 8px">قائمة الدكاترة</h2><div id="list"></div>
 </section></main>
 <script>
-const URL='https://azlplcbphvaiexmyfdbp.supabase.co',KEY='sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
-const db=window.supabase?.createClient ? window.supabase.createClient(URL,KEY,{auth:{storageKey:'bsnu-faculty-admin-auth',persistSession:true,autoRefreshToken:true}}) : null;
+const SUPABASE_URL='https://azlplcbphvaiexmyfdbp.supabase.co',KEY='sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
+const db=window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL,KEY,{auth:{storageKey:'bsnu-faculty-admin-auth',persistSession:true,autoRefreshToken:true}}) : null;
 const $=id=>document.getElementById(id);let faculty=[],accounts=[];
 function msg(el,t,bad=false){el.textContent=t;el.className='msg show '+(bad?'bad':'ok')}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
