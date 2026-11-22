@@ -3110,6 +3110,31 @@ Civil & Political + Economic & Social rights.` },
                           <p className="text-[10px] leading-5 text-amber-800">يجب على الطالب تغييرها عند أول دخول.</p>
                         </div>}
                       </section>
+                      <section className="space-y-3 rounded-2xl border border-amber-200 bg-white p-4">
+                        <div><h2 className="font-black text-slate-800">⚙️ تفعيل أو إيقاف حساب طالب</h2><p className="mt-1 text-xs leading-6 text-slate-500">أدخل كود الطالب لإيقاف دخوله أو إعادة تفعيله. بياناته ودرجاته تظل محفوظة.</p></div>
+                        <form onSubmit={async (event) => {
+                          event.preventDefault();
+                          if (!adminAllowed || !adminSession) return;
+                          const form = event.currentTarget;
+                          const code = String(new FormData(form).get("student_code") || "").trim();
+                          const action = String(new FormData(form).get("account_action") || "");
+                          if (!/^\d{5,20}$/.test(code) || !["disable","enable"].includes(action)) { showToast("راجع كود الطالب واختيار العملية", "error"); return; }
+                          const btn = form.querySelector("button[type=submit]"); btn.disabled = true;
+                          try {
+                            const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                            if (sessionError || !sessionData.session) throw new Error("جلسة الأدمن غير موجودة.");
+                            const { data, error } = await supabaseClient.functions.invoke("admin-set-account-status", { body: { kind: "student", student_code: code, active: action === "enable" }, headers: { Authorization: "Bearer " + sessionData.session.access_token } });
+                            if (error || !data?.ok) throw new Error(data?.error || error?.message || "تعذر تحديث حالة الطالب");
+                            showToast(action === "enable" ? "تمت إعادة تفعيل حساب الطالب" : "تم إيقاف حساب الطالب مع الاحتفاظ ببياناته");
+                            form.reset();
+                          } catch (error) { showToast(error?.message || "تعذر تحديث الحساب", "error"); }
+                          finally { btn.disabled = false; }
+                        }} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                          <input name="student_code" inputMode="numeric" placeholder="كود الطالب" className="soft-control rounded-xl px-3 py-3 text-sm" dir="ltr" required />
+                          <select name="account_action" className="soft-control rounded-xl px-3 py-3 text-sm" required><option value="disable">إيقاف الحساب</option><option value="enable">إعادة التفعيل</option></select>
+                          <button type="submit" className="rounded-xl bg-amber-500 px-4 py-3 text-sm font-black text-white">تنفيذ</button>
+                        </form>
+                      </section>
                       <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="flex items-center justify-between gap-2"><div><h2 className="font-black text-slate-800">👥 الطلاب الذين استخدموا البوابة</h2><p className="mt-1 text-xs text-slate-500">سجل الزيارات المسجل للطلاب</p></div><button type="button" onClick={loadAdminStudents} disabled={adminStudentsBusy} className="rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-800">{adminStudentsBusy ? "جاري التحميل..." : "تحديث القائمة"}</button></div>
                         {adminStudents.length ? <div className="max-h-72 space-y-2 overflow-y-auto">{adminStudents.map(student => <article key={student.user_id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><b className="text-sm text-slate-800">{student.display_name || "طالب بدون اسم"}</b><p className="mt-1 text-xs text-slate-500">{student.group_name || "لم يحدد الجروب"} • {student.visit_count || 0} زيارة</p><p className="text-[10px] text-slate-400">{student.email || "لا يوجد بريد مسجل"}</p></article>)}</div> : <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">اضغط تحديث القائمة لعرض الطلاب الذين زاروا البوابة.</p>}
