@@ -14,11 +14,11 @@
 <section id="login" class="panel login">
 <div class="eyebrow">DEMO ACCESS</div><h1>تسجيل دخول الطلاب التجريبي</h1><p class="muted">استخدم كودًا تجريبيًا من القائمة المخصصة. الحسابات دي منفصلة تمامًا عن حسابات الطلاب الحقيقية.</p>
 <form id="loginForm">
-<div class="field"><label for="code">الكود التجريبي</label><input id="code" autocomplete="username" placeholder="DEMO-G1-001" required maxlength="12"></div>
+<div class="field"><label for="code">الكود التجريبي</label><input id="code" autocomplete="username" placeholder="999000001" inputmode="numeric" pattern="[0-9]{9}" required maxlength="9"></div>
 <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور التجريبية" required></div>
 <button class="primary" id="submit" type="submit">دخول للبوابة التجريبية</button><div id="error" class="error" hidden></div>
 </form>
-<div class="hint">كل الحسابات التجريبية تستخدم كلمة المرور المتفق عليها. الأكواد التجريبية تبدأ بـ <b dir="ltr">DEMO-G1</b> أو <b dir="ltr">DEMO-G2</b>، من 001 حتى 065 و001 حتى 083 على الترتيب.</div>
+<div class="hint">كل الحسابات التجريبية تستخدم كلمة المرور المتفق عليها. كل كود تجريبي مكوّن من 9 أرقام فقط. المجموعة الأولى تبدأ من <b dir="ltr">999000001</b>، والمجموعة الثانية تبدأ من <b dir="ltr">999000066</b>.</div>
 </section>
 <section id="dashboard" class="dash">
 <div class="hero"><div><span class="eyebrow">STUDENT DASHBOARD • DEMO</span><h1>أهلاً بيك في البوابة التجريبية</h1><p id="accountMeta">حساب تجريبي • قراءة فقط</p></div><button class="logout" id="logout">تسجيل الخروج</button></div>
@@ -59,7 +59,7 @@ function showAccount(account){
 $("loginForm").addEventListener("submit", async (event)=>{
   event.preventDefault(); $("error").hidden = true; $("submit").disabled = true; $("submit").textContent = "جاري التحقق...";
   try{
-    const {data,error} = await client.functions.invoke("demo-student-login",{body:{account_code:$("code").value.trim().toUpperCase(),password:$("password").value}});
+    const {data,error} = await client.functions.invoke("demo-student-login",{body:{account_code:$("code").value.trim(),password:$("password").value}});
     if(error || !data?.ok || !data?.account?.demo) throw new Error(data?.error || error?.message || "تعذر تسجيل الدخول.");
     showAccount(data.account); $("password").value = "";
   }catch(err){ $("error").textContent = err.message || "تعذر تسجيل الدخول."; $("error").hidden = false; }
