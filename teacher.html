@@ -111,6 +111,7 @@ async function loadRecords(){const c=configs[activeTab];const {data,error}=await
 $('contentForm').onsubmit=async e=>{
  e.preventDefault();
  const formElement=e.currentTarget,c=configs[activeTab],form=new FormData(formElement),row={created_by:user.id,published:true};
+ let quizAnswerKey=[];
  message($('formMessage'),'جاري التحقق من البيانات وتجهيز النشر...');
  const missing=c.fields().find(f=>f.required&&!String(form.get(f.key)||'').trim());
  if(missing){message($('formMessage'),'من فضلك أكمل حقل: '+missing.label,true);const input=formElement.elements.namedItem(missing.key);if(input)input.focus();return}
@@ -148,7 +149,7 @@ $('contentForm').onsubmit=async e=>{
    }else{
     const questionRows=[...document.querySelectorAll('#questionList .item')];
     if(!questionRows.length)throw new Error('أضف سؤالًا واحدًا على الأقل.');
-    const answerKey=[];
+    quizAnswerKey=[];
     row.quiz_questions=questionRows.map((q,i)=>{
      const questionText=q.querySelector('.question-text').value.trim(),type=q.querySelector('.question-type').value;
      const choices=q.querySelector('.question-choices').value.split('\n').map(x=>x.trim()).filter(Boolean);
@@ -159,7 +160,7 @@ $('contentForm').onsubmit=async e=>{
      if(!correct)throw new Error('حدد الإجابة الصحيحة للسؤال رقم '+(i+1));
      if(type==='mcq'&&!choices.includes(correct))throw new Error('الإجابة الصحيحة للسؤال رقم '+(i+1)+' لازم تطابق أحد الاختيارات حرفيًا');
      if(type==='true_false'&&!['صح','خطأ','true','false'].includes(correct.toLowerCase()))throw new Error('إجابة سؤال الصح والخطأ يجب أن تكون صح أو خطأ');
-     answerKey.push({correct_answer:correct});
+     quizAnswerKey.push({correct_answer:correct});
      return {text:questionText,type,choices,marks};
     });
     row.attachment_url=null;row.attachment_name=null;
@@ -170,7 +171,7 @@ $('contentForm').onsubmit=async e=>{
   if(error)throw error;
   if(!savedRecord?.id)throw new Error('لم يؤكد الخادم حفظ المحتوى. حدّث الصفحة وتحقق من السجل قبل إعادة النشر.');
   if(activeTab==='tasks'&&row.kind==='quiz'&&row.content_mode==='manual'){
-   const {error:keyError}=await db.rpc('faculty_set_quiz_answer_key',{p_task_id:savedRecord.id,p_answer_key:answerKey});
+   const {error:keyError}=await db.rpc('faculty_set_quiz_answer_key',{p_task_id:savedRecord.id,p_answer_key:quizAnswerKey});
    if(keyError){await db.from('student_tasks').delete().eq('id',savedRecord.id).eq('created_by',user.id);throw new Error('تم إلغاء نشر الكويز لأن حفظ مفتاح الإجابة فشل: '+keyError.message)}
   }
   formElement.reset();renderForm();message($('formMessage'),'تم النشر بنجاح! الكويز أصبح متاحًا للطلاب.');await loadRecords();
