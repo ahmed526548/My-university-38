@@ -254,7 +254,7 @@ function exportAcademicCsv(){
  const csv='\\uFEFF'+[columns.map(quote).join(','),...body].join('\\r\\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='academic-records-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 async function loadAnalytics(){
- $('workspaceGrid').classList.add('hidden');$('analyticsPanel').classList.remove('hidden');$('quizResultsPanel').classList.add('hidden');$('analyticsMessage').className='message';
+ $('workspaceGrid').classList.add('hidden');$('analyticsPanel').classList.remove('hidden');$('attendancePanel').classList.add('hidden');$('quizResultsPanel').classList.add('hidden');$('analyticsMessage').className='message';
  $('subjectAnalytics').innerHTML='<div class="empty">جاري التحميل...</div>';$('quizAnalytics').innerHTML='<div class="empty">جاري التحميل...</div>';$('recentAcademicRows').innerHTML='<div class="empty">جاري التحميل...</div>';
  const [gradesRes,quizzesRes]=await Promise.all([db.from('academic_records').select('student_name,student_code,subject_code,assessment_name,assessment_type,grade,max_grade,term,created_at').eq('created_by',user.id).order('created_at',{ascending:false}).limit(500),db.from('student_tasks').select('id,title,subject_code').eq('created_by',user.id).eq('kind','quiz').order('created_at',{ascending:false}).limit(20)]);
  if(gradesRes.error||quizzesRes.error){message($('analyticsMessage'),'تعذر تحميل الإحصائيات: '+(gradesRes.error||quizzesRes.error).message,true);return}
