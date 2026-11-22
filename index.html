@@ -1152,7 +1152,7 @@ Civil & Political + Economic & Social rights.` },
         if (!supabaseClient || studentAuthBusy) return;
         setStudentAuthBusy(true); setStudentAuthError(''); setStudentAuthMessage('');
         try {
-          if (!studentSession || studentAuthMode === 'update') {
+          if (studentAuthMode === 'update') {
             if (studentPassword.length < 10) throw new Error('كلمة المرور الجديدة لازم تكون 10 أحرف على الأقل.');
             const { error } = await supabaseClient.auth.updateUser({ password: studentPassword, data: { must_change_password: false } });
             if (error) throw error;
@@ -2911,7 +2911,7 @@ Civil & Political + Economic & Social rights.` },
       if (studentAuthLoading) {
         return <div dir="rtl" className="portal-loading-screen min-h-screen flex items-center justify-center"><div className="text-center"><div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-sky-400/20 border-t-sky-300"></div><p className="text-sm font-bold text-sky-100">جاري تجهيز البوابة...</p></div></div>;
       }
-      if (studentAuthMode === 'update') {
+      if (!studentSession || studentAuthMode === 'update') {
         const isPasswordMode = ['signin', 'signup', 'update'].includes(studentAuthMode);
         const heading = studentAuthMode === 'signup' ? 'إنشاء حساب طالب' : studentAuthMode === 'forgot' ? 'استعادة كلمة المرور' : studentAuthMode === 'update' ? 'تعيين كلمة مرور جديدة' : 'تسجيل الدخول';
         return (
