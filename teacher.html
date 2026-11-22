@@ -35,6 +35,18 @@
 <div id="app" class="wrap hidden">
  <header class="top"><div class="brand"><div class="mark">🎓</div><div><small>BSNU • FACULTY WORKSPACE</small><b>بوابة الدكتور</b></div></div><div style="display:flex;gap:8px;align-items:center"><span id="who" class="pill"></span><button id="logout" class="btn secondary">خروج</button></div></header>
  <section class="hero"><div><div class="eyebrow">مساحة العمل الأكاديمية</div><h1>أهلاً بيك، <span id="welcomeName">دكتورنا</span></h1><p>أضف محتواك مرة واحدة وهيظهر للطلاب في بوابتهم مباشرة.</p></div><a class="btn secondary" href="./index.html">عرض بوابة الطلاب ↗</a></section>
+
+ <section class="panel" style="margin:14px 0">
+  <h2>تغيير كلمة المرور</h2>
+  <p class="muted">أدخل كلمة المرور الحالية، ثم اختر كلمة مرور جديدة لا تقل عن 10 أحرف.</p>
+  <form id="facultyPasswordChangeForm" class="formgrid">
+   <div class="field"><label>كلمة المرور الحالية</label><input id="facultyCurrentPassword" type="password" autocomplete="current-password" required></div>
+   <div class="field"><label>كلمة المرور الجديدة</label><input id="facultyNewPassword" type="password" minlength="10" autocomplete="new-password" required></div>
+   <div class="field"><label>تأكيد كلمة المرور الجديدة</label><input id="facultyConfirmPassword" type="password" minlength="10" autocomplete="new-password" required></div>
+   <button class="btn" id="facultyPasswordChangeButton">حفظ كلمة المرور</button>
+  </form>
+  <div id="facultyPasswordChangeMessage" class="message" role="status"></div>
+ </section>
  <section class="stats">
   <div class="stat"><strong id="lectureCount">0</strong><span>محاضرات منشورة</span></div>
   <div class="stat"><strong id="taskCount">0</strong><span>امتحانات وتكليفات وكويزات</span></div>
@@ -107,6 +119,24 @@ function message(el,text,error=false){el.textContent=text;el.className='message 
 function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function init(){const {data,error}=await db.from('faculty_directory').select('id,full_name,subject_codes').order('full_name');if(error){$('facultySelect').innerHTML='<option>تعذر تحميل الدكاترة</option>';return}faculty=data||[];$('facultySelect').innerHTML='<option value="">اختار اسمك</option>'+faculty.map(x=>'<option value="'+x.id+'">'+escapeHtml(x.full_name)+'</option>').join('');const {data:sub}=await db.from('subjects').select('code,name,arabic_name').order('sort_order');subjects=sub||[];const {data:sessionData}=await db.auth.getSession();if(sessionData.session)await verifyFaculty(sessionData.session.user);else {$('login').classList.remove('hidden');}}
 async function verifyFaculty(authUser){const {data:link,error}=await db.from('faculty_accounts').select('faculty_id').eq('user_id',authUser.id).maybeSingle();if(error||!link){await db.auth.signOut();$('login').classList.remove('hidden');throw new Error('تعذر ربط الحساب بسجل الدكتور. تأكد من اعتماد البريد والاسم من الإدارة.')}currentFaculty=faculty.find(x=>x.id===link.faculty_id);if(!currentFaculty){await db.auth.signOut();throw new Error('بيانات الدكتور غير موجودة أو غير نشطة.')}user=authUser;$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=currentFaculty.full_name;$('welcomeName').textContent=currentFaculty.full_name;renderForm();await loadRecords()}
+
+$('facultyPasswordChangeForm').onsubmit=async e=>{
+ e.preventDefault();
+ const current=$('facultyCurrentPassword').value, next=$('facultyNewPassword').value, confirmNext=$('facultyConfirmPassword').value, btn=$('facultyPasswordChangeButton');
+ if(next.length<10){message($('facultyPasswordChangeMessage'),'كلمة المرور الجديدة لازم تكون 10 أحرف على الأقل.',true);return}
+ if(next!==confirmNext){message($('facultyPasswordChangeMessage'),'تأكيد كلمة المرور غير مطابق.',true);return}
+ if(!user?.email){message($('facultyPasswordChangeMessage'),'تعذر تحديد الحساب الحالي. سجّل الدخول مرة أخرى.',true);return}
+ btn.disabled=true;
+ try{
+  const {error:verifyError}=await db.auth.signInWithPassword({email:user.email,password:current});
+  if(verifyError)throw new Error('كلمة المرور الحالية غير صحيحة.');
+  const {error}=await db.auth.updateUser({password:next});
+  if(error)throw error;
+  $('facultyCurrentPassword').value='';$('facultyNewPassword').value='';$('facultyConfirmPassword').value='';
+  message($('facultyPasswordChangeMessage'),'تم تغيير كلمة المرور بنجاح.');
+ }catch(err){message($('facultyPasswordChangeMessage'),err.message||'تعذر تغيير كلمة المرور.',true)}
+ finally{btn.disabled=false}
+};
 db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){$('loginForm').classList.add('hidden');$('forgotPassword').classList.add('hidden');$('recoveryForm').classList.remove('hidden');message($('message'),'اكتب كلمة مرور جديدة لحساب الدكتور.')}});
 $('forgotPassword').onclick=async()=>{const email=$('email').value.trim().toLowerCase();if(!email){message($('message'),'اكتب البريد الإلكتروني أولاً ثم اضغط نسيت كلمة المرور.',true);return}const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error){message($('message'),error.message,true);return}message($('message'),'لو البريد مسجل، هتوصلك رسالة لاستعادة كلمة المرور. افتح الرسالة وارجع للصفحة دي لتعيين كلمة مرور جديدة.')};
 $('recoveryForm').onsubmit=async e=>{e.preventDefault();const password=$('newPassword').value;if(password.length<8){message($('message'),'كلمة المرور لازم تكون ٨ أحرف على الأقل.',true);return}const {error}=await db.auth.updateUser({password});if(error){message($('message'),error.message,true);return}$('recoveryForm').classList.add('hidden');$('loginForm').classList.remove('hidden');$('forgotPassword').classList.remove('hidden');$('loginForm').dataset.mode='signin';$('loginBtn').textContent='تسجيل الدخول';$('password').value=password;message($('message'),'تم تحديث كلمة المرور. اختار اسم الدكتور واضغط تسجيل الدخول.')};
