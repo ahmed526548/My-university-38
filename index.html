@@ -2730,6 +2730,7 @@ Civil & Political + Economic & Social rights.` },
                   <div className="flex min-w-0 items-center gap-2"><Icons.Bell className="h-4 w-4 shrink-0 text-sky-300"/><b className="text-sm text-white">{item.title}</b></div>
                   {isUnread && <span className="shrink-0 rounded-full bg-red-500/15 px-2 py-1 text-[9px] font-black text-red-300">جديد</span>}
                 </div>
+                <p className="mt-2 text-[10px] font-bold text-sky-300">بواسطة: {item.doctor_name || 'إدارة المنصة'}</p>
                 <p className="mt-2 whitespace-pre-wrap text-xs leading-6 text-slate-300">{item.body}</p>
                 <p className="mt-2 text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</p>
               </article>;
