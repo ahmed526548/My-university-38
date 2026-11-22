@@ -927,6 +927,7 @@ Civil & Political + Economic & Social rights.` },
 
     // ==================== APP ====================
     function App() {
+      const [entryRole, setEntryRole] = useState('');
       const [studentSession, setStudentSession] = useState(null);
       const [studentAuthLoading, setStudentAuthLoading] = useState(true);
       const [studentAuthBusy, setStudentAuthBusy] = useState(false);
@@ -2664,7 +2665,7 @@ Civil & Political + Economic & Social rights.` },
         }, [selectedGroup]);
         return <div className="min-h-screen soft-page pb-28"><NavBar title="التكليفات والامتحانات" onBack={()=>setView('home')} /><div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
           <p className="text-xs leading-6 text-slate-400">تابع مواعيد التسليم والاختبارات المنشورة من إدارة المنصة.</p>
-          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل المواعيد...</p> : tasks.length ? tasks.map(task=><article key={task.id} className="soft-panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><b className="text-sm text-white">{task.title}</b><span className="mr-2 rounded-md bg-sky-400/10 px-2 py-0.5 text-[9px] text-sky-200">{task.kind === 'exam' ? 'امتحان' : 'تكليف'}</span><p className="mt-1 text-[11px] text-sky-200">{task.subject_code || 'عام'} {task.group_name ? '• '+task.group_name : ''}</p></div><span className="rounded-lg bg-amber-400/10 px-2 py-1 text-[10px] text-amber-200">{task.due_at ? new Date(task.due_at).toLocaleString('ar-EG') : 'بدون موعد محدد'}</span></div>{task.description && <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-300">{task.description}</p>}</article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد تكليفات أو امتحانات منشورة حالياً.</p>}
+          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل المواعيد...</p> : tasks.length ? tasks.map(task=><article key={task.id} className="soft-panel rounded-2xl p-4"><div className="flex items-start justify-between gap-3"><div><b className="text-sm text-white">{task.title}</b><span className="mr-2 rounded-md bg-sky-400/10 px-2 py-0.5 text-[9px] text-sky-200">{task.kind === 'exam' ? 'امتحان' : task.kind === 'quiz' ? 'كويز' : 'تكليف'}</span><p className="mt-1 text-[11px] text-sky-200">{task.subject_code || 'عام'} {task.group_name ? '• '+task.group_name : ''}</p></div><span className="rounded-lg bg-amber-400/10 px-2 py-1 text-[10px] text-amber-200">{task.due_at ? new Date(task.due_at).toLocaleString('ar-EG') : 'بدون موعد محدد'}</span></div>{task.description && <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-slate-300">{task.description}</p>}</article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد تكليفات أو امتحانات أو كويزات منشورة حالياً.</p>}
         </div></div>;
       };
 
@@ -2748,6 +2749,37 @@ Civil & Political + Economic & Social rights.` },
           </nav>
         </div>
       );
+
+      if (!entryRole && !adminStandaloneMode && initialView !== 'admin') {
+        return (
+          <div dir="rtl" lang="ar" className="program-select-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+            <div className="program-select-backdrop pointer-events-none absolute inset-0 -z-10" />
+            <div className="mx-auto w-full max-w-4xl">
+              <div className="text-center mb-10">
+                <div className="program-select-mark mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border text-4xl">🎓</div>
+                <p className="program-select-eyebrow text-xs font-black tracking-[.24em]">BSNU • UNIVERSITY PORTAL</p>
+                <h1 className="mt-3 text-3xl font-black sm:text-4xl">أهلاً بيك في بوابتك الجامعية</h1>
+                <p className="program-select-description mt-3 text-sm">اختار نوع الحساب علشان نفتحلك المساحة المناسبة.</p>
+              </div>
+              <div className="mx-auto grid max-w-2xl grid-cols-1 gap-5 sm:grid-cols-2">
+                <button type="button" onClick={() => setEntryRole('student')} className="program-select-card group rounded-3xl border p-8 text-center transition">
+                  <span className="program-select-icon mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border text-4xl">👨‍🎓</span>
+                  <span className="mt-5 block text-xl font-black">تسجيل الدخول كطالب</span>
+                  <span className="program-select-description mt-2 block text-xs leading-6">المحاضرات، الامتحانات، الكويزات، الجدول والمجتمع الطلابي</span>
+                  <span className="program-select-cta mt-6 block rounded-xl py-3 text-xs font-black">دخول بوابة الطالب</span>
+                </button>
+                <button type="button" onClick={() => { window.location.href = './teacher.html'; }} className="program-select-card group rounded-3xl border p-8 text-center transition">
+                  <span className="program-select-icon mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border text-4xl">👨‍🏫</span>
+                  <span className="mt-5 block text-xl font-black">تسجيل الدخول كدكتور</span>
+                  <span className="program-select-description mt-2 block text-xs leading-6">إدارة المحاضرات، نشر الامتحانات والكويزات والإعلانات</span>
+                  <span className="program-select-cta mt-6 block rounded-xl py-3 text-xs font-black">دخول بوابة الدكتور</span>
+                </button>
+              </div>
+              <p className="mt-8 text-center text-xs text-slate-500">جامعة بني سويف الأهلية • حاسبات ومعلومات</p>
+            </div>
+          </div>
+        );
+      }
 
       if (studentAuthLoading) {
         return <div dir="rtl" className="portal-loading-screen min-h-screen flex items-center justify-center"><div className="text-center"><div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-sky-400/20 border-t-sky-300"></div><p className="text-sm font-bold text-sky-100">جاري تجهيز البوابة...</p></div></div>;
