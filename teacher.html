@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#eff8ff"><title>بوابتي | بوابة الدكتور</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#f3f9fe;--card:#fff;--ink:#142d45;--muted:#6b8094;--line:#dceaf5;--blue:#0284c7;--blue2:#0369a1;--soft:#e7f5ff;--shadow:0 16px 40px rgba(23,72,112,.08)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% 0,#dff3ff 0,transparent 28%),var(--bg);font-family:Cairo,sans-serif;color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}.wrap{max-width:1120px;margin:auto;padding:24px 18px 70px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#ffffffd9;border:1px solid var(--line);border-radius:22px;padding:14px 18px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:3;backdrop-filter:blur(12px)}.brand{display:flex;align-items:center;gap:12px}.mark{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#0ea5e9,#0369a1);display:grid;place-items:center;color:white;font-size:23px}.brand small{display:block;color:var(--muted);font-size:11px;font-weight:800}.brand b{font-size:17px}.btn{border:0;border-radius:13px;padding:11px 16px;font-weight:800;background:var(--blue);color:white}.btn.secondary{background:var(--soft);color:var(--blue2);border:1px solid #cce9fb}.btn.ghost{background:#f1f5f9;color:#526579}.hero{margin:24px 0;padding:26px;border-radius:26px;background:linear-gradient(125deg,#e0f2fe,#f0f9ff 60%,white);border:1px solid #cdeaff;display:flex;justify-content:space-between;gap:18px;align-items:center}.hero h1{margin:4px 0;font-size:clamp(22px,4vw,34px)}.hero p{margin:0;color:var(--muted)}.eyebrow{font-size:11px;color:var(--blue2);font-weight:900;letter-spacing:.08em}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.stat,.panel,.login{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.stat{padding:17px}.stat strong{display:block;font-size:27px;color:var(--blue2)}.stat span{font-size:12px;color:var(--muted);font-weight:700}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--line);background:white;color:var(--muted);padding:10px 15px;border-radius:13px;font-weight:800}.tab.active{background:var(--blue);border-color:var(--blue);color:white}.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px}.panel{padding:20px}.panel h2{font-size:18px;margin:0 0 15px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:800;color:#38536d}.field input,.field select,.field textarea{width:100%;border:1px solid #d5e4ef;border-radius:12px;background:#fbfdff;padding:11px 12px;color:var(--ink);outline:none}.field textarea{min-height:95px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#38a9df;box-shadow:0 0 0 3px #0ea5e91a}.hint{font-size:11px;color:var(--muted);line-height:1.7}.item{padding:13px;border:1px solid var(--line);border-radius:15px;margin-top:9px;background:#fbfdff}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:start}.item b{font-size:13px}.item p{font-size:11px;color:var(--muted);margin:5px 0}.pill{font-size:10px;border-radius:30px;background:var(--soft);color:var(--blue2);padding:4px 9px;font-weight:900}.delete{background:#fff1f2;color:#be123c;border:0;border-radius:9px;padding:6px 10px;font-size:11px;font-weight:800}.login{max-width:470px;margin:7vh auto;padding:28px}.login h1{margin:4px 0}.login p{color:var(--muted);font-size:13px;line-height:1.8}.login .field{margin:12px 0}.message{display:none;border-radius:12px;padding:10px 12px;margin-top:12px;font-size:12px;line-height:1.7}.message.show{display:block}.message.error{background:#fff1f2;color:#9f1239}.message.ok{background:#ecfdf5;color:#047857}.hidden{display:none!important}.empty{padding:25px;text-align:center;color:var(--muted);font-size:12px}.notice{border:1px dashed #b8dff4;background:#f4fbff;border-radius:14px;padding:13px;font-size:12px;color:#47657f;line-height:1.8}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}}@media(max-width:520px){.wrap{padding:12px 11px 45px}.top{padding:11px}.brand b{font-size:14px}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.panel{padding:15px}.hero{padding:20px}.stats{gap:8px}.stat{padding:12px}}
+</style>
+</head>
+<body>
+<div id="login" class="wrap">
+ <div class="login">
+  <div class="mark">🎓</div><div class="eyebrow" style="margin-top:16px">BSNU • FACULTY PORTAL</div>
+  <h1>بوابة أعضاء هيئة التدريس</h1><p>اختار اسمك وسجّل دخولك بحساب الدكتور المعتمد من إدارة المنصة.</p>
+  <form id="loginForm">
+   <div class="field"><label>اسم الدكتور</label><select id="facultySelect" required><option value="">جاري تحميل قائمة الدكاترة...</option></select></div>
+   <div class="field"><label>البريد الإلكتروني الجامعي المعتمد</label><input id="email" type="email" autocomplete="username" required placeholder="name@university.edu"></div>
+   <div class="field"><label>كلمة المرور</label><input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="كلمة المرور الخاصة بك"></div>
+   <button class="btn" id="loginBtn" style="width:100%;margin-top:8px">تسجيل الدخول</button>
+  </form>
+  <div style="display:flex;justify-content:center;gap:12px;margin-top:16px;font-size:12px"><button class="btn ghost" id="showSignup">تفعيل حساب دكتور لأول مرة</button><a href="./index.html" style="color:#0369a1;text-decoration:none;font-weight:800;align-self:center">بوابة الطالب</a></div>
+  <div id="signupNote" class="notice hidden" style="margin-top:14px">لازم يكون البريد الإلكتروني مضافًا مسبقًا بواسطة إدارة المنصة. بعد اختيار اسمك، أنشئ كلمة مرور خاصة بك.</div>
+  <div id="message" class="message"></div>
+ </div>
+</div>
+<div id="app" class="wrap hidden">
+ <header class="top"><div class="brand"><div class="mark">🎓</div><div><small>BSNU • FACULTY WORKSPACE</small><b>بوابة الدكتور</b></div></div><div style="display:flex;gap:8px;align-items:center"><span id="who" class="pill"></span><button id="logout" class="btn secondary">خروج</button></div></header>
+ <section class="hero"><div><div class="eyebrow">مساحة العمل الأكاديمية</div><h1>أهلاً بيك، <span id="welcomeName">دكتورنا</span></h1><p>أضف محتواك مرة واحدة وهيظهر للطلاب في بوابتهم مباشرة.</p></div><a class="btn secondary" href="./index.html">عرض بوابة الطلاب ↗</a></section>
+ <section class="stats">
+  <div class="stat"><strong id="lectureCount">0</strong><span>محاضرات منشورة</span></div>
+  <div class="stat"><strong id="taskCount">0</strong><span>امتحانات وتكليفات وكويزات</span></div>
+  <div class="stat"><strong id="announcementCount">0</strong><span>إعلانات</span></div>
+  <div class="stat"><strong id="notificationCount">0</strong><span>إشعارات</span></div>
+ </section>
+ <nav class="tabs">
+  <button class="tab active" data-tab="lectures">📚 المحاضرات</button>
+  <button class="tab" data-tab="tasks">📝 الامتحانات والكويزات</button>
+  <button class="tab" data-tab="announcements">📢 الإعلانات</button>
+  <button class="tab" data-tab="notifications">🔔 الإشعارات</button>
+ </nav>
+ <div class="grid">
+  <section class="panel">
+   <h2 id="formTitle">إضافة محاضرة جديدة</h2>
+   <form id="contentForm">
+    <div id="fields" class="formgrid"></div>
+    <button class="btn" id="saveBtn" style="width:100%;margin-top:16px">نشر المحتوى للطلاب</button>
+    <div id="formMessage" class="message"></div>
+   </form>
+  </section>
+  <section class="panel"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2 id="listTitle">محتواي المنشور</h2><button id="refresh" class="btn ghost">تحديث</button></div><div id="records"><div class="empty">جاري تحميل المحتوى...</div></div></section>
+ </div>
+ <p class="hint" style="text-align:center;margin-top:24px">كل دكتور يقدر يدير المحتوى اللي نشره بنفسه فقط. صلاحيات الإدارة محمية من قاعدة البيانات.</p>
+</div>
+<script>
+const SUPABASE_URL='https://azlplcbphvaiexmyfdbp.supabase.co';
+const SUPABASE_KEY='sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{storageKey:'bsnu-faculty-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let faculty=[],subjects=[],currentFaculty=null,user=null,activeTab='lectures',records=[];
+const $=id=>document.getElementById(id);
+function message(el,text,error=false){el.textContent=text;el.className='message show '+(error?'error':'ok')}
+function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function init(){const {data,error}=await db.from('faculty_directory').select('id,full_name,subject_codes').order('full_name');if(error){$('facultySelect').innerHTML='<option>تعذر تحميل الدكاترة</option>';return}faculty=data||[];$('facultySelect').innerHTML='<option value="">اختار اسمك</option>'+faculty.map(x=>'<option value="'+x.id+'">'+escapeHtml(x.full_name)+'</option>').join('');const {data:sub}=await db.from('subjects').select('code,name,arabic_name').order('sort_order');subjects=sub||[];const {data:sessionData}=await db.auth.getSession();if(sessionData.session)await verifyFaculty(sessionData.session.user);else {$('login').classList.remove('hidden');}}
+async function verifyFaculty(authUser){const {data:link,error}=await db.from('faculty_accounts').select('faculty_id').eq('user_id',authUser.id).maybeSingle();if(error||!link){await db.auth.signOut();$('login').classList.remove('hidden');return}currentFaculty=faculty.find(x=>x.id===link.faculty_id);if(!currentFaculty){await db.auth.signOut();return}user=authUser;$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=currentFaculty.full_name;$('welcomeName').textContent=currentFaculty.full_name;await loadRecords()}
+$('showSignup').onclick=()=>{$('signupNote').classList.toggle('hidden');$('loginBtn').textContent=$('signupNote').classList.contains('hidden')?'تسجيل الدخول':'إنشاء حساب الدكتور';$('loginForm').dataset.mode=$('signupNote').classList.contains('hidden')?'signin':'signup'};
+$('loginForm').onsubmit=async e=>{e.preventDefault();const id=$('facultySelect').value,email=$('email').value.trim().toLowerCase(),password=$('password').value;const mode=e.currentTarget.dataset.mode||'signin';if(!id){message($('message'),'اختار اسم الدكتور أولاً.',true);return}const chosen=faculty.find(x=>x.id===id);$('loginBtn').disabled=true;try{let result;if(mode==='signup'){result=await db.auth.signUp({email,password,options:{data:{portal_role:'faculty',faculty_id:id,full_name:chosen.full_name},emailRedirectTo:location.origin+location.pathname}});if(result.error)throw result.error;if(result.data.session){await verifyFaculty(result.data.user)}else{message($('message'),'تم إرسال رسالة تأكيد للبريد. افتحها ثم ارجع وسجّل الدخول.')}}else{result=await db.auth.signInWithPassword({email,password});if(result.error)throw result.error;const {data:link,error}=await db.from('faculty_accounts').select('faculty_id').eq('user_id',result.data.user.id).maybeSingle();if(error||!link||link.faculty_id!==id){await db.auth.signOut();throw new Error('الحساب غير مرتبط بالاسم المختار. راجع إدارة المنصة.')}await verifyFaculty(result.data.user)}}catch(err){message($('message'),err.message||'تعذر تسجيل الدخول.',true)}finally{$('loginBtn').disabled=false}};
+const configs={
+ lectures:{title:'إضافة محاضرة',list:'محاضراتي',table:'lectures',fields:()=>[
+  field('subject_code','المادة الدراسية','select',subjects.filter(s=>currentFaculty.subject_codes.includes(s.code)).map(s=>[s.code,s.arabic_name||s.name]),true),
+  field('title','عنوان المحاضرة','text',null,true),
+  field('duration','المدة','text',null,false,'مثال: 50 دقيقة'),
+  field('summary_ar','وصف أو ملخص للطلاب','textarea',null,false),
+  field('file','ملف المحاضرة PDF','file',null,false),
+  field('file_url','أو رابط الملف','url',null,false,'رابط Google Drive أو PDF')
+ ]},
+ tasks:{title:'إضافة امتحان أو كويز أو تكليف',list:'تقييماتي',table:'student_tasks',fields:()=>[
+  field('title','العنوان','text',null,true),
+  field('kind','النوع','select',[['assignment','تكليف'],['exam','امتحان'],['quiz','كويز']],true),
+  field('subject_code','المادة الدراسية','select',[['','عام'],...subjects.filter(s=>currentFaculty.subject_codes.includes(s.code)).map(s=>[s.code,s.arabic_name||s.name])],false),
+  field('due_at','آخر موعد','datetime-local',null,false),
+  field('group_name','الجروب المستهدف','text',null,false,'اتركه فارغًا لكل الطلاب'),
+  field('description','التعليمات والتفاصيل','textarea',null,false)
+ ]},
+ announcements:{title:'نشر إعلان جديد',list:'إعلاناتي',table:'announcements',fields:()=>[
+  field('title','عنوان الإعلان','text',null,true),
+  field('type','نوع الإعلان','select',[['info','معلومات'],['warning','تنبيه'],['success','خبر سار']],true),
+  field('body','نص الإعلان','textarea',null,true)
+ ]},
+ notifications:{title:'إرسال إشعار للطلاب',list:'إشعاراتي',table:'portal_notifications',fields:()=>[
+  field('title','عنوان الإشعار','text',null,true),
+  field('kind','نوع الإشعار','select',[['info','معلومات'],['warning','تحذير'],['success','نجاح'],['exam','امتحان'],['schedule','جدول']],true),
+  field('target_group','الجروب المستهدف','text',null,false,'اتركه فارغًا لكل الطلاب'),
+  field('body','نص الإشعار','textarea',null,true)
+ ]}
+};
+function field(key,label,type,opts,required=false,placeholder=''){return {key,label,type,opts,required,placeholder}}
+function renderForm(){const c=configs[activeTab];$('formTitle').textContent=c.title;$('listTitle').textContent=c.list;$('fields').innerHTML=c.fields().map(f=>{let control='';if(f.type==='select')control='<select name="'+f.key+'" '+(f.required?'required':'')+'><option value="">اختار</option>'+f.opts.map(o=>'<option value="'+escapeHtml(o[0])+'">'+escapeHtml(o[1])+'</option>').join('')+'</select>';else if(f.type==='textarea')control='<textarea name="'+f.key+'" '+(f.required?'required':'')+' placeholder="'+escapeHtml(f.placeholder||'')+'"></textarea>';else control='<input name="'+f.key+'" type="'+f.type+'" '+(f.required?'required':'')+' placeholder="'+escapeHtml(f.placeholder||'')+'" '+(f.type==='file'?'accept=".pdf,.ppt,.pptx,.doc,.docx"':'')+'>';return '<div class="field '+(f.type==='textarea'||f.type==='file'?'full':'')+'"><label>'+f.label+(f.required?' *':'')+'</label>'+control+'</div>'}).join('')}
+async function loadRecords(){const c=configs[activeTab];const {data,error}=await db.from(c.table).select('*').eq('created_by',user.id).order('created_at',{ascending:false}).limit(40);if(error){$('records').innerHTML='<div class="empty">تعذر تحميل المحتوى: '+escapeHtml(error.message)+'</div>';return}records=data||[];const count=records.length;$('records').innerHTML=count?records.map(r=>{const title=r.title||'بدون عنوان',subtitle=activeTab==='lectures'?(r.subject_code||'')+' • '+(r.doctor||currentFaculty.full_name):activeTab==='tasks'?({exam:'امتحان',quiz:'كويز',assignment:'تكليف'}[r.kind]||'محتوى')+' • '+(r.subject_code||'عام'):activeTab==='announcements'?'إعلان':'إشعار';return '<article class="item"><div class="itemtop"><div><b>'+escapeHtml(title)+'</b><p>'+escapeHtml(subtitle)+'</p></div><button class="delete" data-delete="'+r.id+'">حذف</button></div></article>'}).join(''):'<div class="empty">لسه مفيش محتوى هنا. أضف أول منشور من النموذج.</div>';const [l,t,a,n]=await Promise.all(['lectures','student_tasks','announcements','portal_notifications'].map(table=>db.from(table).select('id',{count:'exact',head:true}).eq('created_by',user.id)));$('lectureCount').textContent=l.count||0;$('taskCount').textContent=t.count||0;$('announcementCount').textContent=a.count||0;$('notificationCount').textContent=n.count||0}
+$('contentForm').onsubmit=async e=>{e.preventDefault();const c=configs[activeTab],form=new FormData(e.currentTarget),row={created_by:user.id,published:true};for(const f of c.fields()){if(f.type==='file')continue;let value=form.get(f.key);if(value!==null&&value!=='')row[f.key]=value}if(activeTab==='lectures'){row.doctor=currentFaculty.full_name;row.has_content=true;const file=form.get('file');if(file&&file.size){if(file.size>25*1024*1024)throw new Error('حجم الملف أكبر من 25 ميجابايت.');const path=user.id+'/'+Date.now()+'-'+file.name.replace(/[^\w.\-\u0600-\u06FF]/g,'_');const {error:uploadError}=await db.storage.from('lecture-files').upload(path,file,{upsert:false});if(uploadError){message($('formMessage'),uploadError.message,true);return}row.file_url=db.storage.from('lecture-files').getPublicUrl(path).data.publicUrl}if(!row.file_url)delete row.file_url}if(activeTab==='tasks'&&row.due_at)row.due_at=new Date(row.due_at).toISOString();$('saveBtn').disabled=true;try{const {error}=await db.from(c.table).insert(row);if(error)throw error;e.currentTarget.reset();message($('formMessage'),'تم النشر بنجاح، والمحتوى أصبح متاحًا للطلاب.');await loadRecords()}catch(err){message($('formMessage'),err.message||'تعذر حفظ المحتوى.',true)}finally{$('saveBtn').disabled=false}};
+$('records').onclick=async e=>{const id=e.target.dataset.delete;if(!id)return;if(!confirm('متأكد إنك عايز تحذف المحتوى ده؟'))return;const {error}=await db.from(configs[activeTab].table).delete().eq('id',id).eq('created_by',user.id);if(error){alert(error.message);return}await loadRecords()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));renderForm();loadRecords()});
+$('refresh').onclick=loadRecords;$('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
+init().then(()=>renderForm());
+</script>
+</body></html>
