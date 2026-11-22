@@ -79,6 +79,29 @@
     ::-webkit-scrollbar-thumb { background:#b6d7e9;border-radius:10px; }
     ::-webkit-scrollbar-thumb:hover { background:#7dbbd9; }
 
+
+    /* Global dark theme */
+    html[data-theme="dark"] { color-scheme:dark; --portal-bg:#0b1220; --portal-surface:#111c2d; --portal-surface-soft:#17263a; --portal-line:#26384e; --portal-line-strong:#315574; --portal-ink:#e5eef8; --portal-muted:#9aafc5; --portal-accent:#38bdf8; --portal-accent-strong:#7dd3fc; --portal-accent-soft:#142f45; --portal-accent-pale:#102438; --portal-shadow:0 10px 28px rgba(0,0,0,.24); }
+    html[data-theme="dark"], html[data-theme="dark"] body, html[data-theme="dark"] #root { background:var(--portal-bg) !important; color:var(--portal-ink); }
+    .portal-root[data-theme="dark"] { color:var(--portal-ink) !important; background:var(--portal-bg) !important; }
+    .portal-root[data-theme="dark"] .glass,.portal-root[data-theme="dark"] .glass-strong,.portal-root[data-theme="dark"] .soft-panel,.portal-root[data-theme="dark"] .soft-surface,.portal-root[data-theme="dark"] .soft-chat-assistant,.portal-root[data-theme="dark"] .premium-header,.portal-root[data-theme="dark"] .premium-panel,.portal-root[data-theme="dark"] .premium-shortcut,.portal-root[data-theme="dark"] .premium-progress-card,.portal-root[data-theme="dark"] .premium-lecture-row,.portal-root[data-theme="dark"] .premium-empty-state,.portal-root[data-theme="dark"] .premium-group-choice,.portal-root[data-theme="dark"] .premium-tool-tile,.portal-root[data-theme="dark"] .developer-footer > div,.portal-root[data-theme="dark"] .soft-nav-shell { color:var(--portal-ink) !important;background:var(--portal-surface) !important;border-color:var(--portal-line) !important;box-shadow:var(--portal-shadow) !important; }
+    .portal-root[data-theme="dark"] .soft-page,.portal-root[data-theme="dark"] .premium-home,.portal-root[data-theme="dark"] > .min-h-screen { background:var(--portal-bg) !important;color:var(--portal-ink) !important; }
+    .portal-root[data-theme="dark"] [class~="text-white"],.portal-root[data-theme="dark"] [class~="text-gray-200"],.portal-root[data-theme="dark"] [class~="text-slate-50"],.portal-root[data-theme="dark"] [class~="text-slate-100"],.portal-root[data-theme="dark"] [class~="text-slate-200"],.portal-root[data-theme="dark"] [class~="text-slate-300"] { color:var(--portal-ink) !important; }
+    .portal-root[data-theme="dark"] [class*="text-slate-400"],.portal-root[data-theme="dark"] [class*="text-slate-500"],.portal-root[data-theme="dark"] [class*="text-gray-400"] { color:var(--portal-muted) !important; }
+    .portal-root[data-theme="dark"] [class*="bg-white"],.portal-root[data-theme="dark"] [class*="bg-slate-50"],.portal-root[data-theme="dark"] [class*="bg-slate-100"],.portal-root[data-theme="dark"] [class*="bg-gray-50"],.portal-root[data-theme="dark"] [class*="bg-gray-100"] { background:var(--portal-surface) !important; }
+    .portal-root[data-theme="dark"] input,.portal-root[data-theme="dark"] textarea,.portal-root[data-theme="dark"] select,.portal-root[data-theme="dark"] .soft-control { color:var(--portal-ink) !important;background:#17263a !important;border-color:#38516b !important; }
+    .portal-root[data-theme="dark"] input::placeholder,.portal-root[data-theme="dark"] textarea::placeholder { color:#91a8bf !important; }
+    .portal-root[data-theme="dark"] .home-hero,.portal-root[data-theme="dark"] .premium-welcome { color:var(--portal-ink) !important;background:linear-gradient(135deg,#102b40,#142238 65%,#111c2d) !important;border-color:#28516d !important; }
+    .portal-root[data-theme="dark"] .premium-brand-mark,.portal-root[data-theme="dark"] .premium-shortcut-icon,.portal-root[data-theme="dark"] .premium-eyebrow,.portal-root[data-theme="dark"] .premium-date-chip,.portal-root[data-theme="dark"] .premium-time-chip,.portal-root[data-theme="dark"] .premium-favorite-chip { color:#7dd3fc !important;background:#142f45 !important;border-color:#315574 !important; }
+    .portal-root[data-theme="dark"] .premium-icon-button { color:#7dd3fc !important;background:#142f45 !important;border-color:#315574 !important; }
+    .portal-root[data-theme="dark"] .premium-icon-button:hover { background:#1a3b55 !important; }
+    .portal-root[data-theme="dark"] .premium-secondary-cta { color:#bae6fd !important;background:#142f45 !important;border-color:#315574 !important; }
+    .portal-root[data-theme="dark"] .premium-primary-cta { color:#fff !important; }
+    .portal-root[data-theme="dark"] .soft-nav-item[aria-current="page"] > span:first-child { background:#142f45 !important;color:#7dd3fc !important; }
+    .portal-root[data-theme="dark"] .premium-lecture-row,.portal-root[data-theme="dark"] .premium-group-choice,.portal-root[data-theme="dark"] .premium-empty-state { background:#142033 !important; }
+    .portal-root[data-theme="dark"] .program-select-screen,.portal-root[data-theme="dark"] .portal-loading-screen { background:var(--portal-bg) !important;color:var(--portal-ink) !important; }
+    .theme-toggle { font-size:18px;line-height:1; }
+
     .portal-root { min-height:100vh; color:var(--portal-ink) !important; background:var(--portal-bg) !important; }
     .portal-root .soft-page,
     .portal-root > .min-h-screen,
@@ -927,6 +950,14 @@ Civil & Political + Economic & Social rights.` },
 
     // ==================== APP ====================
     function App() {
+      const [darkMode, setDarkMode] = useState(() => {
+        try { return localStorage.getItem('bsnu-theme') === 'dark'; } catch { return false; }
+      });
+      useEffect(() => {
+        try { localStorage.setItem('bsnu-theme', darkMode ? 'dark' : 'light'); } catch {}
+        document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
+      }, [darkMode]);
       const [entryRole, setEntryRole] = useState('');
       const [studentSession, setStudentSession] = useState(null);
       const [studentAuthLoading, setStudentAuthLoading] = useState(true);
@@ -2036,6 +2067,7 @@ Civil & Political + Economic & Social rights.` },
                   <Icons.Bell className="h-[18px] w-[18px]" />
                   {unreadNotificationCount > 0 && <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-slate-900 bg-red-600 px-1 text-[9px] font-black leading-none text-white shadow-lg">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
                 </button>
+                <button onClick={() => setDarkMode(value => !value)} aria-label={darkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'} title={darkMode ? 'الوضع الفاتح' : 'الوضع الداكن'} className="premium-icon-button home-header-action theme-toggle" aria-pressed={darkMode}>{darkMode ? '☀️' : '🌙'}</button>
                 <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
               </div>
             </header>
@@ -2985,7 +3017,7 @@ Civil & Political + Economic & Social rights.` },
               </div>
             </div>
           )}
-          <div dir="rtl" className={'portal-root font-cairo min-h-screen soft-page text-gray-200 ' + (view === 'admin' ? 'portal-admin-view' : '')}>
+          <div dir="rtl" className={'portal-root font-cairo min-h-screen soft-page text-gray-200 ' + (darkMode ? 'theme-dark ' : 'theme-light ') + (view === 'admin' ? 'portal-admin-view' : '')} data-theme={darkMode ? 'dark' : 'light'}>
           {view === 'home' && <Home />}
           {view === 'subjects' && <Subjects />}
           {view === 'lectures' && <Lectures />}
