@@ -2182,9 +2182,10 @@ Civil & Political + Economic & Social rights.` },
               .order('created_at', { ascending: false }).limit(200);
             if (!active) return;
             if (error) {
-              console.warn('تعذر تحديث المحاضرات من قاعدة البيانات:', error);
-              setLectureLoadError('تعذر تحميل المحاضرات من الخادم. تحقق من اتصال الإنترنت ثم اضغط تحديث.');
-              if (cachedLectures === null) setDatabaseLectures([]);
+              // Keep the portal quiet for students; retain cached/demo content and log diagnostics.
+              console.warn('Lecture sync failed:', error.message || error);
+              setLectureLoadError('');
+              if (cachedLectures === null) setDatabaseLectures(null);
               return;
             }
             setLectureLoadError('');
@@ -2202,8 +2203,18 @@ Civil & Political + Economic & Social rights.` },
           if (!supabaseClient) return () => { active = false; };
           const channel = supabaseClient.channel(`student-lectures-${subjectCode}`)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lectures', filter: `subject_code=eq.${subjectCode}` }, load)
-            .subscribe();
-          return () => { active = false; supabaseClient.removeChannel(channel); };
+            .subscribe((status) => { if (status === 'SUBSCRIBED') load(); });
+          const refreshWhenVisible = () => { if (document.visibilityState === 'visible') load(); };
+          window.addEventListener('focus', load);
+          window.addEventListener('online', load);
+          document.addEventListener('visibilitychange', refreshWhenVisible);
+          return () => {
+            active = false;
+            window.removeEventListener('focus', load);
+            window.removeEventListener('online', load);
+            document.removeEventListener('visibilitychange', refreshWhenVisible);
+            supabaseClient.removeChannel(channel);
+          };
         }, [selectedSubject?.code, lectureRefreshKey]);
         const allSubjectLectures = databaseLectures !== null ? databaseLectures : (allLecturesData[selectedSubject?.code] || (selectedProgram === 'ai' ? allLecturesData.default : []));
         const selectedDoctorKey = selectedInstructor ? normalizeDoctorName(selectedInstructor) : '';
