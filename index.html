@@ -1408,6 +1408,35 @@ Civil & Political + Economic & Social rights.` },
         return () => { active = false; };
       }, [selectedProgram, programSelectionConfirmed]);
       const [selectedGroup, setSelectedGroup] = useState(null);
+      const [portalNotifications, setPortalNotifications] = useState([]);
+      const [readNotificationIds, setReadNotificationIds] = useState([]);
+      const notificationUserKey = studentSession?.user?.id || 'guest';
+      useEffect(() => {
+        let active = true;
+        const storageKey = `bsnu_read_notifications:${notificationUserKey}`;
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          setReadNotificationIds(Array.isArray(saved) ? saved.map(String) : []);
+        } catch (_) { setReadNotificationIds([]); }
+        const loadNotifications = async () => {
+          const { data, error } = await supabaseClient.from('portal_notifications')
+            .select('*').eq('published', true).order('created_at', { ascending: false }).limit(100);
+          if (active && !error) setPortalNotifications(data || []);
+        };
+        if (!supabaseClient) return () => { active = false; };
+        loadNotifications();
+        const channel = supabaseClient.channel('student-portal-notifications')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'portal_notifications' }, loadNotifications)
+          .subscribe();
+        return () => { active = false; supabaseClient.removeChannel(channel); };
+      }, [notificationUserKey]);
+      const notificationItems = portalNotifications.filter(item => !item.target_group || item.target_group === selectedGroup);
+      const unreadNotificationCount = notificationItems.filter(item => !readNotificationIds.includes(String(item.id))).length;
+      const markNotificationsRead = () => {
+        const next = [...new Set([...readNotificationIds, ...notificationItems.map(item => String(item.id))])];
+        setReadNotificationIds(next);
+        try { localStorage.setItem(`bsnu_read_notifications:${notificationUserKey}`, JSON.stringify(next)); } catch (_) {}
+      };
       const [selectedScheduleDay, setSelectedScheduleDay] = useState(null);
 
       // Start every newly opened screen or nested section at the top.
@@ -1982,6 +2011,10 @@ Civil & Political + Economic & Social rights.` },
               <div className="flex shrink-0 items-center gap-2">
                 <button onClick={changeStudentProgram} aria-label="تغيير البرنامج الدراسي" title="تغيير البرنامج الدراسي" className="premium-icon-button home-header-action"><Icons.Layers className="h-[18px] w-[18px]" /></button>
                 <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
+                <button onClick={() => setView('notifications')} aria-label={`الإشعارات: ${unreadNotificationCount} غير مقروء`} title="الإشعارات" className="premium-icon-button home-header-action relative">
+                  <Icons.Bell className="h-[18px] w-[18px]" />
+                  {unreadNotificationCount > 0 && <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-slate-900 bg-red-600 px-1 text-[9px] font-black leading-none text-white shadow-lg">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
+                </button>
                 <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
               </div>
             </header>
@@ -2678,25 +2711,28 @@ Civil & Political + Economic & Social rights.` },
         </div></div>;
       };
 
-      const NotificationsView = () => {
-        const [items, setItems] = useState([]);
-        const [busy, setBusy] = useState(true);
-        useEffect(() => {
-          let alive = true;
-          const load = async () => {
-            const { data, error } = await supabaseClient.from('portal_notifications').select('*').eq('published', true).order('created_at', { ascending: false }).limit(40);
-            if (!alive) return;
-            if (!error) setItems((data || []).filter(n => !n.target_group || n.target_group === selectedGroup));
-            setBusy(false);
-          };
-          load();
-          const channel = supabaseClient.channel('portal-notifications-live').on('postgres_changes', { event: '*', schema: 'public', table: 'portal_notifications' }, load).subscribe();
-          return () => { alive = false; supabaseClient.removeChannel(channel); };
-        }, [selectedGroup]);
-        return <div className="min-h-screen soft-page pb-28"><NavBar title="الإشعارات" onBack={()=>setView('home')} /><div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
-          {busy ? <p className="py-8 text-center text-sm text-slate-400">جاري تحميل الإشعارات...</p> : items.length ? items.map(item=><article key={item.id} className="soft-panel rounded-2xl p-4"><div className="flex items-center gap-2"><Icons.Bell className="h-4 w-4 text-sky-300"/><b className="text-sm text-white">{item.title}</b></div><p className="mt-2 whitespace-pre-wrap text-xs leading-6 text-slate-300">{item.body}</p><p className="mt-2 text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</p></article>) : <p className="py-8 text-center text-sm text-slate-400">لا توجد إشعارات جديدة.</p>}
-        </div></div>;
-      };
+      const NotificationsView = () => (
+        <div className="min-h-screen soft-page pb-28">
+          <NavBar title="الإشعارات" onBack={() => setView('home')} />
+          <div className="mx-auto max-w-3xl space-y-3 px-4 pt-4">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-sky-300/15 bg-sky-400/5 p-3">
+              <div><p className="text-sm font-black text-white">مركز الإشعارات</p><p className="mt-1 text-[10px] text-slate-400">{unreadNotificationCount} إشعار غير مقروء</p></div>
+              <button type="button" onClick={markNotificationsRead} disabled={!unreadNotificationCount} className="shrink-0 rounded-xl bg-sky-400/15 px-3 py-2 text-[10px] font-extrabold text-sky-200 disabled:cursor-not-allowed disabled:opacity-40">تحديد الكل كمقروء</button>
+            </div>
+            {notificationItems.length ? notificationItems.map(item => {
+              const isUnread = !readNotificationIds.includes(String(item.id));
+              return <article key={item.id} className={`soft-panel rounded-2xl border p-4 ${isUnread ? 'border-red-400/30' : 'border-sky-300/10'}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2"><Icons.Bell className="h-4 w-4 shrink-0 text-sky-300"/><b className="text-sm text-white">{item.title}</b></div>
+                  {isUnread && <span className="shrink-0 rounded-full bg-red-500/15 px-2 py-1 text-[9px] font-black text-red-300">جديد</span>}
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-6 text-slate-300">{item.body}</p>
+                <p className="mt-2 text-[10px] text-slate-500">{new Date(item.created_at).toLocaleString('ar-EG')}</p>
+              </article>;
+            }) : <p className="py-8 text-center text-sm text-slate-400">لا توجد إشعارات حاليًا.</p>}
+          </div>
+        </div>
+      );
 
       const CampusMapView = () => (
         <div className="min-h-screen soft-page pb-28"><NavBar title="خريطة الحرم الجامعي" onBack={()=>setView('home')} /><div className="mx-auto max-w-4xl space-y-3 px-4 pt-4">
