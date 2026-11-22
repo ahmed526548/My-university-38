@@ -1187,6 +1187,28 @@ Civil & Political + Economic & Social rights.` },
         } catch (error) { setStudentAuthError(error?.message || 'تعذر إكمال تسجيل الدخول.'); }
         finally { setStudentAuthBusy(false); }
       };
+
+      const [studentCurrentPassword, setStudentCurrentPassword] = useState('');
+      const [studentNewPassword, setStudentNewPassword] = useState('');
+      const [studentConfirmPassword, setStudentConfirmPassword] = useState('');
+      const [studentPasswordChangeBusy, setStudentPasswordChangeBusy] = useState(false);
+      const [studentPasswordChangeMessage, setStudentPasswordChangeMessage] = useState('');
+      const handleStudentPasswordChange = async (event) => {
+        event.preventDefault();
+        if (!studentSession?.user?.email || !supabaseClient || studentPasswordChangeBusy) return;
+        if (studentNewPassword.length < 10) { setStudentPasswordChangeMessage('كلمة المرور الجديدة لازم تكون 10 أحرف على الأقل.'); return; }
+        if (studentNewPassword !== studentConfirmPassword) { setStudentPasswordChangeMessage('تأكيد كلمة المرور غير مطابق.'); return; }
+        setStudentPasswordChangeBusy(true); setStudentPasswordChangeMessage('');
+        try {
+          const { error: verifyError } = await supabaseClient.auth.signInWithPassword({ email: studentSession.user.email, password: studentCurrentPassword });
+          if (verifyError) throw new Error('كلمة المرور الحالية غير صحيحة.');
+          const { error } = await supabaseClient.auth.updateUser({ password: studentNewPassword });
+          if (error) throw error;
+          setStudentCurrentPassword(''); setStudentNewPassword(''); setStudentConfirmPassword('');
+          setStudentPasswordChangeMessage('تم تغيير كلمة المرور بنجاح.');
+        } catch (error) { setStudentPasswordChangeMessage(error?.message || 'تعذر تغيير كلمة المرور.'); }
+        finally { setStudentPasswordChangeBusy(false); }
+      };
       const adminStandaloneMode = new URLSearchParams(window.location.search).get('standalone') === '1' || window.location.pathname.endsWith('/admin.html');
       const initialView = (new URLSearchParams(window.location.search).get('view') === 'admin' || adminStandaloneMode) ? 'admin' : 'home';
       const getPortalHistoryUrl = (target) => {
@@ -2884,6 +2906,14 @@ Civil & Political + Economic & Social rights.` },
                 <Icons.LogOut className="h-4 w-4" /> {studentAuthBusy ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}
               </button>
             </div>
+            <form onSubmit={handleStudentPasswordChange} className="glass border border-sky-300/25 rounded-2xl p-4 space-y-3">
+              <div><h3 className="font-bold text-white text-sm">تغيير كلمة المرور</h3><p className="text-xs text-slate-400 mt-1">اكتب كلمة المرور الحالية ثم اختر كلمة مرور جديدة لا تقل عن 10 أحرف.</p></div>
+              <input type="password" autoComplete="current-password" required value={studentCurrentPassword} onChange={e=>setStudentCurrentPassword(e.target.value)} placeholder="كلمة المرور الحالية" className="w-full rounded-xl bg-slate-900/70 border border-slate-700 p-3 text-sm text-white" />
+              <input type="password" autoComplete="new-password" minLength={10} required value={studentNewPassword} onChange={e=>setStudentNewPassword(e.target.value)} placeholder="كلمة المرور الجديدة (10 أحرف على الأقل)" className="w-full rounded-xl bg-slate-900/70 border border-slate-700 p-3 text-sm text-white" />
+              <input type="password" autoComplete="new-password" minLength={10} required value={studentConfirmPassword} onChange={e=>setStudentConfirmPassword(e.target.value)} placeholder="تأكيد كلمة المرور الجديدة" className="w-full rounded-xl bg-slate-900/70 border border-slate-700 p-3 text-sm text-white" />
+              {studentPasswordChangeMessage && <p role="status" className="text-xs text-sky-200">{studentPasswordChangeMessage}</p>}
+              <button type="submit" disabled={studentPasswordChangeBusy} className="w-full rounded-xl bg-sky-500/15 border border-sky-300/30 py-3 text-sm font-bold text-sky-100 disabled:opacity-50">{studentPasswordChangeBusy ? 'جاري الحفظ...' : 'حفظ كلمة المرور الجديدة'}</button>
+            </form>
             <div className="glass border border-cyan-900/30 rounded-2xl p-4">
               <h3 className="font-bold text-white text-sm mb-3">البيانات المحفوظة</h3>
               <div className="space-y-2 text-xs text-gray-400">
