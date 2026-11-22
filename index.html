@@ -466,6 +466,8 @@
     // Supabase public client configuration. Keep secret/service-role keys out of the browser.
     const SUPABASE_URL = 'https://azlplcbphvaiexmyfdbp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ti61vFdKvOt9xQ6XF3U3WQ_AWXCjJFs';
+    // The single approved administrator account for this portal.
+    const ADMIN_LOGIN_EMAIL = 'ao839118@gmail.com';
     const STUDENT_REDIRECT_URL = 'https://ahmed526548.github.io/My-university-38/';
     const STUDENT_SESSION_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     const studentSessionKey = (userId) => `bsnu_student_session_started:${userId}`;
@@ -1196,7 +1198,7 @@ Civil & Political + Economic & Social rights.` },
       const [adminSession, setAdminSession] = useState(null);
       const [adminAllowed, setAdminAllowed] = useState(false);
       const [adminChecking, setAdminChecking] = useState(true);
-      const [adminEmail, setAdminEmail] = useState('');
+      const [adminEmail, setAdminEmail] = useState(ADMIN_LOGIN_EMAIL);
       const [adminPassword, setAdminPassword] = useState('');
       const [adminBusy, setAdminBusy] = useState(false);
       const [adminRecovery, setAdminRecovery] = useState(() => new URLSearchParams(window.location.search).get('recovery') === '1');
@@ -1597,6 +1599,7 @@ Civil & Political + Economic & Social rights.` },
       const handleAdminLogin = async (event) => {
         event.preventDefault();
         if (!supabaseClient) { showToast('تعذر الاتصال بخدمة تسجيل الدخول', 'error'); return; }
+        if (adminEmail.trim().toLowerCase() !== ADMIN_LOGIN_EMAIL) { showToast('الدخول متاح للبريد الإداري المعتمد فقط', 'error'); return; }
         setAdminBusy(true);
         try {
           const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -1623,8 +1626,8 @@ Civil & Political + Economic & Social rights.` },
 
       const handleAdminPasswordReset = async () => {
         if (!supabaseClient) { showToast('خدمة تسجيل الدخول غير متاحة', 'error'); return; }
-        const email = adminEmail.trim();
-        if (!email) { showToast('اكتب البريد الإلكتروني للأدمن أولاً', 'error'); return; }
+        const email = ADMIN_LOGIN_EMAIL;
+        setAdminEmail(ADMIN_LOGIN_EMAIL);
         setAdminResetBusy(true);
         try {
           const redirectUrl = new URL(window.location.href);
@@ -1642,22 +1645,36 @@ Civil & Political + Economic & Social rights.` },
       const handleAdminPasswordUpdate = async (event) => {
         event.preventDefault();
         if (adminNewPassword.length < 10) { showToast('كلمة المرور لازم تكون 10 أحرف على الأقل', 'error'); return; }
+        if (!supabaseClient) { showToast('خدمة تسجيل الدخول غير متاحة', 'error'); return; }
         setAdminResetBusy(true);
         try {
-          const { error } = await supabaseClient.auth.updateUser({ password: adminNewPassword });
-          if (error) throw error;
-          const { data: sessionData } = await supabaseClient.auth.getSession();
-          const userId = sessionData?.session?.user?.id;
-          if (!userId) throw new Error('تم تحديث كلمة المرور، لكن تعذر التحقق من جلسة الأدمن. سجل الدخول من جديد.');
-          const { data: adminRow, error: adminError } = await supabaseClient.from('portal_admins').select('user_id').eq('user_id', userId).maybeSingle();
+          // Resolve the PKCE recovery code explicitly if automatic URL detection has not restored a session.
+          let { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+          if (sessionError) throw sessionError;
+          if (!sessionData?.session) {
+            const recoveryCode = new URLSearchParams(window.location.search).get('code');
+            if (recoveryCode) {
+              const exchanged = await supabaseClient.auth.exchangeCodeForSession(recoveryCode);
+              if (exchanged.error) throw exchanged.error;
+              sessionData = { session: exchanged.data?.session || null };
+            }
+          }
+          const recoverySession = sessionData?.session;
+          if (!recoverySession?.user?.id) throw new Error('رابط الاستعادة لم يفعّل جلسة صالحة. اطلب رسالة استعادة جديدة وافتح أحدث رابط مرة واحدة.');
+          if (String(recoverySession.user.email || '').toLowerCase() !== ADMIN_LOGIN_EMAIL) throw new Error('رابط الاستعادة لا يخص البريد الإداري المعتمد.');
+          const { data: adminRow, error: adminError } = await supabaseClient.from('portal_admins').select('user_id').eq('user_id', recoverySession.user.id).maybeSingle();
           if (adminError) throw adminError;
           if (!adminRow) throw new Error('الحساب لا يمتلك صلاحية الأدمن.');
-          setAdminSession(sessionData.session);
+          const { error: updateError } = await supabaseClient.auth.updateUser({ password: adminNewPassword });
+          if (updateError) throw updateError;
+          const { data: refreshedSessionData, error: refreshedSessionError } = await supabaseClient.auth.getSession();
+          if (refreshedSessionError) throw refreshedSessionError;
+          setAdminSession(refreshedSessionData?.session || recoverySession);
           setAdminAllowed(true);
           setAdminRecovery(false);
           setAdminNewPassword('');
           try { const cleanUrl = new URL(window.location.href); cleanUrl.searchParams.delete('recovery'); cleanUrl.searchParams.delete('code'); window.history.replaceState({}, document.title, cleanUrl.toString()); } catch (_) {}
-          showToast('تم تغيير كلمة مرور الأدمن بنجاح');
+          showToast('تم تغيير كلمة مرور الأدمن بنجاح. تقدر تسجل دخول بالبريد الثابت وكلمة المرور الجديدة.');
         } catch (error) { showToast(error?.message || 'تعذر تحديث كلمة المرور', 'error'); }
         finally { setAdminResetBusy(false); }
       };
@@ -3253,7 +3270,7 @@ Civil & Political + Economic & Social rights.` },
                   ) : (
                     <form onSubmit={handleAdminLogin} className="space-y-3">
                       <label className="block text-xs font-bold text-slate-600">البريد الإلكتروني للأدمن</label>
-                      <input type="email" required autoComplete="username" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} placeholder="admin@example.com" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
+                      <input type="email" required readOnly autoComplete="username" value={ADMIN_LOGIN_EMAIL} className="soft-control w-full rounded-xl px-4 py-3 text-sm opacity-90" dir="ltr" />
                       <label className="block text-xs font-bold text-slate-600">كلمة المرور</label>
                       <input type="password" required autoComplete="current-password" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="••••••••" className="soft-control w-full rounded-xl px-4 py-3 text-sm" dir="ltr" />
                       <button type="submit" disabled={adminBusy} className="mt-2 w-full rounded-xl bg-sky-600 py-3 text-sm font-black text-white disabled:opacity-50">{adminBusy ? "جاري التحقق..." : "تسجيل الدخول"}</button>
