@@ -2147,134 +2147,139 @@ Civil & Political + Economic & Social rights.` },
         </div>
       );
 
-      const Home = () => (
-        <div className="premium-home relative min-h-screen overflow-hidden pb-28">
-          <div className="premium-ambient premium-ambient-one" />
-          <div className="premium-ambient premium-ambient-two" />
-          <div className="premium-container relative z-10 mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8">
-            <header className="premium-header home-enter flex items-center justify-between gap-3 rounded-2xl px-4 py-3 sm:px-5">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="premium-brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl">
-                  <Icons.Graduation className="h-6 w-6" />
-                </div>
-                <div className="min-w-0">
-                  <p className="home-university-name text-[10px] font-semibold sm:text-[11px]">جامعة بني سويف الأهلية</p>
-                  <h1 className="home-brand-title truncate text-[13px] font-black leading-tight sm:text-lg">بوابتك الجامعية</h1>
-                </div>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <button onClick={changeStudentProgram} aria-label="تغيير البرنامج الدراسي" title="تغيير البرنامج الدراسي" className="premium-icon-button home-header-action"><Icons.Layers className="h-[18px] w-[18px]" /></button>
-                <button onClick={() => setShowSearch(true)} aria-label="بحث" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
-                <button onClick={() => setView('notifications')} aria-label={`الإشعارات: ${unreadNotificationCount} غير مقروء`} title="الإشعارات" className="premium-icon-button home-header-action relative">
-                  <Icons.Bell className="h-[18px] w-[18px]" />
-                  {unreadNotificationCount > 0 && <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-slate-900 bg-red-600 px-1 text-[9px] font-black leading-none text-white shadow-lg">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
-                </button>
-                <button onClick={() => setDarkMode(value => !value)} aria-label={darkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'} title={darkMode ? 'الوضع الفاتح' : 'الوضع الداكن'} className="premium-icon-button home-header-action theme-toggle" aria-pressed={darkMode}>{darkMode ? '☀️' : '🌙'}</button>
-                <button onClick={() => setView('settings')} aria-label="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
-              </div>
-            </header>
-
-            <section className="premium-welcome home-hero mt-5 overflow-hidden rounded-[1.8rem] p-5 sm:mt-7 sm:p-8 lg:p-10">
-              <div className="relative">
-                <span className="premium-eyebrow mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold sm:text-xs">
-                  <Icons.Sparkles className="h-3.5 w-3.5" /> مساحتك الدراسية في مكان واحد
-                </span>
-                <h2 className="max-w-2xl text-2xl font-black leading-[1.45] text-white sm:text-3xl lg:text-4xl">نظّم يومك، <span className="premium-highlight">وحقّق تقدّمك.</span></h2>
-                <p className="mt-3 max-w-xl text-xs leading-7 text-slate-300 sm:text-sm">تابع محاضراتك، راجع موادك، واعرف جدولك بسهولة من بوابتك الجامعية.</p>
-              </div>
-              <div className="mt-7 grid grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_auto] sm:gap-6">
-                <div className="flex flex-wrap items-center gap-2.5 sm:justify-start">
-                  <button onClick={() => setView('subjects')} className="premium-primary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-extrabold sm:text-sm">
-                    <Icons.BookOpen className="h-4 w-4" /> تصفح المحاضرات <Icons.ChevronRight className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => setView('bot')} className="premium-secondary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold sm:text-sm">
-                    <Icons.Bot className="h-4 w-4" /> اسأل المساعد
-                  </button>
-                </div>
-                <div className="premium-progress-card relative mx-auto w-full max-w-xs rounded-2xl p-5 sm:mx-0 sm:justify-self-end">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-300">إنجازك الدراسي</span>
-                    <Icons.Trophy className="h-5 w-5 text-sky-300" />
-                  </div>
-                  <div className="mt-4 flex items-center gap-4">
-                    <div className="relative h-24 w-24 shrink-0">
-                      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,.16)" strokeWidth="8" />
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="var(--portal-accent)" strokeWidth="8" strokeLinecap="round" strokeDasharray={263.9} strokeDashoffset={263.9*(1-overallProgress.percent/100)} />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center text-xl font-black text-white">{overallProgress.percent}%</div>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-extrabold text-white">{overallProgress.totalDone} محاضرة</p>
-                      <p className="mt-1 text-[11px] leading-5 text-slate-400">من أصل {overallProgress.totalReady} محاضرة متاحة</p>
-                      <p className="mt-2 text-[10px] font-bold text-sky-300">استمر، أنت بتتقدم!</p>
-                    </div>
+      const Home = () => {
+        const studentUser = studentSession?.user;
+        const studentDisplayName = String(studentUser?.user_metadata?.full_name || studentUser?.user_metadata?.name || studentUser?.email?.split('@')[0] || 'طالب').trim().split(/\s+/)[0];
+        const upcomingTasks = homeTasks
+          .filter(task => task.due_at && new Date(task.due_at).getTime() >= Date.now())
+          .sort((a, b) => new Date(a.due_at) - new Date(b.due_at)).slice(0, 3);
+        const unreadItems = notificationItems.filter(item => !readNotificationIds.includes(String(item.id))).slice(0, 2);
+        const hasActionItems = upcomingTasks.length > 0 || unreadItems.length > 0 || announcements.length > 0;
+        const quickActions = [
+          { icon: Icons.BookOpen, label: 'المحاضرات', desc: 'المواد والمحتوى الدراسي', action: () => setView('subjects') },
+          { icon: Icons.Calendar, label: 'جدولي', desc: selectedGroup || 'اختار الجروب أولاً', action: () => { if (!selectedGroup) setView('groups'); else { setSelectedScheduleDay(null); setView('schedule'); } } },
+          { icon: Icons.Note, label: 'الكويزات والمهام', desc: 'المواعيد والتكليفات', action: () => setView('tasks') },
+          { icon: Icons.Target, label: 'تسجيل الحضور', desc: 'افتح تسجيل حضور المحاضرة', action: () => { window.location.href = './attendance.html'; } },
+          { icon: Icons.Bot, label: 'المساعد الذكي', desc: 'اسأل عن دراستك', action: () => setView('bot') }
+        ];
+        return (
+          <div className="premium-home relative min-h-screen overflow-hidden pb-28">
+            <div className="premium-ambient premium-ambient-one" />
+            <div className="premium-ambient premium-ambient-two" />
+            <div className="premium-container relative z-10 mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8">
+              <header className="premium-header home-enter flex items-center justify-between gap-3 rounded-2xl px-4 py-3 sm:px-5">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="premium-brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"><Icons.Graduation className="h-6 w-6" /></div>
+                  <div className="min-w-0">
+                    <p className="home-university-name text-[10px] font-semibold sm:text-[11px]">جامعة بني سويف الأهلية</p>
+                    <h1 className="home-brand-title truncate text-[13px] font-black leading-tight sm:text-lg">مساحتي الجامعية</h1>
                   </div>
                 </div>
-              </div>
-            </section>
-
-            <section className="mt-7">
-              <div className="premium-section-heading mb-3 flex items-end justify-between">
-                <div><p className="premium-kicker">QUICK ACCESS</p><h3 className="mt-1 text-base font-black text-white sm:text-lg">ابدأ من هنا</h3></div>
-                <span className="text-[10px] text-slate-500">اختصاراتك الأساسية</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2 sm:gap-3">
-                {[
-                  { icon: Icons.BookOpen, label: 'مكتبة المحاضرات', desc: 'المواد والملخصات والشرح', v: 'subjects', number: '01' },
-                  { icon: Icons.Note, label: 'الامتحانات والكويزات', desc: 'التكليفات ومواعيد التسليم', v: 'tasks', number: '02' },
-                  { icon: Icons.Graduation, label: 'السجل الأكاديمي', desc: 'درجاتك ونتائج الكويزات', v: 'academic-record', number: '06' },
-                  { icon: Icons.Graduation, label: 'تسجيل الحضور', desc: 'امسح QR المحاضرة وسجل حضورك', v: 'attendance', number: '07' },
-                  { icon: Icons.Bell, label: 'إعلانات الدكاترة', desc: 'آخر أخبار وتنبيهات المواد', v: 'announcements', number: '03' },
-                  { icon: Icons.Bot, label: 'المساعد الجامعي', desc: 'اسأل واستفسر وتعلّم', v: 'bot', number: '04' },
-                  { icon: Icons.Calendar, label: 'جدول المحاضرات', desc: selectedGroup || 'اختار الجروب لعرض جدولك', v: 'groups', number: '05' },
-                ].map(({ icon: I, label, desc, v, number }) => (
-                  <button key={v} onClick={() => { if (v === 'attendance') { window.location.href = './attendance.html'; return; } if (v === 'groups') { setSelectedGroup(null); selectedScheduleDayRef.current = null; setSelectedScheduleDay(null); } setView(v); }} className="premium-shortcut group flex min-w-0 flex-col items-start gap-2 rounded-2xl p-2.5 text-right sm:gap-3 sm:p-4">
-                    <span className="premium-shortcut-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12"><I className="h-5 w-5 sm:h-6 sm:w-6" /></span>
-                    <span className="min-w-0 w-full"><span className="block text-[11px] font-extrabold leading-5 text-white sm:text-sm">{label}</span><span className="mt-1 block text-[9px] leading-4 text-slate-400 sm:text-[10px]">{desc}</span></span>
-                    <span className="text-[9px] font-bold tracking-widest text-sky-300/60 sm:text-[10px]">{number}</span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button onClick={() => setShowSearch(true)} aria-label="بحث شامل" title="بحث شامل" className="premium-icon-button home-header-action"><Icons.Search className="h-[18px] w-[18px]" /></button>
+                  <button onClick={() => setView('notifications')} aria-label={'الإشعارات: ' + unreadNotificationCount + ' غير مقروء'} title="الإشعارات" className="premium-icon-button home-header-action relative">
+                    <Icons.Bell className="h-[18px] w-[18px]" />
+                    {unreadNotificationCount > 0 && <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-slate-900 bg-red-600 px-1 text-[9px] font-black leading-none text-white">{unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}</span>}
                   </button>
-                ))}
-              </div>
-            </section>
+                  <button onClick={() => setDarkMode(value => !value)} aria-label={darkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'} title={darkMode ? 'الوضع الفاتح' : 'الوضع الداكن'} className="premium-icon-button home-header-action theme-toggle" aria-pressed={darkMode}>{darkMode ? '☀️' : '🌙'}</button>
+                  <button onClick={() => setView('settings')} aria-label="الإعدادات" title="الإعدادات" className="premium-icon-button home-header-action"><Icons.Settings className="h-[18px] w-[18px]" /></button>
+                </div>
+              </header>
 
-            <section className="mt-7">
-              <div className="mb-3 flex items-end justify-between gap-3">
-                <div><p className="premium-kicker">YOUR OVERVIEW</p><h3 className="mt-1 text-base font-black sm:text-lg">ملخصك الدراسي</h3></div>
-                <span className="text-[10px] text-slate-500">{today} • نظرة سريعة</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <button type="button" onClick={() => setView('subjects')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{currentProgramSubjects.length}</span><span className="mt-1 block text-xs text-slate-500">مواد دراسية</span></button>
-                <button type="button" onClick={() => setView('subjects')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{overallProgress.totalDone}<small className="text-xs text-slate-400"> / {overallProgress.totalReady}</small></span><span className="mt-1 block text-xs text-slate-500">محاضرات مكتملة</span></button>
-                <button type="button" onClick={() => setView('tasks')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{homeTasks.filter(task => task.due_at && new Date(task.due_at).getTime() >= Date.now()).length}</span><span className="mt-1 block text-xs text-slate-500">مواعيد قادمة</span></button>
-                <button type="button" onClick={() => setView('notifications')} className="premium-panel rounded-2xl p-4 text-right"><span className="block text-2xl font-black">{unreadNotificationCount}</span><span className="mt-1 block text-xs text-slate-500">إشعارات غير مقروءة</span></button>
-              </div>
-            </section>
+              <section className="premium-welcome home-hero mt-5 overflow-hidden rounded-[1.8rem] p-5 sm:mt-7 sm:p-7 lg:p-8">
+                <div className="relative grid items-center gap-6 lg:grid-cols-[1fr_auto]">
+                  <div>
+                    <span className="premium-eyebrow mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold sm:text-xs"><Icons.Sparkles className="h-3.5 w-3.5" /> لوحة الطالب الشخصية</span>
+                    <p className="text-sm font-semibold text-sky-100">أهلاً بيك، {studentDisplayName} 👋</p>
+                    <h2 className="mt-2 max-w-2xl text-2xl font-black leading-[1.45] text-white sm:text-3xl">خلّي يومك الدراسي <span className="premium-highlight">أوضح وأسهل.</span></h2>
+                    <p className="mt-2 max-w-xl text-xs leading-7 text-slate-300 sm:text-sm">كل اللي محتاج تتابعه النهارده موجود هنا، من غير ما تلف بين الأقسام.</p>
+                    <div className="mt-5 flex flex-wrap items-center gap-2">
+                      <button onClick={() => setView('tasks')} className="premium-primary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-extrabold sm:text-sm"><Icons.CheckCircle className="h-4 w-4" /> راجع مهامك</button>
+                      <button onClick={() => setShowSearch(true)} className="premium-secondary-cta inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold sm:text-sm"><Icons.Search className="h-4 w-4" /> ابحث في البوابة</button>
+                    </div>
+                  </div>
+                  <div className="premium-progress-card relative w-full rounded-2xl p-5 lg:w-64">
+                    <div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-300">إنجاز المحاضرات</span><Icons.Trophy className="h-5 w-5 text-sky-300" /></div>
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="relative h-20 w-20 shrink-0">
+                        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,.16)" strokeWidth="8" />
+                          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--portal-accent)" strokeWidth="8" strokeLinecap="round" strokeDasharray={263.9} strokeDashoffset={263.9 * (1 - overallProgress.percent / 100)} />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-lg font-black text-white">{overallProgress.percent}%</div>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-extrabold text-white">{overallProgress.totalDone} مكتملة</p>
+                        <p className="mt-1 text-[10px] leading-5 text-slate-400">من {overallProgress.totalReady} محاضرة متاحة</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-[10px] text-slate-400">النسبة مبنية على المحاضرات التي سجلت إكمالها.</p>
+                  </div>
+                </div>
+              </section>
 
-            <section className="mt-7 grid grid-cols-1 gap-3 lg:grid-cols-2">
-              <div className="premium-panel rounded-2xl p-4 sm:p-5">
-                <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">TODAY SCHEDULE</p><h3 className="mt-1 font-black">جدول محاضرات اليوم</h3></div><button type="button" onClick={() => setView('groups')} className="text-xs font-bold text-sky-700">عرض الجدول ←</button></div>
-                {!selectedGroup ? <div className="rounded-xl bg-sky-50 p-4 text-center"><p className="text-sm font-bold text-slate-700">اختار جروبك لعرض جدولك اليومي</p><div className="mt-3 flex gap-2">{['جروب 1','جروب 2'].map(group => <button key={group} type="button" onClick={() => setSelectedGroup(group)} className="flex-1 rounded-lg bg-sky-600 px-3 py-2 text-xs font-black text-white">{group}</button>)}</div></div> : <div className="space-y-2">{((liveSchedule[selectedGroup] || []).find(day => day.day === today)?.slots || []).flatMap(slot => slot.items.map(item => ({...item,time:slot.time}))).slice(0,3).map((item,index) => <div key={index} className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><span className="min-w-[76px] rounded-lg bg-sky-100 px-2 py-2 text-center text-[10px] font-black text-sky-800" dir="ltr">{item.time}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{item.subject}</p><p className="mt-1 truncate text-[10px] text-slate-500">{item.doctor || 'بدون محاضر'} • {item.hall || 'لم تحدد القاعة'}</p></div></div>)}{!(liveSchedule[selectedGroup] || []).find(day => day.day === today)?.slots?.length && <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">مفيش محاضرات مسجلة لجروبك النهارده.</p>}</div>}
-              </div>
-              <div className="premium-panel rounded-2xl p-4 sm:p-5">
-                <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">UPCOMING</p><h3 className="mt-1 font-black">أقرب الامتحانات والتكليفات</h3></div><button type="button" onClick={() => setView('tasks')} className="text-xs font-bold text-sky-700">كل المهام ←</button></div>
-                <div className="space-y-2">{homeTasks.filter(task => task.due_at && new Date(task.due_at).getTime() >= Date.now()).sort((a,b) => new Date(a.due_at)-new Date(b.due_at)).slice(0,3).map(task => <button type="button" key={task.id} onClick={() => setView('tasks')} className="flex w-full items-center gap-3 rounded-xl bg-slate-50 p-3 text-right"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">📝</span><span className="min-w-0 flex-1"><b className="block truncate text-sm">{task.title}</b><small className="mt-1 block text-[10px] text-slate-500">{task.kind === 'exam' ? 'امتحان' : task.kind === 'quiz' ? 'كويز' : 'تكليف'} • {new Date(task.due_at).toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'})}</small></span></button>)}{!homeTasks.some(task => task.due_at && new Date(task.due_at).getTime() >= Date.now()) && <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">مفيش مواعيد قادمة منشورة حاليًا.</p>}</div>
-              </div>
-            </section>
+              <section className="mt-6">
+                <div className="mb-3 flex items-end justify-between gap-3">
+                  <div><p className="premium-kicker">ACTION CENTER</p><h3 className="mt-1 text-base font-black sm:text-lg">محتاج انتباهك</h3></div>
+                  <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-sky-800">{upcomingTasks.length + unreadItems.length + (announcements.length ? 1 : 0)} عناصر</span>
+                </div>
+                <div className="premium-panel space-y-2 rounded-2xl p-3 sm:p-4">
+                  {upcomingTasks.map(task => (
+                    <button type="button" key={'task-' + task.id} onClick={() => setView('tasks')} className="flex w-full items-center gap-3 rounded-xl border border-amber-200/70 bg-amber-50 p-3 text-right transition hover:shadow-sm">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><Icons.Clock className="h-5 w-5" /></span>
+                      <span className="min-w-0 flex-1"><b className="block truncate text-xs font-black text-slate-800">{task.title}</b><small className="mt-1 block text-[10px] text-slate-600">{task.kind === 'exam' ? 'امتحان' : task.kind === 'quiz' ? 'كويز' : 'تكليف'} • {new Date(task.due_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })}</small></span>
+                      <Icons.ChevronLeft className="h-4 w-4 shrink-0 text-amber-700" />
+                    </button>
+                  ))}
+                  {unreadItems.map(item => (
+                    <button type="button" key={'notice-' + item.id} onClick={() => setView('notifications')} className="flex w-full items-center gap-3 rounded-xl border border-sky-200/70 bg-sky-50 p-3 text-right transition hover:shadow-sm">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><Icons.Bell className="h-5 w-5" /></span>
+                      <span className="min-w-0 flex-1"><b className="block truncate text-xs font-black text-slate-800">{item.title}</b><small className="mt-1 block text-[10px] text-slate-600">إشعار جديد • اضغط لعرض التفاصيل</small></span>
+                      <Icons.ChevronLeft className="h-4 w-4 shrink-0 text-sky-700" />
+                    </button>
+                  ))}
+                  {announcements.length > 0 && (
+                    <button type="button" onClick={() => setView('announcements')} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-right transition hover:shadow-sm">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sky-700"><Icons.Message className="h-5 w-5" /></span>
+                      <span className="min-w-0 flex-1"><b className="block truncate text-xs font-black text-slate-800">{announcements[0].title}</b><small className="mt-1 block text-[10px] text-slate-600">آخر إعلانات الجامعة • {announcements.length} إعلان</small></span>
+                      <Icons.ChevronLeft className="h-4 w-4 shrink-0 text-slate-500" />
+                    </button>
+                  )}
+                  {!hasActionItems && <div className="py-5 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><Icons.CheckCircle className="h-6 w-6" /></span><p className="mt-2 text-sm font-extrabold">أنت متابع كل جديد</p><p className="mt-1 text-xs text-slate-500">مفيش عناصر محتاجة انتباهك حاليًا.</p></div>}
+                </div>
+              </section>
 
-            <section className="mt-7 premium-panel rounded-2xl p-4 sm:p-5">
-              <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">LATEST UPDATES</p><h3 className="mt-1 font-black">آخر إعلانات الجامعة</h3></div><button type="button" onClick={() => setView('announcements')} className="text-xs font-bold text-sky-700">كل الإعلانات ←</button></div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{announcements.slice(0,2).map(item => <button type="button" key={item.id} onClick={() => setView('announcements')} className="rounded-xl bg-slate-50 p-3 text-right"><b className="block text-sm">{item.title}</b><p className="mt-1 line-clamp-2 text-xs leading-6 text-slate-500">{item.body}</p></button>)}{!announcements.length && <p className="text-xs text-slate-500">لا توجد إعلانات منشورة حاليًا.</p>}</div>
-            </section>
+              <section className="mt-6">
+                <div className="mb-3 flex items-end justify-between"><div><p className="premium-kicker">QUICK ACTIONS</p><h3 className="mt-1 text-base font-black sm:text-lg">اختصارات سريعة</h3></div><span className="text-[10px] text-slate-500">أهم خدماتك اليومية</span></div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                  {quickActions.map(({ icon: I, label, desc, action }) => (
+                    <button type="button" key={label} onClick={action} className="premium-shortcut group flex min-w-0 flex-col items-start gap-2 rounded-2xl p-3 text-right sm:p-4">
+                      <span className="premium-shortcut-icon flex h-10 w-10 items-center justify-center rounded-xl"><I className="h-5 w-5" /></span>
+                      <span className="block text-xs font-extrabold text-white">{label}</span><span className="text-[10px] leading-5 text-slate-400">{desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
 
-            <section className="mt-4 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setView('academic-record')} className="premium-secondary-cta flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-black">🎓 السجل الأكاديمي</button>
-              <button type="button" onClick={() => { window.location.href = './attendance.html'; }} className="premium-secondary-cta flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-black">▦ تسجيل الحضور</button>
-            </section>
+              <section className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
+                <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                  <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">TODAY</p><h3 className="mt-1 font-black">جدول محاضرات اليوم</h3></div><button type="button" onClick={() => setView(selectedGroup ? 'schedule' : 'groups')} className="text-xs font-bold text-sky-700">عرض الجدول ←</button></div>
+                  {!selectedGroup ? <div className="rounded-xl bg-sky-50 p-4 text-center"><p className="text-sm font-bold text-slate-700">اختار جروبك علشان يظهر جدولك</p><button type="button" onClick={() => setView('groups')} className="mt-3 rounded-lg bg-sky-600 px-4 py-2 text-xs font-black text-white">اختيار الجروب</button></div> : <div className="space-y-2">{((liveSchedule[selectedGroup] || []).find(day => day.day === today)?.slots || []).flatMap(slot => slot.items.map(item => ({ ...item, time: slot.time }))).slice(0, 3).map((item, index) => <div key={index} className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><span className="min-w-[76px] rounded-lg bg-sky-100 px-2 py-2 text-center text-[10px] font-black text-sky-800" dir="ltr">{item.time}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{item.subject}</p><p className="mt-1 truncate text-[10px] text-slate-500">{item.doctor || 'بدون محاضر'} • {item.hall || 'لم تحدد القاعة'}</p></div></div>)}{!(liveSchedule[selectedGroup] || []).find(day => day.day === today)?.slots?.length && <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">مفيش محاضرات مسجلة لجروبك النهارده.</p>}</div>}
+                </div>
+                <div className="premium-panel rounded-2xl p-4 sm:p-5">
+                  <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">UPCOMING</p><h3 className="mt-1 font-black">أقرب المواعيد</h3></div><button type="button" onClick={() => setView('tasks')} className="text-xs font-bold text-sky-700">كل المهام ←</button></div>
+                  <div className="space-y-2">{upcomingTasks.map(task => <button type="button" key={task.id} onClick={() => setView('tasks')} className="flex w-full items-center gap-3 rounded-xl bg-slate-50 p-3 text-right"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">📝</span><span className="min-w-0 flex-1"><b className="block truncate text-sm">{task.title}</b><small className="mt-1 block text-[10px] text-slate-500">{task.kind === 'exam' ? 'امتحان' : task.kind === 'quiz' ? 'كويز' : 'تكليف'} • {new Date(task.due_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })}</small></span></button>)}{!upcomingTasks.length && <p className="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-500">مفيش مواعيد قادمة منشورة حاليًا.</p>}</div>
+                </div>
+              </section>
 
+              <section className="mt-6 premium-panel rounded-2xl p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-2"><div><p className="premium-kicker">LATEST UPDATES</p><h3 className="mt-1 font-black">آخر إعلانات الجامعة</h3></div><button type="button" onClick={() => setView('announcements')} className="text-xs font-bold text-sky-700">كل الإعلانات ←</button></div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{announcements.slice(0, 2).map(item => <button type="button" key={item.id} onClick={() => setView('announcements')} className="rounded-xl bg-slate-50 p-3 text-right"><b className="block text-sm">{item.title}</b><p className="mt-1 line-clamp-2 text-xs leading-6 text-slate-500">{item.body}</p></button>)}{!announcements.length && <p className="text-xs text-slate-500">لا توجد إعلانات منشورة حاليًا.</p>}</div>
+              </section>
+            </div>
           </div>
-        </div>
-      );
+        );
+      };
 
       const Subjects = () => {
         const [searchQuery, setSearchQuery] = useState('');
@@ -3077,23 +3082,27 @@ Civil & Political + Economic & Social rights.` },
       // Persistent glass navigation across the main portal views
       const BottomNav = () => (
         <div className="fixed inset-x-0 bottom-0 z-40 pointer-events-none px-3 pb-2 safe-bottom">
-          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex w-full max-w-lg items-stretch justify-between gap-1 rounded-[1.35rem] px-2 py-2">
+          <nav aria-label="التنقل الرئيسي" className="soft-nav-shell pointer-events-auto mx-auto flex w-full max-w-xl items-stretch justify-between gap-1 rounded-[1.35rem] px-2 py-2">
             {[
               { icon: Icons.Home, label: 'الرئيسية', v: 'home' },
               { icon: Icons.BookOpen, label: 'المواد', v: 'subjects' },
               { icon: Icons.Calendar, label: 'الجدول', v: 'schedule' },
-              { icon: Icons.Bot, label: 'المساعد', v: 'bot', featured: true },
-              { icon: Icons.Users, label: 'الجروب', v: 'groups' }
-            ].map(({ icon: I, label, v, featured }) => {
-              const active = view === v || (v === 'subjects' && view === 'lectures');
+              { icon: Icons.Note, label: 'المهام', v: 'tasks' },
+              { icon: Icons.Layers, label: 'المزيد', v: 'tools' }
+            ].map(({ icon: I, label, v }) => {
+              const active = view === v || (v === 'subjects' && view === 'lectures') || (v === 'schedule' && view === 'groups');
               return (
                 <button key={v} type="button" aria-current={active ? 'page' : undefined}
-                  onClick={() => { if (v === 'groups') { setSelectedGroup(null); setView('groups'); return; } if (v === 'schedule' && !selectedGroup) { setView('groups'); return; } if (v === 'schedule') setSelectedScheduleDay(null); setView(v); }}
-                  className={`soft-nav-item group flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2.5 ${active ? 'text-sky-700' : 'text-slate-500 hover:text-sky-700'}`}>
-                  <span className={`flex h-9 w-10 items-center justify-center rounded-xl transition-all duration-200 ${active ? 'bg-sky-100 text-sky-700 shadow-sm' : featured ? 'bg-sky-50 text-sky-600' : 'bg-transparent'}`}>
+                  onClick={() => {
+                    if (v === 'schedule' && !selectedGroup) { setView('groups'); return; }
+                    if (v === 'schedule') setSelectedScheduleDay(null);
+                    setView(v);
+                  }}
+                  className={'soft-nav-item group flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2.5 ' + (active ? 'text-sky-700' : 'text-slate-500 hover:text-sky-700')}>
+                  <span className={'flex h-9 w-10 items-center justify-center rounded-xl transition-all duration-200 ' + (active ? 'bg-sky-100 text-sky-700 shadow-sm' : 'bg-transparent')}>
                     <I className="h-5 w-5 shrink-0" strokeWidth={active ? 2.5 : 2} />
                   </span>
-                  <span className={`whitespace-nowrap text-[10px] font-bold leading-none ${active ? 'text-sky-700' : 'text-slate-500'}`}>{label}</span>
+                  <span className={'whitespace-nowrap text-[10px] font-bold leading-none ' + (active ? 'text-sky-700' : 'text-slate-500')}>{label}</span>
                 </button>
               );
             })}
